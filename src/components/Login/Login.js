@@ -4,7 +4,7 @@ import logo from '../../assets/images/logo-aci-transparente.png';
 import SenhaInput from "../SenhaInput/SenhaInput";
 import './Login.css';
 import { useNavigate } from 'react-router-dom';
-import InputVerificado from "../Cadastro/InputVerificado";
+import InputVerificado from "../Inputs/InputVerificado";
 
 const Login = () => {
     const [email, setEmail] = useState('');

@@ -53,7 +53,7 @@ const HeaderCandidato = () => {
         <>
             <header className="header-candidato">
                 <div className='logo-container'>
-                    <a href='/' rel='noreferrer'><img src={logo} alt="Logo" loading="lazy" /></a>
+                    <a href='/dashboard' rel='noreferrer'><img src={logo} alt="Logo" loading="lazy" /></a>
                 </div>
                 <div className="opcoes-area">
                     <Button
@@ -70,7 +70,7 @@ const HeaderCandidato = () => {
 
                     {isLoginActive && (
                         <div className='opcoes-usuario'>
-                            <Link to='/config-usuario' className='link'>
+                            <Link to='/config-candidato' className='link'>
                                 <Button className='opcao-usuario'>Perfil</Button>
                             </Link>
                             <Button className='opcao-usuario' onClick={handleLogout}>Sair</Button>

@@ -9,7 +9,8 @@ import Footer from './components/Footer/Footer';
 import TokenCadastro from './components/Cadastro/TokenCadastro';
 import Dashboard from './components/Candidato/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
-import InputVerificado from './components/Cadastro/InputVerificado';
+import InputVerificado from './components/Inputs/InputVerificado';
+import ConfigCandidato from './components/Candidato/ConfigCandidato/ConfigCandidato';
 
 const App = () => {
   const [isVerificationAllowed, setIsVerificationAllowed] = useState(false);
@@ -37,6 +38,7 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
+            <Route path='/config-candidato' element={<ConfigCandidato />} />
           </Routes>
         </div>
       </div>

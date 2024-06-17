@@ -6,7 +6,7 @@ import useFormattedCPF, { validarCPF } from '../../hooks/useFormattedCPF';
 import useFormattedNome from '../../hooks/useFormattedNome';
 import logo from '../../assets/images/logo-aci-transparente.png';
 import { useNavigate } from 'react-router-dom';
-import InputVerificado from './InputVerificado';
+import InputVerificado from '../Inputs/InputVerificado';
 import { ErrorContext, ErrorProvider } from '../../context/ErrorContext';
 
 const Cadastro = ({ onRegister }) => {
@@ -17,7 +17,7 @@ const Cadastro = ({ onRegister }) => {
         nascimento: '',
         email: '',
         senha: '',
-        confirmacaoSenha: ''
+        confirmacaoSenha: '',
     });
     const [cpf, handleSetCpf] = useFormattedCPF(userData.cpf);
     const { errors, setErrors } = useContext(ErrorContext);
