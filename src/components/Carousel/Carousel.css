@@ -1,0 +1,57 @@
+.carousel-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 10px;
+  margin-bottom: 10vh;
+}
+
+.carousel-container h1 {
+  padding: 10px;
+  font-size: 40px;
+  color: #1876EA;
+  margin-bottom: 5vh;
+}
+
+.swiper {
+  width: 95%;
+  height: auto;
+}
+
+.swiper-slide img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  box-shadow: 3px 0 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.swiper-slide p {
+  font-size: 18px;
+  color: #1F5291;
+  margin-top: 10px;
+}
+
+.swiper-scrollbar {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .carousel-container h1 {
+    font-size: 32px;
+  }
+
+  .swiper-slide img {
+    width: 90px;
+    height: 90px;
+  }
+
+  .swiper-scrollbar {
+    display: block;
+  }
+
+  .swiper {
+    width: 98%;
+  }
+}

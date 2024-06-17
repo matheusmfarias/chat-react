@@ -1,0 +1,118 @@
+.container-cadastro {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    height: auto;
+    padding: 10px;
+    color: #1f5291;
+}
+
+.form-cadastro {
+    position: relative;
+    width: 100%;
+    margin: 10px;
+    max-width: 500px;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.form-cadastro h2 {
+    margin-bottom: 10px;
+}
+
+.credencial-cadastro {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 80%;
+}
+
+.credencial-cadastro .form-control {
+    width: 100%;
+}
+
+.logo-container-cadastro {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 250px;
+    margin-bottom: 10px;
+}
+
+.logo-container-cadastro img,
+.logo-container-cadastro a {
+    max-width: 100%;
+    width: 85%;
+    height: auto;
+}
+
+.credencial-cadastro p {
+    text-align: center;
+    padding: 10px;
+}
+
+.container-cadastro button {
+    background-color: #1f5291;
+    transition: background-color 0.3s;
+}
+
+.btn {
+    background-color: #1f5291;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary {
+    background-color: #1f5291;
+}
+
+.btn-primary:disabled {
+    background-color: #999999;
+    cursor: not-allowed;
+}
+
+
+.form-cadastro .btn-voltar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    margin: 10px;
+}
+
+.senha-input {
+    position: relative;
+}
+
+.senha-toggle-icone {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+.senha-toggle-icone svg {
+    width: 20px;
+    height: 20px;
+    color: #333;
+}
+
+.credencial-cadastro .text-danger {
+    color: #ff5360;
+    font-size: 16px;
+    text-align: center;
+    padding: 10px;
+}

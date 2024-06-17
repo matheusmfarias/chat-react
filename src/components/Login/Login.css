@@ -1,0 +1,78 @@
+.container-login {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    height: auto;
+    padding: 10px;
+    color: #1f5291;
+}
+
+.container-login button {
+    background-color: #1f5291;
+}
+
+.form-login {
+    position: relative;
+    width: 100%;
+    margin: 10px;
+    max-width: 500px;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+}
+
+.form-login .btn-voltar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    margin: 10px;
+}
+
+.credencial-login {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 80%;
+    padding: 10px;
+}
+
+.credencial-login .form-control {
+    width: 100%;
+}
+
+.credencial-login p {
+    text-align: center;
+    padding: 10px;
+}
+
+.logo-container-login {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 250px;
+    margin-bottom: 10px;
+}
+
+.logo-container-login img,
+.logo-container-login a {
+    max-width: 100%;
+    width: 85%;
+    height: auto;
+}
+
+.credencial-login .text-danger {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.btn-entrar {
+    margin-top: 20px;
+}

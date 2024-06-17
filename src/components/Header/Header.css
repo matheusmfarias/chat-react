@@ -1,0 +1,122 @@
+:root {
+    --primary-color: #1f5291;
+    --background-color: #ffffff;
+    --hover-background-color: #1f5291;
+    --hover-text-color: #ffffff;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 7%;
+    background-color: var(--background-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 250px;
+}
+
+.logo-container img {
+    max-width: 100%;
+    width: 65%;
+    height: auto;
+}
+
+.auth-area {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.login-button,
+.cadastro-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--background-color);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    transition: background-color 0.3s ease;
+    border-radius: 10px;
+    padding: 10px;
+    cursor: pointer;
+    margin-right: 20px;
+    width: 100px;
+}
+
+.setas-container {
+    margin-left: 10px;
+    transition: transform 0.5s ease;
+}
+
+.setas-container.up {
+    transform: rotate(360deg);
+}
+
+.login-button:hover,
+.cadastro-button:hover {
+    color: var(--hover-text-color);
+    background-color: var(--hover-background-color);
+}
+
+.link {
+    text-decoration: none;
+}
+
+.login-button.active {
+    background-color: var(--hover-background-color);
+    color: var(--hover-text-color);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.opcoes-login {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 100%;
+    z-index: 1000;
+    width: auto;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.header .login-button.active+.opcoes-login {
+    display: block;
+}
+
+.opcao-login {
+    display: block;
+    color: var(--primary-color);
+    background-color: var(--background-color);
+    padding: 10px;
+    border: 1px solid var(--primary-color);
+    text-align: left;
+    width: 100px;
+    transition: background-color 0.3s ease;
+}
+
+.opcao-login:hover {
+    background-color: #92abcb;
+    color: var(--hover-text-color);
+}
+
+
+@media (max-width: 605px) {
+    .header {
+        padding: 10px 5%;
+    }
+
+    .logo-container img {
+        width: 100%;
+    }
+
+    .login-button,
+    .cadastro-button {
+        margin-right: 10px;
+    }
+}

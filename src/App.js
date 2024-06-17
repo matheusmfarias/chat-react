@@ -1,25 +1,56 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Cadastro from './components/Cadastro/Cadastro';
+import Login from './components/Login/Login';
+import Header from './components/Header/Header';
+import Main from './components/Main/Main';
+import Carousel from './components/Carousel/Carousel';
+import Footer from './components/Footer/Footer';
+import TokenCadastro from './components/Cadastro/TokenCadastro';
+import Dashboard from './components/Candidato/Dashboard';
+import ProtectedRoute from './components/ProtectedRoute';
+import InputVerificado from './components/Cadastro/InputVerificado';
 
-function App() {
+const App = () => {
+  const [isVerificationAllowed, setIsVerificationAllowed] = useState(false);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div className='app-container'>
+        <div className='content'>
+          <Routes>
+            <Route path='/input' element={<InputVerificado />} />
+            <Route path='/' element={<Home />} />
+            <Route path='/login' element={<Login />} />
+            <Route path='/cadastro' element={<Cadastro onRegister={() => setIsVerificationAllowed(true)} />} />
+            <Route
+              path="/verificacao-token"
+              element={
+                <TokenCadastro onVerify={() => setIsVerificationAllowed(false)} />
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </div>
+      </div>
+    </Router>
   );
 }
+
+const Home = () => (
+  <>
+    <Header />
+    <Main />
+    <Carousel />
+    <Footer />
+  </>
+);
 
 export default App;

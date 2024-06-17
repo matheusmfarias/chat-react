@@ -1,0 +1,70 @@
+.senha-input {
+    width: 100%;
+    position: relative;
+    display: inline-block;
+}
+
+.senha-input label {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    translate: 0 -50%;
+    pointer-events: none;
+    color: #888888;
+    transition: 0.3s;
+    padding: 4px 8px;
+}
+
+.senha-input input {
+    width: 100%;
+    height: 3em;
+    padding: 0 40px 0 16px;
+    border: 2px solid #d3d3d3;
+    border-radius: 8px;
+    outline: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 16px;
+    transition: 0.3s;
+}
+
+.senha-input input:focus + label,
+.senha-input input.has-value + label {
+    background-color: #fff;
+    color: #1f5291;
+    translate: 2px -36px;
+    font-size: 14px;
+    padding: 0 4px;
+}
+
+.senha-toggle-icone {
+    position: absolute;
+    top: 50%;
+    right: 16px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    z-index: 2;
+    pointer-events: auto;
+}
+
+.listaRequisitos {
+    list-style-type: none;
+    padding: 0;
+}
+
+.listaRequisitos li {
+    margin: 10px;
+    color: #333333;
+}
+
+.listaRequisitos li .fa-circle {
+    font-size: 12px;
+}
+
+.listaRequisitos li .fa-check {
+    color: #1f5291;
+}
+
+.listaRequisitos li span {
+    margin-left: 10px;
+}
