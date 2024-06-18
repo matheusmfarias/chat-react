@@ -12,18 +12,20 @@
     padding: 10px 7%;
     background-color: var(--background-color);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 1000;
 }
 
 .logo-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 250px;
+    width: 162.5px;
 }
 
 .logo-container img {
     max-width: 100%;
-    width: 65%;
+    width: 100%;
     height: auto;
 }
 

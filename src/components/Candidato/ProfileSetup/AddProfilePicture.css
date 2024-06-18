@@ -1,30 +1,53 @@
-.config-content-usuario {
+.profile-setup-container {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: calc(100vh - 120px);
-    background-color: #f5f5f5;
-    padding: 20px;
-}
-
-.config-container-usuario {
-    background-color: #ffffff;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 800px;
-}
-
-.profile-header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     flex-direction: column;
+    align-items: center;
+    min-height: calc(100vh - 210px);
+    background-color: #ffffff;
+    padding: 20px;
+    animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.welcome-message {
+    text-align: center;
     margin-bottom: 20px;
 }
 
-.profile-avatar {
+.welcome-message h1 {
+    font-size: 2.5em;
+    color: #1F5291;
+}
+
+.welcome-message p {
+    font-size: 1.2em;
+    color: #333;
+    margin: 5px 0;
+}
+
+.profile-picture-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.profile-picture-icon {
+    font-size: 150px;
+    color: #d3d3d3;
+}
+
+.profile-picture-preview {
     width: 150px;
     height: 150px;
     border-radius: 50%;
@@ -33,12 +56,13 @@
     transition: transform 0.3s ease-in-out;
 }
 
-.profile-avatar:hover {
+.profile-picture-preview:hover {
     transform: scale(1.05);
 }
 
 .change-photo-btn {
     display: inline-block;
+    width: 100%;
     margin-top: 20px;
     padding: 10px 20px;
     border: none;
@@ -55,41 +79,9 @@
     transform: scale(1.05);
 }
 
-.profile-form {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    flex-wrap: wrap;
-}
-
-.form-column {
-    display: flex;
-    flex-direction: column;
-    width: 48%;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.profile-form .form-group label {
+.confirm-btn {
     display: block;
-    margin-bottom: 5px;
-    color: #1F5291;
-}
-
-.profile-form .form-group input,
-.profile-form .form-group select {
-    width: 100%;
-    padding: 10px;
-    border: 2px solid #D3D3D3;
-    border-radius: 8px;
-    font-size: 16px;
-}
-
-.save-btn {
-    display: block;
-    width: 20%;
+    width: 150px;
     height: auto;
     padding: 10px;
     border: none;
@@ -102,14 +94,7 @@
     transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 
-.save-btn:hover {
+.confirm-btn:hover {
     background-color: #286abb;
     transform: scale(1.05);
-}
-
-.message {
-    margin-top: 20px;
-    font-size: 1em;
-    color: green;
-    text-align: center;
 }

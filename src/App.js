@@ -11,6 +11,7 @@ import Dashboard from './components/Candidato/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import InputVerificado from './components/Inputs/InputVerificado';
 import ConfigCandidato from './components/Candidato/ConfigCandidato/ConfigCandidato';
+import ProfileSetup from './components/Candidato/ProfileSetup/ProfileSetup';
 
 const App = () => {
   const [isVerificationAllowed, setIsVerificationAllowed] = useState(false);
@@ -38,6 +39,7 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
+            <Route path="/profile-setup" element={<ProfileSetup />} />
             <Route path='/config-candidato' element={<ConfigCandidato />} />
           </Routes>
         </div>

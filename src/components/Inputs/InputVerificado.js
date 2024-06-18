@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './InputVerificado.css';
+import axios from 'axios';
 
 const InputVerificado = ({ type, label, name, onChange, maxLength, value, title, showButton, shouldValidate, min, max }) => {
     const [inputValue, setInputValue] = useState(value || '');
@@ -7,15 +8,6 @@ const InputVerificado = ({ type, label, name, onChange, maxLength, value, title,
     const [isButtonDisabled, setIsButtonDisabled] = useState(true);
     const [isValid, setIsValid] = useState(!shouldValidate || !!value);
     const [errorMessage, setErrorMessage] = useState('');
-
-    const usernames = useMemo(() => ["017.448.080-66", "matheustroll0101@gmail.com"], []);
-
-    useEffect(() => {
-        if (!shouldValidate) {
-            setIsButtonDisabled(false);
-            setIsValid(true);
-        }
-    }, [shouldValidate]);
 
     const debounce = useCallback((callback, time) => {
         let interval;
@@ -27,13 +19,30 @@ const InputVerificado = ({ type, label, name, onChange, maxLength, value, title,
         };
     }, []);
 
-    const updateUi = useCallback((value) => {
+    const updateUi = useCallback(async (value) => {
         setIsTyping(false);
-        const usernameExists = usernames.some((u) => u === value);
-        setIsValid(!usernameExists && !!value);
-        setIsButtonDisabled(usernameExists || !value);
-        setErrorMessage(usernameExists ? `${label} já está sendo utilizado.` : '');
-    }, [usernames, label]);
+        if (shouldValidate) {
+            try {
+                const response = await axios.post('http://localhost:5000/api/user/check-availability', {
+                    [name]: value
+                });
+
+                const exists = name === 'email' ? response.data.emailExists : response.data.cpfExists;
+                setIsValid(!exists && !!value);
+                setIsButtonDisabled(exists || !value);
+                setErrorMessage(exists ? `${label} já está sendo utilizado.` : '');
+            } catch (error) {
+                console.error('Erro ao verificar disponibilidade:', error);
+                setIsValid(false);
+                setIsButtonDisabled(true);
+                setErrorMessage('Erro ao verificar disponibilidade.');
+            }
+        } else {
+            setIsValid(!!value);
+            setIsButtonDisabled(!value);
+            setErrorMessage('');
+        }
+    }, [shouldValidate, name, label]);
 
     const handleStartTyping = () => {
         if (shouldValidate) {

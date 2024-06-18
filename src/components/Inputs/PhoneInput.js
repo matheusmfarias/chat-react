@@ -40,6 +40,7 @@ const PhoneInput = ({ label, name, value, onChange, title, required }) => {
                     value={inputValue}
                     onChange={handleChange}
                     title={title}
+                    minLength="11"
                     className={getClassName()}
                     required={required}
                 >

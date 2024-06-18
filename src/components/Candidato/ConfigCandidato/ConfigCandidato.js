@@ -16,13 +16,20 @@ const Config = () => {
         email: '',
         contactPhone: '',
         backupPhone: '',
-        address: ''
+        street: '',
+        number: '',
+        neighborhood: '',
+        city: '',
+        profilePicture: ''
     });
+
+    const [message, setMessage] = useState('');
+    const [preview, setPreview] = useState(null);
 
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const token = localStorage.getItem('token'); // Assumindo que o token está armazenado no localStorage
+                const token = localStorage.getItem('token');
                 const response = await axios.get('http://localhost:5000/api/user/candidato', {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -34,14 +41,23 @@ const Config = () => {
                 setUserData({
                     firstName: user.nome,
                     lastName: user.sobrenome,
-                    maritalStatus: user.estadoCivil,
+                    maritalStatus: user.additionalInfo?.maritialStatus || '',
                     cpf: user.cpf,
                     birthDate: formattedBirthDate,
                     email: user.email,
-                    contactPhone: user.telefoneContato,
-                    backupPhone: user.telefoneRecado,
-                    address: user.endereco
+                    contactPhone: user.additionalInfo?.contactPhone || '',
+                    backupPhone: user.additionalInfo?.backupPhone || '',
+                    street: user.address?.street || '',
+                    number: user.address?.number || '',
+                    neighborhood: user.address?.district || '',
+                    city: user.address?.city || '',
+                    profilePicture: user.profilePicture || ''
                 });
+
+                if (user.profilePicture) {
+                    const profilePicUrl = `http://localhost:5000${user.profilePicture}`;
+                    setPreview(profilePicUrl);
+                }
             } catch (error) {
                 console.error('Erro ao buscar os dados do usuário', error);
             }
@@ -58,16 +74,77 @@ const Config = () => {
         }));
     };
 
+    const handleFileChange = (event) => {
+        const selectedFile = event.target.files[0];
+        if (selectedFile) {
+            setUserData(prevState => ({
+                ...prevState,
+                profilePicture: selectedFile
+            }));
+
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreview(reader.result);
+            };
+            reader.readAsDataURL(selectedFile);
+        } else {
+            setUserData(prevState => ({
+                ...prevState,
+                profilePicture: ''
+            }));
+            setPreview(null);
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const token = localStorage.getItem('token');
+            const formData = new FormData();
+
+            Object.keys(userData).forEach(key => {
+                if (key !== 'profilePicture') {
+                    formData.append(key, userData[key]);
+                }
+            });
+
+            if (userData.profilePicture instanceof File) {
+                formData.append('profilePicture', userData.profilePicture);
+            }
+
+            const response = await axios.put('http://localhost:5000/api/user/candidato', formData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            if (response.data.profilePicture) {
+                setPreview(`http://localhost:5000${response.data.profilePicture}`);
+            }
+
+            setMessage('Dados atualizados com sucesso!');
+        } catch (error) {
+            console.error('Erro ao atualizar os dados do usuário', error);
+            setMessage('Erro ao atualizar os dados. Tente novamente.');
+        }
+    };
+
     return (
         <>
             <HeaderCandidato />
             <main className='config-content-usuario'>
                 <div className='config-container-usuario'>
                     <div className='profile-header'>
-                        <FontAwesomeIcon icon={faCircleUser} className='profile-avatar' />
-                        <button className='change-photo-btn'>Alterar foto</button>
+                        {preview ? (
+                            <img src={preview} alt="Profile Preview" className="profile-avatar" />
+                        ) : (
+                            <FontAwesomeIcon icon={faCircleUser} className='profile-avatar' />
+                        )}
+                        <input type="file" id="profilePicture" onChange={handleFileChange} style={{ display: 'none' }} />
+                        <label htmlFor="profilePicture" className="change-photo-btn">Alterar foto</label>
                     </div>
-                    <form className='profile-form'>
+                    <form className='profile-form' onSubmit={handleSubmit}>
                         <div className='form-column'>
                             <div className='form-group'>
                                 <label htmlFor='firstName'>Nome</label>
@@ -156,18 +233,49 @@ const Config = () => {
                                 />
                             </div>
                             <div className='form-group'>
-                                <label htmlFor='address'>Endereço</label>
+                                <label htmlFor='street'>Rua</label>
                                 <input
                                     type='text'
-                                    id='address'
-                                    name='address'
-                                    value={userData.address}
+                                    id='street'
+                                    name='street'
+                                    value={userData.street}
+                                    onChange={handleChange}
+                                />
+                            </div>
+                            <div className='form-group'>
+                                <label htmlFor='number'>Número</label>
+                                <input
+                                    type='text'
+                                    id='number'
+                                    name='number'
+                                    value={userData.number}
+                                    onChange={handleChange}
+                                />
+                            </div>
+                            <div className='form-group'>
+                                <label htmlFor='neighborhood'>Bairro</label>
+                                <input
+                                    type='text'
+                                    id='neighborhood'
+                                    name='neighborhood'
+                                    value={userData.neighborhood}
+                                    onChange={handleChange}
+                                />
+                            </div>
+                            <div className='form-group'>
+                                <label htmlFor='city'>Cidade</label>
+                                <input
+                                    type='text'
+                                    id='city'
+                                    name='city'
+                                    value={userData.city}
                                     onChange={handleChange}
                                 />
                             </div>
                         </div>
                         <button type='submit' className='save-btn'>Salvar</button>
                     </form>
+                    {message && <p>{message}</p>}
                 </div>
             </main>
             <Footer />

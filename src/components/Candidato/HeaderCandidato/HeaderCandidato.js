@@ -18,16 +18,15 @@ const HeaderCandidato = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const token = localStorage.getItem('token'); // Assumindo que você armazena o token no localStorage
+        const token = localStorage.getItem('token');
 
         if (token) {
-            axios.get('http://localhost:5000/api/user/candidato', { // Certifique-se de que a URL está correta
+            axios.get('http://localhost:5000/api/user/candidato', {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             })
                 .then(response => {
-                    console.log('Response:', response.data); // Log da resposta
                     setUserName(response.data.nome); // Assumindo que o nome do usuário está no campo 'name'
                 })
                 .catch(error => {

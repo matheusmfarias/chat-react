@@ -18,12 +18,16 @@ const Login = () => {
         try {
             const response = await axios.post('http://localhost:5000/api/auth/login', { email, senha });
 
-            const { token } = response.data;
+            const { token, firstLogin } = response.data;
 
             // Armazena o token no localStorage
             localStorage.setItem('token', token);
 
-            navigate('/dashboard');
+            if (firstLogin) {
+                navigate('/profile-setup');
+            } else {
+                navigate('/dashboard');
+            }
         } catch (error) {
             if (error.response) {
                 setErroLogin(error.response.data);
@@ -36,11 +40,6 @@ const Login = () => {
     return (
         <div className="container-login">
             <div className="form-login">
-                {/*
-                <Link to='/' className='btn-voltar'>
-                    <button className="btn btn-primary">Voltar</button>
-                </Link>
-                */}
                 <div className='logo-container-login'>
                     <a href='/' rel='noreferrer'><img src={logo} alt="Logo" loading="lazy" /></a>
                 </div>
