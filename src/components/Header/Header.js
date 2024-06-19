@@ -32,7 +32,7 @@ function Header() {
                         isActive={isLoginActive}
                         aria-expanded={isLoginActive}
                     >
-                        <span>Login</span>
+                        <span>Entrar</span>
                         <div className={`setas-container ${isLoginActive ? 'up' : 'down'}`}>
                             <FontAwesomeIcon icon={isLoginActive ? faAngleUp : faAngleDown} className='seta' />
                         </div>

@@ -10,7 +10,7 @@ function Main() {
                 <h1>Encontre vagas de emprego</h1>
                 <h4>Unimos talento e oportunidade, criando um mundo de possibilidades</h4>
                 <Link to='/login' className='link'>
-                    <button>Login</button>
+                    <button className="btn-main-login">Entrar</button>
                 </Link>
             </div>
         </main>

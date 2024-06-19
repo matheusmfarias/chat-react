@@ -68,6 +68,12 @@
     padding: 0 4px;
 }
 
+.textbox-wrapper .textbox .textbox__input.disabled-input {
+    border-color: #ced4da;
+    cursor: not-allowed;
+    color: #6c757d;
+}
+
 .autocomplete-dropdown-container {
     position: absolute;
     z-index: 1000;

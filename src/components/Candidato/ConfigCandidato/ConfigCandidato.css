@@ -1,10 +1,9 @@
 .config-content-usuario {
     display: flex;
+    height: auto;
     justify-content: center;
-    align-items: center;
-    min-height: calc(100vh - 210px);
     background-color: #f5f5f5;
-    padding: 20px;
+    padding: 40px;
 }
 
 .config-container-usuario {
@@ -30,7 +29,6 @@
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid #1F5291;
-    margin-bottom: 20px;
 }
 
 .change-photo-btn:hover {
@@ -63,19 +61,26 @@
 
 .profile-form {
     display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.form-columns-container {
+    display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    flex-wrap: wrap;
+    width: 100%;
 }
 
 .form-column {
     display: flex;
+    align-items: center;
     flex-direction: column;
-    width: 48%;
+    width: 50%;
 }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .profile-form .form-group label {
@@ -87,10 +92,31 @@
 .profile-form .form-group input,
 .profile-form .form-group select {
     width: 100%;
-    padding: 10px;
+    padding: 15px;
     border: 2px solid #D3D3D3;
     border-radius: 8px;
     font-size: 16px;
+}
+
+.profile-form .email-input-container {
+    display: flex;
+    align-items: center;
+}
+
+.profile-form .change-email-btn {
+    justify-content: center;
+    width: 10%;
+    margin-left: 5px;
+    border: none;
+    border-radius: 8px;
+    background-color: #1F5291;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.profile-form .change-email-btn:hover {
+    background-color: #286abb;
 }
 
 .save-btn {
@@ -111,4 +137,9 @@
 .save-btn:hover {
     background-color: #286abb;
     transform: scale(1.05);
+}
+
+.config-container-usuario p {
+    text-align: center;
+    margin-top: 20px;
 }

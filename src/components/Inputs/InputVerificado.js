@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import './InputVerificado.css';
 import axios from 'axios';
 
-const InputVerificado = ({ type, label, name, onChange, maxLength, value, title, showButton, shouldValidate, min, max }) => {
+const InputVerificado = ({ type, label, name, onChange, maxLength, value, title, showButton, shouldValidate, min, max, disabled }) => {
     const [inputValue, setInputValue] = useState(value || '');
     const [isTyping, setIsTyping] = useState(false);
     const [isButtonDisabled, setIsButtonDisabled] = useState(true);
@@ -78,6 +78,9 @@ const InputVerificado = ({ type, label, name, onChange, maxLength, value, title,
         if (inputValue || name === "nascimento") {
             className += ' has-value';
         }
+        if (disabled) {
+            className += ' disabled-input';
+        }
         return className;
     };
 
@@ -102,6 +105,7 @@ const InputVerificado = ({ type, label, name, onChange, maxLength, value, title,
                     min={min}
                     max={max}
                     className={getClassName()}
+                    disabled={disabled}
                     required
                 />
                 <label htmlFor={name}>{label}</label>

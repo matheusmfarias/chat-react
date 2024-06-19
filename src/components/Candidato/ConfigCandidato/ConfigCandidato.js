@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './ConfigCandidato.css';
 import HeaderCandidato from '../HeaderCandidato/HeaderCandidato';
-import Footer from '../../Footer/Footer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCircleUser } from '@fortawesome/free-solid-svg-icons';
+import { faCircleUser, faPencil } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
+import useFormattedName from '../../../hooks/useFormattedNome';
+import { useNavigate } from 'react-router-dom';
 
 const Config = () => {
     const [userData, setUserData] = useState({
@@ -26,6 +27,12 @@ const Config = () => {
     const [message, setMessage] = useState('');
     const [preview, setPreview] = useState(null);
     const [activeTab, setActiveTab] = useState('general');
+    const [isFormChanged, setIsFormChanged] = useState(false);
+
+    const [firstName, handleFirstNameChange] = useFormattedName(userData.firstName);
+    const [lastName, handleLastNameChange] = useFormattedName(userData.lastName);
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -67,6 +74,10 @@ const Config = () => {
         fetchUserData();
     }, []);
 
+    useEffect(() => {
+        setIsFormChanged(true);
+    }, [firstName, lastName, userData]);
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setUserData(prevState => ({
@@ -103,8 +114,11 @@ const Config = () => {
             const token = localStorage.getItem('token');
             const formData = new FormData();
 
+            formData.append('firstName', firstName);
+            formData.append('lastName', lastName);
+
             Object.keys(userData).forEach(key => {
-                if (key !== 'profilePicture') {
+                if (key !== 'profilePicture' && key !== 'firstName' && key !== 'lastName') {
                     formData.append(key, userData[key]);
                 }
             });
@@ -125,10 +139,15 @@ const Config = () => {
             }
 
             setMessage('Dados atualizados com sucesso!');
+            setIsFormChanged(false);
         } catch (error) {
             console.error('Erro ao atualizar os dados do usuário', error);
             setMessage('Erro ao atualizar os dados. Tente novamente.');
         }
+    };
+
+    const handleEmailChangeClick = () => {
+        navigate('/alterar-email');
     };
 
     return (
@@ -151,7 +170,7 @@ const Config = () => {
                     </div>
                     <form className='profile-form' onSubmit={handleSubmit}>
                         {activeTab === 'general' && (
-                            <>
+                            <div className="form-columns-container">
                                 <div className='form-column'>
                                     <div className='form-group'>
                                         <label htmlFor='firstName'>Nome</label>
@@ -160,7 +179,7 @@ const Config = () => {
                                             id='firstName'
                                             name='firstName'
                                             value={userData.firstName}
-                                            onChange={handleChange}
+                                            onChange={handleFirstNameChange}
                                         />
                                     </div>
                                     <div className='form-group'>
@@ -170,7 +189,7 @@ const Config = () => {
                                             id='lastName'
                                             name='lastName'
                                             value={userData.lastName}
-                                            onChange={handleChange}
+                                            onChange={handleLastNameChange}
                                         />
                                     </div>
                                     <div className='form-group'>
@@ -195,6 +214,7 @@ const Config = () => {
                                             name='cpf'
                                             value={userData.cpf}
                                             onChange={handleChange}
+                                            disabled
                                         />
                                     </div>
                                 </div>
@@ -211,13 +231,19 @@ const Config = () => {
                                     </div>
                                     <div className='form-group'>
                                         <label htmlFor='email'>E-mail</label>
-                                        <input
-                                            type='email'
-                                            id='email'
-                                            name='email'
-                                            value={userData.email}
-                                            onChange={handleChange}
-                                        />
+                                        <div className='email-input-container'>
+                                            <input
+                                                type='email'
+                                                id='email'
+                                                name='email'
+                                                value={userData.email}
+                                                onChange={handleChange}
+                                                disabled
+                                            />
+                                            <button type='button' className='change-email-btn' onClick={handleEmailChangeClick}>
+                                                <FontAwesomeIcon icon={faPencil} />
+                                            </button>
+                                        </div>
                                     </div>
                                     <div className='form-group'>
                                         <label htmlFor='contactPhone'>Telefone de contato</label>
@@ -240,10 +266,10 @@ const Config = () => {
                                         />
                                     </div>
                                 </div>
-                            </>
+                            </div>
                         )}
                         {activeTab === 'address' && (
-                            <>
+                            <div className="form-columns-container">
                                 <div className='form-column'>
                                     <div className='form-group'>
                                         <label htmlFor='street'>Rua</label>
@@ -288,14 +314,13 @@ const Config = () => {
                                         />
                                     </div>
                                 </div>
-                            </>
+                            </div>
                         )}
-                        <button type='submit' className='save-btn'>Salvar</button>
+                        <button type='submit' className='save-btn' disabled={!isFormChanged}>Salvar</button>
                     </form>
                     {message && <p>{message}</p>}
                 </div>
             </main>
-            <Footer />
         </>
     );
 };
