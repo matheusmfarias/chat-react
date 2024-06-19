@@ -25,6 +25,7 @@ const Config = () => {
 
     const [message, setMessage] = useState('');
     const [preview, setPreview] = useState(null);
+    const [activeTab, setActiveTab] = useState('general');
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -135,6 +136,10 @@ const Config = () => {
             <HeaderCandidato />
             <main className='config-content-usuario'>
                 <div className='config-container-usuario'>
+                    <div className='tabs'>
+                        <button className={activeTab === 'general' ? 'active' : ''} onClick={() => setActiveTab('general')}>Configurações gerais</button>
+                        <button className={activeTab === 'address' ? 'active' : ''} onClick={() => setActiveTab('address')}>Configurações de endereço</button>
+                    </div>
                     <div className='profile-header'>
                         {preview ? (
                             <img src={preview} alt="Profile Preview" className="profile-avatar" />
@@ -142,137 +147,149 @@ const Config = () => {
                             <FontAwesomeIcon icon={faCircleUser} className='profile-avatar' />
                         )}
                         <input type="file" id="profilePicture" onChange={handleFileChange} style={{ display: 'none' }} />
-                        <label htmlFor="profilePicture" className="change-photo-btn">Alterar foto</label>
+                        <label htmlFor="profilePicture" className="save-btn">Alterar foto</label>
                     </div>
                     <form className='profile-form' onSubmit={handleSubmit}>
-                        <div className='form-column'>
-                            <div className='form-group'>
-                                <label htmlFor='firstName'>Nome</label>
-                                <input
-                                    type='text'
-                                    id='firstName'
-                                    name='firstName'
-                                    value={userData.firstName}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className='form-group'>
-                                <label htmlFor='lastName'>Sobrenome</label>
-                                <input
-                                    type='text'
-                                    id='lastName'
-                                    name='lastName'
-                                    value={userData.lastName}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className='form-group'>
-                                <label htmlFor='maritalStatus'>Estado civil</label>
-                                <select
-                                    id='maritalStatus'
-                                    name='maritalStatus'
-                                    value={userData.maritalStatus}
-                                    onChange={handleChange}
-                                >
-                                    <option value='solteiro'>Solteiro(a)</option>
-                                    <option value='casado'>Casado(a)</option>
-                                    <option value='divorciado'>Divorciado(a)</option>
-                                    <option value='viuvo'>Viúvo(a)</option>
-                                </select>
-                            </div>
-                            <div className='form-group'>
-                                <label htmlFor='cpf'>CPF</label>
-                                <input
-                                    type='text'
-                                    id='cpf'
-                                    name='cpf'
-                                    value={userData.cpf}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className='form-group'>
-                                <label htmlFor='birthDate'>Data de nascimento</label>
-                                <input
-                                    type='date'
-                                    id='birthDate'
-                                    name='birthDate'
-                                    value={userData.birthDate}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                        </div>
-                        <div className='form-column'>
-                            <div className='form-group'>
-                                <label htmlFor='email'>E-mail</label>
-                                <input
-                                    type='email'
-                                    id='email'
-                                    name='email'
-                                    value={userData.email}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className='form-group'>
-                                <label htmlFor='contactPhone'>Telefone de contato</label>
-                                <input
-                                    type='tel'
-                                    id='contactPhone'
-                                    name='contactPhone'
-                                    value={userData.contactPhone}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className='form-group'>
-                                <label htmlFor='backupPhone'>Telefone para recado</label>
-                                <input
-                                    type='tel'
-                                    id='backupPhone'
-                                    name='backupPhone'
-                                    value={userData.backupPhone}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className='form-group'>
-                                <label htmlFor='street'>Rua</label>
-                                <input
-                                    type='text'
-                                    id='street'
-                                    name='street'
-                                    value={userData.street}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className='form-group'>
-                                <label htmlFor='number'>Número</label>
-                                <input
-                                    type='text'
-                                    id='number'
-                                    name='number'
-                                    value={userData.number}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className='form-group'>
-                                <label htmlFor='neighborhood'>Bairro</label>
-                                <input
-                                    type='text'
-                                    id='neighborhood'
-                                    name='neighborhood'
-                                    value={userData.neighborhood}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className='form-group'>
-                                <label htmlFor='city'>Cidade</label>
-                                <input
-                                    type='text'
-                                    id='city'
-                                    name='city'
-                                    value={userData.city}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                        </div>
+                        {activeTab === 'general' && (
+                            <>
+                                <div className='form-column'>
+                                    <div className='form-group'>
+                                        <label htmlFor='firstName'>Nome</label>
+                                        <input
+                                            type='text'
+                                            id='firstName'
+                                            name='firstName'
+                                            value={userData.firstName}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+                                    <div className='form-group'>
+                                        <label htmlFor='lastName'>Sobrenome</label>
+                                        <input
+                                            type='text'
+                                            id='lastName'
+                                            name='lastName'
+                                            value={userData.lastName}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+                                    <div className='form-group'>
+                                        <label htmlFor='maritalStatus'>Estado civil</label>
+                                        <select
+                                            id='maritalStatus'
+                                            name='maritalStatus'
+                                            value={userData.maritalStatus}
+                                            onChange={handleChange}
+                                        >
+                                            <option value='solteiro'>Solteiro(a)</option>
+                                            <option value='casado'>Casado(a)</option>
+                                            <option value='divorciado'>Divorciado(a)</option>
+                                            <option value='viuvo'>Viúvo(a)</option>
+                                        </select>
+                                    </div>
+                                    <div className='form-group'>
+                                        <label htmlFor='cpf'>CPF</label>
+                                        <input
+                                            type='text'
+                                            id='cpf'
+                                            name='cpf'
+                                            value={userData.cpf}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+                                </div>
+                                <div className='form-column'>
+                                    <div className='form-group'>
+                                        <label htmlFor='birthDate'>Data de nascimento</label>
+                                        <input
+                                            type='date'
+                                            id='birthDate'
+                                            name='birthDate'
+                                            value={userData.birthDate}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+                                    <div className='form-group'>
+                                        <label htmlFor='email'>E-mail</label>
+                                        <input
+                                            type='email'
+                                            id='email'
+                                            name='email'
+                                            value={userData.email}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+                                    <div className='form-group'>
+                                        <label htmlFor='contactPhone'>Telefone de contato</label>
+                                        <input
+                                            type='tel'
+                                            id='contactPhone'
+                                            name='contactPhone'
+                                            value={userData.contactPhone}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+                                    <div className='form-group'>
+                                        <label htmlFor='backupPhone'>Telefone para recado</label>
+                                        <input
+                                            type='tel'
+                                            id='backupPhone'
+                                            name='backupPhone'
+                                            value={userData.backupPhone}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                        {activeTab === 'address' && (
+                            <>
+                                <div className='form-column'>
+                                    <div className='form-group'>
+                                        <label htmlFor='street'>Rua</label>
+                                        <input
+                                            type='text'
+                                            id='street'
+                                            name='street'
+                                            value={userData.street}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+                                    <div className='form-group'>
+                                        <label htmlFor='number'>Número</label>
+                                        <input
+                                            type='text'
+                                            id='number'
+                                            name='number'
+                                            value={userData.number}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+                                </div>
+                                <div className='form-column'>
+                                    <div className='form-group'>
+                                        <label htmlFor='neighborhood'>Bairro</label>
+                                        <input
+                                            type='text'
+                                            id='neighborhood'
+                                            name='neighborhood'
+                                            value={userData.neighborhood}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+                                    <div className='form-group'>
+                                        <label htmlFor='city'>Cidade</label>
+                                        <input
+                                            type='text'
+                                            id='city'
+                                            name='city'
+                                            value={userData.city}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+                                </div>
+                            </>
+                        )}
                         <button type='submit' className='save-btn'>Salvar</button>
                     </form>
                     {message && <p>{message}</p>}
