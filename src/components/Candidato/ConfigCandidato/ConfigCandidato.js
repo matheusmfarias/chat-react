@@ -371,7 +371,7 @@ const Config = () => {
                             <div className="form-columns-container">
                                 <div className='form-column'>
                                     <div className='form-group'>
-                                        <label htmlFor='street'>Rua</label>
+                                        <label htmlFor='street'>Logradouro</label>
                                         <input
                                             type='text'
                                             id='street'

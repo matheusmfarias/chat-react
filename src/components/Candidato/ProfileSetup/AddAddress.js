@@ -47,11 +47,11 @@ const AddAddress = ({ onNext, onBack }) => {
             <form onSubmit={handleSubmit} className="address-form">
                 <InputVerificado
                     type="text"
-                    label="Rua"
+                    label="Logradouro"
                     name="street"
                     value={addressData.street}
                     onChange={handleChange}
-                    title="Sua rua"
+                    title="Seu logradouro"
                     required
                 />
                 <InputVerificado

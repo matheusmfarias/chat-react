@@ -39,13 +39,14 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: var(--background-color);
+    background-color: var(--hover-text-color);
     color: var(--primary-color);
     border: none;
     transition: background-color 0.3s ease;
     border-radius: 10px;
     cursor: pointer;
-    width: 80%;
+    padding: 10px;
+    width: auto;
 }
 
 .setas-container {
@@ -79,6 +80,10 @@
     left: 0;
     top: 100%;
     z-index: 1000;
+    background-color: var(--background-color);
+    width: auto; /* Remover largura fixa */
+    min-width: 100%; /* Garantir que a largura mínima seja igual ao botão */
+    box-sizing: border-box;
 }
 
 .header-candidato .usuario-btn.active+.opcoes-usuario {
@@ -92,7 +97,8 @@
     padding: 10px;
     border: 1px solid var(--primary-color);
     text-align: center;
-    width: 172%;
+    width: 100%;
+    box-sizing: border-box;
     transition: background-color 0.3s ease;
 }
 
@@ -101,9 +107,8 @@
     color: var(--hover-text-color);
 }
 
-
 @media (max-width: 605px) {
-    .header {
+    .header-candidato {
         padding: 10px 5%;
     }
 
@@ -111,8 +116,7 @@
         width: 100%;
     }
 
-    .login-button,
-    .cadastro-button {
+    .usuario-btn {
         margin-right: 10px;
     }
 }

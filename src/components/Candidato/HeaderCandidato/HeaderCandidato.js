@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import './HeaderCandidato.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleDown, faAngleUp } from '@fortawesome/free-solid-svg-icons';
@@ -7,15 +7,16 @@ import '../../../styles/global.css';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const Button = ({ children, onClick, className, isActive }) => (
-    <button className={`${className} ${isActive ? 'active' : ''}`} onClick={onClick}>
+const Button = React.forwardRef(({ children, onClick, className, isActive }, ref) => (
+    <button ref={ref} className={`${className} ${isActive ? 'active' : ''}`} onClick={onClick}>
         {children}
     </button>
-);
+));
 
 const HeaderCandidato = () => {
     const [userName, setUserName] = useState('');
     const navigate = useNavigate();
+    const buttonRef = useRef(null);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -27,7 +28,7 @@ const HeaderCandidato = () => {
                 }
             })
                 .then(response => {
-                    setUserName(response.data.nome); // Assumindo que o nome do usuário está no campo 'name'
+                    setUserName(response.data.nome); // Assumindo que o nome do usuário está no campo 'nome'
                 })
                 .catch(error => {
                     console.error('Error fetching user data:', error);
@@ -56,6 +57,7 @@ const HeaderCandidato = () => {
                 </div>
                 <div className="opcoes-area">
                     <Button
+                        ref={buttonRef}
                         className="usuario-btn"
                         onClick={toggleLoginOptions}
                         isActive={isLoginActive}
