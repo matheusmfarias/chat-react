@@ -8,8 +8,10 @@ import logo from '../../assets/images/logo-aci-transparente.png';
 import { useNavigate } from 'react-router-dom';
 import InputVerificado from '../Inputs/InputVerificado';
 import { ErrorContext, ErrorProvider } from '../../context/ErrorContext';
+import { LoadingContext } from "../../context/LoadingContext";
 
 const Cadastro = ({ onRegister }) => {
+    const { showLoading, hideLoading } = useContext(LoadingContext);
     const [nome, handleNomeChange] = useFormattedNome('');
     const [sobrenome, handleSobrenomeChange] = useFormattedNome('');
     const [userData, setUserData] = useState({
@@ -64,6 +66,7 @@ const Cadastro = ({ onRegister }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        showLoading();
         let formErrors = {};
         if (!validarCPF(cpf)) {
             formErrors.cpf = 'CPF inválido! Verifique suas informações.';
@@ -88,6 +91,8 @@ const Cadastro = ({ onRegister }) => {
         } catch (error) {
             console.error('Erro no cadastro:', error);
             setErrors({ cadastro: 'E-mail e/ou CPF já cadastrados, verifique suas informações!' });
+        } finally {
+            hideLoading();
         }
     };
 

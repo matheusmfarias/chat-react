@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import './ConfigCandidato.css';
 import HeaderCandidato from '../HeaderCandidato/HeaderCandidato';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleUser, faPencil } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { LoadingContext } from "../../../context/LoadingContext";
 
 const Config = () => {
+    const { showLoading, hideLoading } = useContext(LoadingContext);
     const [userData, setUserData] = useState({
         firstName: '',
         lastName: '',
@@ -34,6 +36,7 @@ const Config = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        showLoading();
         const fetchUserData = async () => {
             try {
                 const token = localStorage.getItem('token');
@@ -70,6 +73,8 @@ const Config = () => {
                 }
             } catch (error) {
                 console.error('Erro ao buscar os dados do usuário', error);
+            } finally {
+                hideLoading();
             }
         };
 
@@ -165,6 +170,7 @@ const Config = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        showLoading();
         try {
             const token = localStorage.getItem('token');
             const formData = new FormData();
@@ -195,6 +201,8 @@ const Config = () => {
         } catch (error) {
             console.error('Erro ao atualizar os dados do usuário:', error);
             setMessage('Erro ao atualizar os dados. Tente novamente.');
+        } finally {
+            hideLoading();
         }
     };
 

@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import "./TokenCadastro.css";
 import TokenInput from './TokenInput';
 import logo from '../../assets/images/logo-aci-transparente.png';
+import { LoadingContext } from "../../context/LoadingContext";
 
 const TokenCadastro = ({ onVerify }) => {
+    const { showLoading, hideLoading } = useContext(LoadingContext);
     const [token, setToken] = useState('');
     const [erroToken, setErroToken] = useState('');
     const [tokenReenviado, setTokenReenviado] = useState('');
@@ -41,6 +43,7 @@ const TokenCadastro = ({ onVerify }) => {
     }, [canResend, urlToken]);
 
     useEffect(() => {
+        showLoading();
         const checkUserVerification = async () => {
             try {
                 const response = await axios.get(`http://localhost:5000/api/auth/check-verification?email=${encodeURIComponent(email)}`);
@@ -49,6 +52,8 @@ const TokenCadastro = ({ onVerify }) => {
                 }
             } catch (error) {
                 console.error('Erro ao verificar o status do usuário:', error);
+            } finally {
+                hideLoading();
             }
         };
 
@@ -59,6 +64,7 @@ const TokenCadastro = ({ onVerify }) => {
 
     const handleVerifyToken = async (event) => {
         event.preventDefault();
+        showLoading();
         try {
             await axios.post('http://localhost:5000/api/auth/verify', { email, token });
             setShowSuccessPopup(true);
@@ -69,10 +75,13 @@ const TokenCadastro = ({ onVerify }) => {
         } catch (error) {
             setErroToken('Token inválido ou expirado.');
             setTokenReenviado('');
+        } finally {
+            hideLoading();
         }
     };
 
     const handleResendToken = async () => {
+        showLoading();
         if (canResend) {
             try {
                 await axios.post('http://localhost:5000/api/auth/resend-token', { email });
@@ -82,6 +91,8 @@ const TokenCadastro = ({ onVerify }) => {
                 setErroToken('');
             } catch (error) {
                 alert('Erro ao reenviar o token.');
+            } finally {
+                hideLoading();
             }
         }
     };
