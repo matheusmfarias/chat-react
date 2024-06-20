@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleDown, faAngleUp } from '@fortawesome/free-solid-svg-icons';
 import logo from '../../../assets/images/logo-aci-transparente.png';
 import '../../../styles/global.css';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { LoadingContext } from "../../../context/LoadingContext";
 
@@ -17,7 +17,9 @@ const Button = React.forwardRef(({ children, onClick, className, isActive }, ref
 const HeaderCandidato = () => {
     const { showLoading, hideLoading } = useContext(LoadingContext);
     const [userName, setUserName] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
+    const location = useLocation();
     const buttonRef = useRef(null);
 
     useEffect(() => {
@@ -36,9 +38,12 @@ const HeaderCandidato = () => {
                     console.error('Error fetching user data:', error);
                 }).finally(() => {
                     hideLoading();
+                    setIsLoading(false);
                 });
         } else {
             console.error('No token found');
+            hideLoading();
+            setIsLoading(false);
         }
     }, []);
 
@@ -59,6 +64,14 @@ const HeaderCandidato = () => {
                 <div className='logo-container'>
                     <a href='/dashboard' rel='noreferrer'><img src={logo} alt="Logo" loading="lazy" /></a>
                 </div>
+                <nav>
+                    <ul>
+                        <Link to="/dashboard" className={`header-link ${location.pathname === '/dashboard' ? 'active' : ''}`}><li>Início</li></Link>
+                        <Link to="/inscricoes" className={`header-link ${location.pathname === '/inscricoes' ? 'active' : ''}`}><li>Inscrições</li></Link>
+                        <Link to="/curriculo" className={`header-link ${location.pathname === '/curriculo' ? 'active' : ''}`}><li>Currículo</li></Link>
+                    </ul>
+                </nav>
+                {!isLoading && (
                 <div className="opcoes-area">
                     <Button
                         ref={buttonRef}
@@ -82,6 +95,7 @@ const HeaderCandidato = () => {
                         </div>
                     )}
                 </div>
+                )}
             </header>
         </>
     );

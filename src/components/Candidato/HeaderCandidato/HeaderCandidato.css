@@ -29,13 +29,29 @@
     height: auto;
 }
 
+.header-candidato nav ul {
+    display: flex;
+    justify-content: center;  /* Centraliza os links */
+    align-items: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex: 1;
+}
+
+.header-link {
+    margin: 20px;
+    text-decoration: none;
+}
+
 .opcoes-area {
     display: flex;
     align-items: center;
     position: relative;
 }
 
-.usuario-btn {
+.usuario-btn,
+.header-link {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -49,6 +65,17 @@
     width: auto;
 }
 
+.header-link {
+    border-bottom: 2px solid transparent;
+}
+
+.header-link.active {
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+    border-bottom: 2px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
 .setas-container {
     margin-left: 10px;
     transition: transform 0.5s ease;
@@ -58,7 +85,8 @@
     transform: rotate(360deg);
 }
 
-.usuario-btn:hover {
+.usuario-btn:hover,
+.header-link:hover {
     color: var(--hover-text-color);
     background-color: var(--hover-background-color);
 }
@@ -81,8 +109,10 @@
     top: 100%;
     z-index: 1000;
     background-color: var(--background-color);
-    width: auto; /* Remover largura fixa */
-    min-width: 100%; /* Garantir que a largura mínima seja igual ao botão */
+    width: auto;
+    /* Remover largura fixa */
+    min-width: 100%;
+    /* Garantir que a largura mínima seja igual ao botão */
     box-sizing: border-box;
 }
 
