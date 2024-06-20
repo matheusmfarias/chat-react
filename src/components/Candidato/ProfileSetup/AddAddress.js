@@ -83,7 +83,7 @@ const AddAddress = ({ onNext, onBack }) => {
                 />
                 <div className="form-buttons">
                     <button type="button" className="back-btn" onClick={onBack}>Voltar</button>
-                    <button type="submit" className="submit-btn" disabled={!isFormValid}>Avançar</button>
+                    <button type="submit" className="submit-setup-btn" disabled={!isFormValid}>Avançar</button>
                 </div>
             </form>
         </div>

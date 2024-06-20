@@ -1,9 +1,9 @@
 .config-content-usuario {
     display: flex;
-    height: auto;
+    min-height: calc(100vh - 210px);
     justify-content: center;
     background-color: #f5f5f5;
-    padding: 40px;
+    padding: 20px;
 }
 
 .config-container-usuario {

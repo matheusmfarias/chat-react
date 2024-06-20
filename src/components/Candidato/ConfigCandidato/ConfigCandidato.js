@@ -4,7 +4,6 @@ import HeaderCandidato from '../HeaderCandidato/HeaderCandidato';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleUser, faPencil } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
-import useFormattedName from '../../../hooks/useFormattedNome';
 import { useNavigate } from 'react-router-dom';
 
 const Config = () => {
@@ -21,16 +20,16 @@ const Config = () => {
         number: '',
         neighborhood: '',
         city: '',
-        profilePicture: ''
+        profilePicture: '',
+        rg: '',
+        cnh: '',
+        cnhTypes: []
     });
 
     const [message, setMessage] = useState('');
     const [preview, setPreview] = useState(null);
     const [activeTab, setActiveTab] = useState('general');
     const [isFormChanged, setIsFormChanged] = useState(false);
-
-    const [firstName, handleFirstNameChange] = useFormattedName(userData.firstName);
-    const [lastName, handleLastNameChange] = useFormattedName(userData.lastName);
 
     const navigate = useNavigate();
 
@@ -49,7 +48,7 @@ const Config = () => {
                 setUserData({
                     firstName: user.nome,
                     lastName: user.sobrenome,
-                    maritalStatus: user.additionalInfo?.maritialStatus || '',
+                    maritalStatus: user.additionalInfo?.maritalStatus || '',
                     cpf: user.cpf,
                     birthDate: formattedBirthDate,
                     email: user.email,
@@ -59,7 +58,10 @@ const Config = () => {
                     number: user.address?.number || '',
                     neighborhood: user.address?.district || '',
                     city: user.address?.city || '',
-                    profilePicture: user.profilePicture || ''
+                    profilePicture: user.profilePicture || '',
+                    rg: user.additionalInfo?.rg || '',
+                    cnh: user.additionalInfo?.cnh || '',
+                    cnhTypes: user.additionalInfo?.cnhTypes || []
                 });
 
                 if (user.profilePicture) {
@@ -76,7 +78,7 @@ const Config = () => {
 
     useEffect(() => {
         setIsFormChanged(true);
-    }, [firstName, lastName, userData]);
+    }, [userData]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -84,6 +86,59 @@ const Config = () => {
             ...prevState,
             [name]: value
         }));
+    };
+
+    const handleNameChange = (e) => {
+        const { name, value } = e.target;
+        const formattedValue = value.replace(/[^a-zA-ZÀ-ÿ\s]/g, ''); // Permitir letras e acentos
+        setUserData(prevState => ({
+            ...prevState,
+            [name]: formattedValue
+        }));
+    };
+
+    const handleRgChange = (e) => {
+        const { value } = e.target;
+        const formattedValue = value.replace(/\D/g, '');
+        setUserData(prevState => ({
+            ...prevState,
+            rg: formattedValue
+        }));
+    };
+
+    const handlePhoneChange = (e) => {
+        const { name, value } = e.target;
+        const formattedValue = value
+            .replace(/\D/g, '')
+            .replace(/^(\d{2})(\d)/, '($1) $2')
+            .replace(/(\d{5})(\d)/, '$1-$2')
+            .replace(/(-\d{4})\d+?$/, '$1');
+        setUserData(prevState => ({
+            ...prevState,
+            [name]: formattedValue
+        }));
+    };
+
+    const handleCnhChange = (e) => {
+        const { value } = e.target;
+        setUserData(prevState => ({
+            ...prevState,
+            cnh: value,
+            cnhTypes: value === 'Tenho' ? prevState.cnhTypes || [] : [] // Limpar tipos de CNH se selecionar 'Não tenho'
+        }));
+    };
+
+    const handleCnhTypesChange = (e) => {
+        const { value, checked } = e.target;
+        setUserData(prevState => {
+            const newCnhTypes = checked
+                ? [...(prevState.cnhTypes || []), value]
+                : (prevState.cnhTypes || []).filter(type => type !== value);
+            return {
+                ...prevState,
+                cnhTypes: newCnhTypes
+            };
+        });
     };
 
     const handleFileChange = (event) => {
@@ -114,11 +169,8 @@ const Config = () => {
             const token = localStorage.getItem('token');
             const formData = new FormData();
 
-            formData.append('firstName', firstName);
-            formData.append('lastName', lastName);
-
             Object.keys(userData).forEach(key => {
-                if (key !== 'profilePicture' && key !== 'firstName' && key !== 'lastName') {
+                if (key !== 'profilePicture') {
                     formData.append(key, userData[key]);
                 }
             });
@@ -141,7 +193,7 @@ const Config = () => {
             setMessage('Dados atualizados com sucesso!');
             setIsFormChanged(false);
         } catch (error) {
-            console.error('Erro ao atualizar os dados do usuário', error);
+            console.error('Erro ao atualizar os dados do usuário:', error);
             setMessage('Erro ao atualizar os dados. Tente novamente.');
         }
     };
@@ -179,7 +231,7 @@ const Config = () => {
                                             id='firstName'
                                             name='firstName'
                                             value={userData.firstName}
-                                            onChange={handleFirstNameChange}
+                                            onChange={handleNameChange}
                                         />
                                     </div>
                                     <div className='form-group'>
@@ -189,7 +241,7 @@ const Config = () => {
                                             id='lastName'
                                             name='lastName'
                                             value={userData.lastName}
-                                            onChange={handleLastNameChange}
+                                            onChange={handleNameChange}
                                         />
                                     </div>
                                     <div className='form-group'>
@@ -215,6 +267,17 @@ const Config = () => {
                                             value={userData.cpf}
                                             onChange={handleChange}
                                             disabled
+                                        />
+                                    </div>
+                                    <div className='form-group'>
+                                        <label htmlFor='rg'>RG</label>
+                                        <input
+                                            type='text'
+                                            id='rg'
+                                            name='rg'
+                                            maxLength='10'
+                                            value={userData.rg}
+                                            onChange={handleRgChange}
                                         />
                                     </div>
                                 </div>
@@ -252,7 +315,7 @@ const Config = () => {
                                             id='contactPhone'
                                             name='contactPhone'
                                             value={userData.contactPhone}
-                                            onChange={handleChange}
+                                            onChange={handlePhoneChange}
                                         />
                                     </div>
                                     <div className='form-group'>
@@ -262,9 +325,45 @@ const Config = () => {
                                             id='backupPhone'
                                             name='backupPhone'
                                             value={userData.backupPhone}
-                                            onChange={handleChange}
+                                            onChange={handlePhoneChange}
                                         />
                                     </div>
+                                    <div className='form-group'>
+                                        <label htmlFor='cnh'>CNH</label>
+                                        <select
+                                            id='cnh'
+                                            name='cnh'
+                                            value={userData.cnh}
+                                            onChange={(e) => {
+                                                const { value } = e.target;
+                                                setUserData(prevState => ({
+                                                    ...prevState,
+                                                    cnh: value,
+                                                    cnhTypes: value === 'Tenho' ? prevState.cnhTypes : []
+                                                }));
+                                            }}
+                                        >
+                                            <option value='Tenho'>Tenho</option>
+                                            <option value='Não tenho'>Não tenho</option>
+                                        </select>
+                                    </div>
+                                    {userData.cnh === 'Tenho' && (
+                                        <div className="form-group">
+                                            <div className="cnh-types-checkboxes">
+                                                {['A', 'B', 'C', 'D', 'E'].map(type => (
+                                                    <label key={type}>
+                                                        <input
+                                                            type="checkbox"
+                                                            value={type}
+                                                            checked={userData.cnhTypes.includes(type)}
+                                                            onChange={handleCnhTypesChange}
+                                                        />
+                                                        {type}
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )}

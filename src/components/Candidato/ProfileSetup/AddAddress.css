@@ -45,7 +45,7 @@
 }
 
 .back-btn,
-.submit-btn {
+.submit-setup-btn {
     display: block;
     width: 48%;
     padding: 10px;
@@ -59,7 +59,7 @@
 }
 
 .back-btn:hover,
-.submit-btn:hover {
+.submit-setup-btn:hover {
     background-color: #286abb;
     transform: scale(1.05);
 }

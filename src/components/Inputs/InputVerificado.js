@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import './InputVerificado.css';
 import axios from 'axios';
 
-const InputVerificado = ({ type, label, name, onChange, maxLength, value, title, showButton, shouldValidate, min, max, disabled }) => {
+const InputVerificado = ({ type, label, name, onChange, maxLength, value, title, showButton, shouldValidate, min, max, disabled, required }) => {
     const [inputValue, setInputValue] = useState(value || '');
     const [isTyping, setIsTyping] = useState(false);
     const [isButtonDisabled, setIsButtonDisabled] = useState(true);
@@ -51,14 +51,17 @@ const InputVerificado = ({ type, label, name, onChange, maxLength, value, title,
     };
 
     const handleChange = (event) => {
-        const { value } = event.target;
+        let { value } = event.target;
+        if (name === 'rg') {
+            value = value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
+        }
         setInputValue(value);
         if (shouldValidate) {
             debounce(() => {
                 updateUi(value);
             }, 500)();
         }
-        onChange(event);
+        onChange({ target: { name, value } });
     };
 
     const handleBlur = () => {
@@ -106,7 +109,7 @@ const InputVerificado = ({ type, label, name, onChange, maxLength, value, title,
                     max={max}
                     className={getClassName()}
                     disabled={disabled}
-                    required
+                    required={required}
                 />
                 <label htmlFor={name}>{label}</label>
                 {isTyping && <span className="spinner visible"></span>}
