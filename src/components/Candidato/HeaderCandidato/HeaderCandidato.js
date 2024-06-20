@@ -17,7 +17,6 @@ const Button = React.forwardRef(({ children, onClick, className, isActive }, ref
 const HeaderCandidato = () => {
     const { showLoading, hideLoading } = useContext(LoadingContext);
     const [userName, setUserName] = useState('');
-    const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
     const location = useLocation();
     const buttonRef = useRef(null);
@@ -38,12 +37,9 @@ const HeaderCandidato = () => {
                     console.error('Error fetching user data:', error);
                 }).finally(() => {
                     hideLoading();
-                    setIsLoading(false);
                 });
         } else {
             console.error('No token found');
-            hideLoading();
-            setIsLoading(false);
         }
     }, []);
 
@@ -71,7 +67,6 @@ const HeaderCandidato = () => {
                         <Link to="/curriculo" className={`header-link ${location.pathname === '/curriculo' ? 'active' : ''}`}><li>Currículo</li></Link>
                     </ul>
                 </nav>
-                {!isLoading && (
                 <div className="opcoes-area">
                     <Button
                         ref={buttonRef}
@@ -95,7 +90,6 @@ const HeaderCandidato = () => {
                         </div>
                     )}
                 </div>
-                )}
             </header>
         </>
     );
