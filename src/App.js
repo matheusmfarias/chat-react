@@ -15,6 +15,7 @@ import VerifyEmail from './components/Candidato/ConfigCandidato/VerifyEmail';
 import { LoadingContext } from './context/LoadingContext';
 import Spinner from './components/Spinner/Spinner';
 import SpinnerDemo from './components/Spinner/SpinnerDemo'
+import Curriculo from './components/Candidato/Curriculo/Curriculo';
 
 const App = () => {
   const { isLoading } = useContext(LoadingContext);
@@ -58,6 +59,11 @@ const App = () => {
             <Layout>
               <ConfigCandidato />
             </Layout>
+          } />
+          <Route path='/curriculo' element={
+              <Layout>
+                <Curriculo />
+              </Layout>
           } />
           <Route path='/spinner-demo' element={<SpinnerDemo />} />
         </Routes>

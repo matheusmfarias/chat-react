@@ -31,7 +31,7 @@
 
 .header-candidato nav ul {
     display: flex;
-    justify-content: center;  /* Centraliza os links */
+    justify-content: center; 
     align-items: center;
     list-style: none;
     padding: 0;
@@ -110,9 +110,7 @@
     z-index: 1000;
     background-color: var(--background-color);
     width: auto;
-    /* Remover largura fixa */
     min-width: 100%;
-    /* Garantir que a largura mínima seja igual ao botão */
     box-sizing: border-box;
 }
 
