@@ -60,7 +60,7 @@ const TokenCadastro = ({ onVerify }) => {
         if (email) {
             checkUserVerification();
         }
-    }, [email, navigate]);
+    }, [email, navigate, showLoading, hideLoading]);
 
     const handleVerifyToken = async (event) => {
         event.preventDefault();

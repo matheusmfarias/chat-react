@@ -43,7 +43,9 @@ function Header() {
                             <Link to='/login' className='link'>
                                 <Button className='opcao-login'>Candidato</Button>
                             </Link>
-                            <Button className='opcao-login'>Empresa</Button>
+                            <Link to='/login-empresa' className='link'>
+                                <Button className='opcao-login'>Empresa</Button>
+                            </Link>
                         </div>
                     )}
                     <Link to='/cadastro' className='link'>

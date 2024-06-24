@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import InputVerificado from "../Inputs/InputVerificado";
 import { LoadingContext } from "../../context/LoadingContext";
 
-const Login = () => {
+const LoginEmpresa = () => {
     const { showLoading, hideLoading } = useContext(LoadingContext);
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
@@ -18,20 +18,18 @@ const Login = () => {
         e.preventDefault();
         showLoading();
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/login', { email, senha });
+            const response = await axios.post('http://localhost:5000/api/auth/login-empresa', { email, senha });
 
-            const { token, firstLogin, role } = response.data;
+            const { token, role } = response.data;
 
             // Armazena o token no localStorage
             localStorage.setItem('token', token);
             localStorage.setItem('role', role);
 
-            if (role === 'admin') {
-                navigate('/admin-dashboard');
-            } else if (firstLogin) {
-                navigate('/profile-setup');
+            if (role === 'empresa') {
+                navigate('/dashboard-empresa');
             } else {
-                navigate('/dashboard');
+                setErroLogin('Credenciais inválidas.');
             }
         } catch (error) {
             if (error.response) {
@@ -84,4 +82,4 @@ const Login = () => {
     );
 }
 
-export default Login;
+export default LoginEmpresa;

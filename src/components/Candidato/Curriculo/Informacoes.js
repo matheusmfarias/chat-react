@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import './Informacoes.css';
 
@@ -35,111 +35,120 @@ const Informacoes = () => {
         setInputValues({ ...inputValues, [name]: value });
     };
 
-    const handleAddTag = (type) => {
-        setInformacoes({
-            ...informacoes,
-            [type]: [...informacoes[type], inputValues[type.slice(0, -1)]]
-        });
-        setInputValues({ ...inputValues, [type.slice(0, -1)]: '' });
-    };
+    const fieldMap = useMemo(() => ({
+        cursos: 'curso',
+        habilidadesProfissionais: 'habilidadeProfissional',
+        habilidadesComportamentais: 'habilidadeComportamental',
+        objetivos: 'objetivo'
+    }), []);
 
-    const handleRemoveTag = (type, index) => {
-        const updatedTags = informacoes[type].filter((_, i) => i !== index);
-        setInformacoes({ ...informacoes, [type]: updatedTags });
-    };
-
-    const handleSave = async () => {
+    const handleAddTag = useCallback(async (type, value) => {
         try {
-            await axios.post('http://localhost:5000/api/user/informacoes', informacoes, {
+            const item = { [fieldMap[type]]: value };
+            await axios.post(`http://localhost:5000/api/user/${type}`, item, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
-            alert('Informações salvas com sucesso!');
+
+            setInformacoes((prevInformacoes) => ({
+                ...prevInformacoes,
+                [type]: [...prevInformacoes[type], value]
+            }));
+            setInputValues((prevValues) => ({ ...prevValues, [fieldMap[type]]: '' }));
         } catch (error) {
-            console.error('Erro ao salvar informações:', error);
+            console.error(`Erro ao adicionar ${fieldMap[type]}:`, error);
         }
-    };
+    }, [fieldMap]);
+
+    const handleRemoveTag = useCallback(async (type, value) => {
+        try {
+            const item = { [fieldMap[type]]: value };
+            await axios.delete(`http://localhost:5000/api/user/${type}`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                data: item
+            });
+
+            setInformacoes((prevInformacoes) => ({
+                ...prevInformacoes,
+                [type]: prevInformacoes[type].filter((tag) => tag !== value)
+            }));
+        } catch (error) {
+            console.error(`Erro ao remover ${fieldMap[type]}:`, error);
+        }
+    }, [fieldMap]);
 
     return (
         <div className="informacoes-container">
-            <div className="form-group">
-                <label>Cursos/Qualificações</label>
-                <div className="tags-input-container">
-                    {informacoes.cursos.map((curso, index) => (
-                        <div key={index} className="tag">
-                            {curso}
-                            <span className="tag-close" onClick={() => handleRemoveTag('cursos', index)}>x</span>
-                        </div>
-                    ))}
-                    <input
-                        type="text"
-                        name="curso"
-                        value={inputValues.curso}
-                        onChange={handleInputChange}
-                        placeholder="Adicionar curso/qualificação"
-                    />
-                    <button type="button" onClick={() => handleAddTag('cursos')}>Adicionar</button>
-                </div>
-            </div>
-            <div className="form-group">
-                <label>Habilidades Profissionais</label>
-                <div className="tags-input-container">
-                    {informacoes.habilidadesProfissionais.map((habilidade, index) => (
-                        <div key={index} className="tag">
-                            {habilidade}
-                            <span className="tag-close" onClick={() => handleRemoveTag('habilidadesProfissionais', index)}>x</span>
-                        </div>
-                    ))}
-                    <input
-                        type="text"
-                        name="habilidadeProfissional"
-                        value={inputValues.habilidadeProfissional}
-                        onChange={handleInputChange}
-                        placeholder="Adicionar habilidade profissional"
-                    />
-                    <button type="button" onClick={() => handleAddTag('habilidadesProfissionais')}>Adicionar</button>
-                </div>
-            </div>
-            <div className="form-group">
-                <label>Habilidades Comportamentais</label>
-                <div className="tags-input-container">
-                    {informacoes.habilidadesComportamentais.map((habilidade, index) => (
-                        <div key={index} className="tag">
-                            {habilidade}
-                            <span className="tag-close" onClick={() => handleRemoveTag('habilidadesComportamentais', index)}>x</span>
-                        </div>
-                    ))}
-                    <input
-                        type="text"
-                        name="habilidadeComportamental"
-                        value={inputValues.habilidadeComportamental}
-                        onChange={handleInputChange}
-                        placeholder="Adicionar habilidade comportamental"
-                    />
-                    <button type="button" onClick={() => handleAddTag('habilidadesComportamentais')}>Adicionar</button>
-                </div>
-            </div>
-            <div className="form-group">
-                <label>Objetivos</label>
-                <div className="tags-input-container">
-                    {informacoes.objetivos.map((objetivo, index) => (
-                        <div key={index} className="tag">
-                            {objetivo}
-                            <span className="tag-close" onClick={() => handleRemoveTag('objetivos', index)}>x</span>
-                        </div>
-                    ))}
-                    <input
-                        type="text"
-                        name="objetivo"
-                        value={inputValues.objetivo}
-                        onChange={handleInputChange}
-                        placeholder="Adicionar objetivo"
-                    />
-                    <button type="button" onClick={() => handleAddTag('objetivos')}>Adicionar</button>
-                </div>
-            </div>
-            <button type="button" onClick={handleSave}>Salvar Informações</button>
+            <InformacaoCard
+                title="Cursos/Qualificações"
+                inputName="curso"
+                inputValue={inputValues.curso}
+                handleInputChange={handleInputChange}
+                tags={informacoes.cursos}
+                placeholder="Adicionar curso/qualificação"
+                handleAddTag={() => handleAddTag('cursos', inputValues.curso)}
+                handleRemoveTag={(value) => handleRemoveTag('cursos', value)}
+            />
+            <InformacaoCard
+                title="Habilidades Profissionais"
+                inputName="habilidadeProfissional"
+                inputValue={inputValues.habilidadeProfissional}
+                handleInputChange={handleInputChange}
+                tags={informacoes.habilidadesProfissionais}
+                placeholder="Adicionar habilidade profissional"
+                handleAddTag={() => handleAddTag('habilidadesProfissionais', inputValues.habilidadeProfissional)}
+                handleRemoveTag={(value) => handleRemoveTag('habilidadesProfissionais', value)}
+            />
+            <InformacaoCard
+                title="Habilidades Comportamentais"
+                inputName="habilidadeComportamental"
+                inputValue={inputValues.habilidadeComportamental}
+                handleInputChange={handleInputChange}
+                tags={informacoes.habilidadesComportamentais}
+                placeholder="Adicionar habilidade comportamental"
+                handleAddTag={() => handleAddTag('habilidadesComportamentais', inputValues.habilidadeComportamental)}
+                handleRemoveTag={(value) => handleRemoveTag('habilidadesComportamentais', value)}
+            />
+            <InformacaoCard
+                title="Objetivos"
+                inputName="objetivo"
+                inputValue={inputValues.objetivo}
+                handleInputChange={handleInputChange}
+                tags={informacoes.objetivos}
+                placeholder="Adicionar objetivo"
+                handleAddTag={() => handleAddTag('objetivos', inputValues.objetivo)}
+                handleRemoveTag={(value) => handleRemoveTag('objetivos', value)}
+            />
         </div>
     );
 };
+
+const InformacaoCard = ({ title, inputName, inputValue, handleInputChange, tags, handleAddTag, handleRemoveTag, placeholder }) => (
+    <div className='informacoes-card'>
+        <h4>{title}</h4>
+        <input
+            type="text"
+            name={inputName}
+            value={inputValue}
+            onChange={handleInputChange}
+            placeholder={placeholder}
+        />
+        <div className='tags-container'>
+            {tags.map((tag, index) => (
+                <div key={index} className="tag">
+                    {tag}
+                    <span className="tag-close" onClick={() => handleRemoveTag(tag)}>x</span>
+                </div>
+            ))}
+        </div>
+        <button
+            type="button"
+            onClick={handleAddTag}
+            className='save-btn'
+            disabled={!inputValue}
+        >
+            Adicionar
+        </button>
+    </div>
+);
 
 export default Informacoes;

@@ -94,13 +94,13 @@
 }
 
 .experience-card.expanded .card-body {
-    opacity: 1; /* Define a opacidade como 1 quando expandido */
+    opacity: 1;
     padding: 10px 0;
 }
 
 .experience-card .form-group {
     margin-bottom: 10px;
-    width: 100%; /* Garante que o grupo de formulário ocupe 100% da largura */
+    width: 100%;
 }
 
 .experience-card .form-group label {

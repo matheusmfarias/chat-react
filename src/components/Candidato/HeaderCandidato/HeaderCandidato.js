@@ -41,7 +41,7 @@ const HeaderCandidato = () => {
         } else {
             console.error('No token found');
         }
-    }, []);
+    }, [showLoading, hideLoading]);
 
     const [isLoginActive, setIsLoginActive] = useState(false);
 

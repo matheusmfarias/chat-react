@@ -16,10 +16,13 @@ import { LoadingContext } from './context/LoadingContext';
 import Spinner from './components/Spinner/Spinner';
 import SpinnerDemo from './components/Spinner/SpinnerDemo'
 import Curriculo from './components/Candidato/Curriculo/Curriculo';
+import AdminDashboard from './components/Admin/AdminDashboard';
+import LoginEmpresa from './components/Login/LoginEmpresa';
+import DashboardEmpresa from './components/Empresa/DashboardEmpresa';
 
 const App = () => {
   const { isLoading } = useContext(LoadingContext);
-  const [isVerificationAllowed, setIsVerificationAllowed] = useState(false);
+  const [setIsVerificationAllowed] = useState(false);
 
   return (
     <>
@@ -33,11 +36,17 @@ const App = () => {
             </Layout>
           } />
           <Route path='/login' element={<Login />} />
+          <Route path="/login-empresa" element={<LoginEmpresa />} />
           <Route path='/cadastro' element={<Cadastro onRegister={() => setIsVerificationAllowed(true)} />} />
           <Route path="/verificacao-token" element={<TokenCadastro onVerify={() => setIsVerificationAllowed(false)} />} />
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/dashboard-empresa" element={
+            <ProtectedRoute>
+              <DashboardEmpresa />
             </ProtectedRoute>
           } />
           <Route path='/alterar-email' element={
@@ -61,10 +70,11 @@ const App = () => {
             </Layout>
           } />
           <Route path='/curriculo' element={
-              <Layout>
-                <Curriculo />
-              </Layout>
+            <Layout>
+              <Curriculo />
+            </Layout>
           } />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path='/spinner-demo' element={<SpinnerDemo />} />
         </Routes>
       </Router>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import './ConfigCandidato.css';
 import HeaderCandidato from '../HeaderCandidato/HeaderCandidato';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -79,7 +79,7 @@ const Config = () => {
         };
 
         fetchUserData();
-    }, []);
+    }, [showLoading, hideLoading]);
 
     useEffect(() => {
         setIsFormChanged(true);
@@ -121,15 +121,6 @@ const Config = () => {
         setUserData(prevState => ({
             ...prevState,
             [name]: formattedValue
-        }));
-    };
-
-    const handleCnhChange = (e) => {
-        const { value } = e.target;
-        setUserData(prevState => ({
-            ...prevState,
-            cnh: value,
-            cnhTypes: value === 'Tenho' ? prevState.cnhTypes || [] : [] // Limpar tipos de CNH se selecionar 'Não tenho'
         }));
     };
 
