@@ -24,9 +24,10 @@
     margin-bottom: 20px;
 }
 
-.tabs button {
+.curriculo-container-usuario .tabs button {
     justify-content: center;
     width: 40%;
+    padding: 0 40px;
     border: none;
     border-bottom: 2px solid transparent;
     background: none;
@@ -45,7 +46,7 @@
     width: 100%;
 }
 
-.form-columns-container {
+.curriculo-form .form-columns-container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -54,29 +55,121 @@
 
 .experience-card {
     background-color: #f5f5f5;
-    padding: 15px;
+    padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    width: 100%;
+    width: 70%;
     margin-bottom: 10px;
-    cursor: pointer;
+    transition: max-height 0.3s ease-in-out;
+    overflow: hidden;
+    max-height: 70px;
 }
 
-.card-header {
+.experience-card.expanded {
+    max-height: 1000px; /* Altura máxima quando expandido */
+}
+
+.experience-card .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    cursor: pointer; /* Muda o cursor para indicar que o card é clicável */
 }
 
-.card-body {
-    display: none;
+.experience-card .card-header h4, .experience-card .card-header p {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.experience-card .card-header .toggle-icon {
+    font-size: 16px;
+}
+
+.experience-card .card-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0; /* Define a opacidade inicial como 0 */
+    transition: opacity 0.3s ease-in-out; /* Adiciona a transição para opacidade */
 }
 
 .experience-card.expanded .card-body {
+    opacity: 1; /* Define a opacidade como 1 quando expandido */
+    padding: 10px 0;
+}
+
+.experience-card .form-group {
+    margin-bottom: 10px;
+    width: 100%; /* Garante que o grupo de formulário ocupe 100% da largura */
+}
+
+.experience-card .form-group label {
     display: block;
+    margin-bottom: 5px;
+    color: #1F5291;
+}
+
+.experience-card .form-group input,
+.experience-card .form-group select,
+.experience-card .form-group textarea {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #D3D3D3;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.experience-card .form-group input[type="checkbox"] {
+    width: auto;
+    margin-right: 10px;
+    margin-top: 15px; /* Adiciona a margem superior ao checkbox */
+}
+
+.experience-card .date-select {
+    display: flex;
+    gap: 10px;
+}
+
+.experience-card .button-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.experience-card .save-btn {
+    width: auto;
+    background-color: #1F5291;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.experience-card .save-btn:hover {
+    background-color: #286abb;
+}
+
+.experience-card .delete-btn {
+    background: none;
+    width: auto;
+    height: auto;
+    border: none;
+    cursor: pointer;
+    color: #e74c3c;
+    font-size: 20px;
+    padding: 0;
+    margin-left: auto;
+}
+
+.experience-card .delete-btn:hover {
+    color: #c0392b;
 }
 
 .add-experience-btn {
+    justify-content: center;
     background-color: #1F5291;
     color: white;
     border: none;
@@ -84,6 +177,7 @@
     border-radius: 8px;
     cursor: pointer;
     margin-top: 20px;
+    width: auto;
 }
 
 .add-experience-btn:hover {
@@ -100,19 +194,38 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    animation: fadeIn 0.5s forwards;
+}
+
+.popup-overlay.closing {
+    animation: fadeOut 0.5s forwards;
 }
 
 .popup-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
     background-color: #ffffff;
     padding: 30px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 500px;
+    transform: scale(0.8);
+    animation: scaleIn 0.5s forwards;
+}
+
+.popup-content.closing {
+    animation: scaleOut 0.5s forwards;
 }
 
 .popup-content .form-group {
     margin-bottom: 10px;
+    width: 400px;
+    max-width: 400px;
 }
 
 .popup-content .form-group label {
@@ -122,6 +235,7 @@
 }
 
 .popup-content .form-group input,
+.popup-content .form-group select,
 .popup-content .form-group textarea {
     width: 100%;
     padding: 15px;
@@ -130,17 +244,71 @@
     font-size: 16px;
 }
 
+.popup-content .form-group input[type="checkbox"] {
+    width: auto;
+    margin-right: 10px;
+    margin-top: 15px;
+}
+
+.popup-content .date-select {
+    display: flex;
+    gap: 10px;
+}
+
+.popup-content .button-group {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px; 
+}
+
 .popup-content button {
     background-color: #1F5291;
+    justify-content: center;
     color: white;
     border: none;
     padding: 10px 20px;
     border-radius: 8px;
     cursor: pointer;
-    margin-top: 10px;
-    margin-right: 10px;
+    width: auto;
 }
 
 .popup-content button:hover {
     background-color: #286abb;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.8);
+    }
+    to {
+        transform: scale(1);
+    }
+}
+
+@keyframes scaleOut {
+    from {
+        transform: scale(1);
+    }
+    to {
+        transform: scale(0.8);
+    }
 }
