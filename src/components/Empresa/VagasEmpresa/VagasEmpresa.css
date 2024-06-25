@@ -1,0 +1,181 @@
+.visualizar-vagas-container {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.vagas-empresa-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    width: 85%;
+}
+
+.visualizar-vagas-container h1 {
+    margin-bottom: 20px;
+    color: #1F5291;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.buttons {
+    display: flex;
+    align-items: center;
+}
+
+.vagas-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #1f5291;
+    color: #ffffff;
+    border: 1px solid #1f5291;
+    transition: background-color 0.3s ease;
+    border-radius: 10px;
+    cursor: pointer;
+    padding: 10px;
+    margin-right: 10px;
+    width: auto;
+    height: auto;
+    text-decoration: none;
+}
+
+.vagas-btn span {
+    padding: 5px;
+}
+
+.vagas-btn:hover {
+    color: #1f5291;
+    background-color: #ffffff;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 500px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid #1F5291;
+    border-radius: 5px 0 0 5px;
+    outline: none;
+}
+
+.search-btn {
+    justify-content: center;
+    background-color: #e9ecef;
+    width: 20%;
+    color: #1F5291;
+    border: 1px solid #1F5291;
+    border-left: none;
+    border-radius: 0 5px 5px 0;
+    cursor: pointer;
+}
+
+.vagas-table {
+    background-color: rgba(31, 82, 145, 0.100);
+    border-radius: 8px 8px 0 0;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.vagas-table th,
+.vagas-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.vagas-table th {
+    color: #3B6A96;    
+}
+
+.vagas-table td {
+    background-color: #fff;
+}
+
+.btn-action {
+    padding: 8px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+.btn-edit {
+    background-color: #ffc107;
+    color: #fff;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+/* Modal Styles */
+.Modal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    margin-right: -50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 400px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.Overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #1F5291;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e9ecef;
+    border-radius: 5px;
+}
+
+.modal-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    margin-top: 10px;
+    margin-right: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #1F5291;
+    color: #fff;
+}
+
+.modal-btn:last-child {
+    background-color: #dc3545;
+}

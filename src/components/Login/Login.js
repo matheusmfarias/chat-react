@@ -1,14 +1,12 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import axios from 'axios';
 import logo from '../../assets/images/logo-aci-transparente.png';
 import SenhaInput from "../SenhaInput/SenhaInput";
 import './Login.css';
 import { useNavigate } from 'react-router-dom';
 import InputVerificado from "../Inputs/InputVerificado";
-import { LoadingContext } from "../../context/LoadingContext";
 
 const Login = () => {
-    const { showLoading, hideLoading } = useContext(LoadingContext);
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [erroLogin, setErroLogin] = useState('');
@@ -16,7 +14,6 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        showLoading();
         try {
             const response = await axios.post('http://localhost:5000/api/auth/login', { email, senha });
 
@@ -39,8 +36,6 @@ const Login = () => {
             } else {
                 setErroLogin('Erro ao fazer login. Por favor, tente novamente mais tarde.');
             }
-        } finally {
-            hideLoading();
         }
     };
 

@@ -1,0 +1,95 @@
+.carousel-empresa-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    min-height: 50vh;
+}
+
+.carousel-empresa-container h1 {
+    font-size: 40px;
+    color: #1876EA;
+    margin: 2vh;
+}
+
+.carousel-empresa-container .swiper {
+    width: 95%;
+    padding: 0 30px;
+}
+
+.carousel-empresa-container .swiper-button-next,
+.carousel-empresa-container .swiper-button-prev {
+    color: #1876EA;
+}
+
+.carousel-empresa-container .swiper-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.job-card {
+    background-color: #e9ecef;
+    border-radius: 10px;
+    text-align: center;
+    width: 100%;
+    color: #1F5291;
+    padding: 20px;
+}
+
+.job-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 45%;
+    margin-bottom: 8px;
+}
+
+.detail-item svg {
+    margin-right: 8px;
+}
+
+.publish-date {
+    margin-top: 15px;
+    font-size: 0.9em;
+    color: #1F5291;
+}
+
+.linha-vaga {
+    height: 1px;
+    margin: 10px 0;
+    background-color: #1F5291;
+}
+
+.swiper-scrollbar {
+    display: none;
+}
+
+.align-center .swiper-wrapper {
+    display: flex;
+    justify-content: center; /* Centraliza os cartões */
+}
+
+.align-start .swiper-wrapper {
+    display: flex;
+    justify-content: flex-start; /* Alinha os cartões no início */
+}
+
+.no-jobs-message {
+    font-size: 1.2em;
+    color: #1F5291;
+    margin-top: 20px;
+}
+
+.no-jobs-message a {
+    color: #1876EA;
+    text-decoration: underline;
+}

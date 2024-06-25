@@ -1,33 +1,40 @@
-import React from 'react';
-import { Container, Carousel } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
 import './MainEmpresa.css';
-import profileIcon from '../../assets/images/logo-banrisul.png'; // Supondo que o ícone de perfil esteja nesse caminho
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircleUser } from '@fortawesome/free-solid-svg-icons';
+import axios from 'axios';
 
-const MainEmpresa = ({ companyName, jobs }) => {
+const MainEmpresa = () => {
+  const [companyName, setCompanyName] = useState('');
+
+  useEffect(() => {
+    const fetchCompanyData = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const companyResponse = await axios.get('http://localhost:5000/api/company/me', {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+          setCompanyName(companyResponse.data.nome);
+        } catch (error) {
+          console.error('Error fetching company data:', error);
+        }
+      }
+    };
+
+    fetchCompanyData();
+
+  }, []);
+
   return (
-    <div className="empresa-dashboard-main">
-      <div className="welcome-section">
-        <img src={profileIcon} alt="Profile Icon" className="profile-icon" />
+    <div className="main-content-empresa">
+      <div className="central-container-empresa">
+      <FontAwesomeIcon icon={faCircleUser} className='profile-empresa-icon' />
         <h2>Olá, {companyName}</h2>
         <p>Acompanhe suas vagas cadastradas</p>
       </div>
-      <Container>
-        <h3>Vagas cadastradas</h3>
-        <Carousel>
-          {jobs.map((job, index) => (
-            <Carousel.Item key={index}>
-              <div className="job-card">
-                <h4>{job.title}</h4>
-                <p><strong>Local:</strong> {job.location}</p>
-                <p><strong>Tipo:</strong> {job.type}</p>
-                <p><strong>Modalidade:</strong> {job.modality}</p>
-                <p><strong>PcD:</strong> {job.pcd ? 'Sim' : 'Não'}</p>
-                <p><strong>Data de publicação:</strong> {job.publishedDate}</p>
-              </div>
-            </Carousel.Item>
-          ))}
-        </Carousel>
-      </Container>
     </div>
   );
 };

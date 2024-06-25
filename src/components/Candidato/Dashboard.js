@@ -8,10 +8,10 @@ const Dashboard = () => {
 
     return (
         <>
-        <HeaderCandidato />
-        <MainCandidato />
-        <Carousel />
-        <Footer />
+            <HeaderCandidato />
+            <MainCandidato />
+            <Carousel />
+            <Footer />
         </>
     );
 };

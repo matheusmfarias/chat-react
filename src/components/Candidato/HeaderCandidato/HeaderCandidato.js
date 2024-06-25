@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef, useContext } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import './HeaderCandidato.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleDown, faAngleUp } from '@fortawesome/free-solid-svg-icons';
@@ -6,7 +6,6 @@ import logo from '../../../assets/images/logo-aci-transparente.png';
 import '../../../styles/global.css';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { LoadingContext } from "../../../context/LoadingContext";
 
 const Button = React.forwardRef(({ children, onClick, className, isActive }, ref) => (
     <button ref={ref} className={`${className} ${isActive ? 'active' : ''}`} onClick={onClick}>
@@ -15,14 +14,12 @@ const Button = React.forwardRef(({ children, onClick, className, isActive }, ref
 ));
 
 const HeaderCandidato = () => {
-    const { showLoading, hideLoading } = useContext(LoadingContext);
     const [userName, setUserName] = useState('');
     const navigate = useNavigate();
     const location = useLocation();
     const buttonRef = useRef(null);
 
     useEffect(() => {
-        showLoading();
         const token = localStorage.getItem('token');
         if (token) {
             axios.get('http://localhost:5000/api/user/candidato', {
@@ -35,13 +32,11 @@ const HeaderCandidato = () => {
                 })
                 .catch(error => {
                     console.error('Error fetching user data:', error);
-                }).finally(() => {
-                    hideLoading();
                 });
         } else {
             console.error('No token found');
         }
-    }, [showLoading, hideLoading]);
+    }, []);
 
     const [isLoginActive, setIsLoginActive] = useState(false);
 
@@ -65,6 +60,7 @@ const HeaderCandidato = () => {
                         <Link to="/dashboard" className={`header-link ${location.pathname === '/dashboard' ? 'active' : ''}`}><li>Início</li></Link>
                         <Link to="/inscricoes" className={`header-link ${location.pathname === '/inscricoes' ? 'active' : ''}`}><li>Inscrições</li></Link>
                         <Link to="/curriculo" className={`header-link ${location.pathname === '/curriculo' ? 'active' : ''}`}><li>Currículo</li></Link>
+                        <Link to="/mentoria" className={`header-link ${location.pathname === '/mentoria' ? 'actiove' : ''}`}><li>Mentoria</li></Link>
                     </ul>
                 </nav>
                 <div className="opcoes-area">
