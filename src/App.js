@@ -14,7 +14,6 @@ import Layout from './components/Layout/Layout';
 import VerifyEmail from './components/Candidato/ConfigCandidato/VerifyEmail';
 import { LoadingContext } from './context/LoadingContext';
 import Spinner from './components/Spinner/Spinner';
-import SpinnerDemo from './components/Spinner/SpinnerDemo'
 import Curriculo from './components/Candidato/Curriculo/Curriculo';
 import AdminDashboard from './components/Admin/AdminDashboard';
 import LoginEmpresa from './components/Login/LoginEmpresa';
@@ -75,7 +74,6 @@ const App = () => {
             </Layout>
           } />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          <Route path='/spinner-demo' element={<SpinnerDemo />} />
         </Routes>
       </Router>
     </>
