@@ -19,12 +19,10 @@ import AdminDashboard from './components/Admin/AdminDashboard';
 import LoginEmpresa from './components/Login/LoginEmpresa';
 import DashboardEmpresa from './components/Empresa/DashboardEmpresa';
 import VagasEmpresa from './components/Empresa/VagasEmpresa/VagasEmpresa';
-import Mentoria from './components/Candidato/Mentoria/Mentoria';
-import CompraMentoria from './components/Candidato/Mentoria/CompraMentoria';
 
 const App = () => {
   const { isLoading } = useContext(LoadingContext);
-  const [setIsVerificationAllowed] = useState(false);
+  const [isVerificationAllowed, setIsVerificationAllowed] = useState(false);
 
   return (
     <>
@@ -81,13 +79,6 @@ const App = () => {
             </Layout>
           } />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          <Route path="/mentoria" element={<Layout>
-            <Mentoria />
-          </Layout>} />
-          <Route path="/mentoria/compra" element={
-            <Layout>
-              <CompraMentoria />
-            </Layout>} />
         </Routes>
       </Router>
     </>

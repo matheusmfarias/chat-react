@@ -17,7 +17,12 @@ const LoginEmpresa = () => {
         try {
             const response = await axios.post('http://localhost:5000/api/auth/login-empresa', { email, senha });
 
-            const { token, role } = response.data;
+            const { token, role, isDisabled } = response.data;
+
+            if (isDisabled) {
+                setErroLogin('Conta desabilitada. Entre em contato com o suporte.');
+                return;
+            }
 
             // Armazena o token no localStorage
             localStorage.setItem('token', token);

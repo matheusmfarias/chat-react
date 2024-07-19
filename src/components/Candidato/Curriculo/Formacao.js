@@ -10,15 +10,21 @@ const Formacao = () => {
     const [newFormacao, setNewFormacao] = useState({
         escolaridade: '',
         instituicao: '',
-        situacao: ''
+        situacao: '',
+        curso: '',
+        grau: ''
     });
 
     const escolaridades = [
-        'Ensino Fundamental', 'Ensino Médio', 'Técnico', 'Superior', 'Pós-graduação', 'Mestrado', 'Doutorado'
+        'Ensino Fundamental', 'Ensino Médio', 'Técnico', 'Superior'
     ];
 
     const situacoes = [
         'Completo', 'Incompleto', 'Cursando', 'Trancado'
+    ];
+
+    const graus = [
+        'Tecnólogo', 'Graduação', 'Pós-graduação', 'Mestrado', 'Doutorado'
     ];
 
     useEffect(() => {
@@ -48,7 +54,9 @@ const Formacao = () => {
             setNewFormacao({
                 escolaridade: '',
                 instituicao: '',
-                situacao: ''
+                situacao: '',
+                curso: '',
+                grau: ''
             });
         } catch (error) {
             console.error('Erro ao adicionar formação:', error);
@@ -152,6 +160,25 @@ const Formacao = () => {
                                             </select>
                                         </div>
                                     </div>
+                                    {(exp.escolaridade === 'Técnico' || exp.escolaridade === 'Superior') && (
+                                        <div className="form-group">
+                                            <label>Curso</label>
+                                            <input type="text" name="curso" value={exp.curso || ''} onChange={(e) => handleEditChange(index, e)} />
+                                        </div>
+                                    )}
+                                    {exp.escolaridade === 'Superior' && (
+                                        <div className="form-group">
+                                            <label>Grau</label>
+                                            <div className="grau-select">
+                                                <select name="grau" value={exp.grau || ''} onChange={(e) => handleEditChange(index, e)}>
+                                                    <option value="">Selecione</option>
+                                                    {graus.map((grau, i) => (
+                                                        <option key={i} value={grau}>{grau}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    )}
                                     <div className="form-group">
                                         <label>Situação</label>
                                         <div className="situacao-select">
@@ -196,6 +223,25 @@ const Formacao = () => {
                                     </select>
                                 </div>
                             </div>
+                            {(newFormacao.escolaridade === 'Técnico' || newFormacao.escolaridade === 'Superior') && (
+                                <div className="form-group">
+                                    <label>Curso</label>
+                                    <input type="text" name="curso" value={newFormacao.curso} onChange={handleInputChange} />
+                                </div>
+                            )}
+                            {newFormacao.escolaridade === 'Superior' && (
+                                <div className="form-group">
+                                    <label>Grau</label>
+                                    <div className="grau-select">
+                                        <select name="grau" value={newFormacao.grau} onChange={handleInputChange}>
+                                            <option value="">Selecione</option>
+                                            {graus.map((grau, index) => (
+                                                <option key={index} value={grau}>{grau}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                            )}
                             <div className="form-group">
                                 <label>Situação</label>
                                 <div className="situacao-select">

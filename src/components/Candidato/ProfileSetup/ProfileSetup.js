@@ -4,7 +4,6 @@ import AddAddress from './AddAddress';
 import AddAdditionalInfo from './AddAdditionalInfo';
 import { useNavigate } from 'react-router-dom';
 import HeaderCandidato from '../HeaderCandidato/HeaderCandidato';
-import Footer from '../../Footer/Footer';
 
 const ProfileSetup = () => {
     const [step, setStep] = useState(() => {
@@ -49,7 +48,6 @@ const ProfileSetup = () => {
             <div>
                 {renderStep()}
             </div>
-            <Footer />
         </>
     );
 };

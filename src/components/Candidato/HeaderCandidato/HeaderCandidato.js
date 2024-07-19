@@ -60,7 +60,6 @@ const HeaderCandidato = () => {
                         <Link to="/dashboard" className={`header-link ${location.pathname === '/dashboard' ? 'active' : ''}`}><li>Início</li></Link>
                         <Link to="/inscricoes" className={`header-link ${location.pathname === '/inscricoes' ? 'active' : ''}`}><li>Inscrições</li></Link>
                         <Link to="/curriculo" className={`header-link ${location.pathname === '/curriculo' ? 'active' : ''}`}><li>Currículo</li></Link>
-                        <Link to="/mentoria" className={`header-link ${location.pathname === '/mentoria' ? 'actiove' : ''}`}><li>Mentoria</li></Link>
                     </ul>
                 </nav>
                 <div className="opcoes-area">
