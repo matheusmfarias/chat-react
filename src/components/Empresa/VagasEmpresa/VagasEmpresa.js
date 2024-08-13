@@ -1,17 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Modal, Button, Form, Table, Row, Col, InputGroup } from 'react-bootstrap';
-import { FaPlus, FaFilter, FaEdit, FaTrash } from 'react-icons/fa';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
-import './VagasEmpresa.css';
-import HeaderEmpresa from '../HeaderEmpresa';
+import { Table, Row, Col, Button, InputGroup, Form, Alert, Pagination, Modal } from 'react-bootstrap';
+import { FaPlus, FaFilter, FaSearch } from 'react-icons/fa';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faToggleOn, faToggleOff, faEye } from '@fortawesome/free-solid-svg-icons';
+import HeaderEmpresa from '../HeaderEmpresa';
+import ModalVagas from './ModalVagas';
+import Swal from 'sweetalert2';
+import './VagasEmpresa.css';
+
+// Função para remover tags HTML
+const removeHtmlTags = (str) => {
+    if (!str) return "Não informado";
+    return str.replace(/<\/?[^>]+(>|$)/g, "");
+};
 
 const VagasEmpresa = () => {
     const [jobs, setJobs] = useState([]);
     const [modalIsOpen, setModalIsOpen] = useState(false);
+    const [viewModalIsOpen, setViewModalIsOpen] = useState(false); // Novo modal para visualização
+    const [selectedJob, setSelectedJob] = useState(null); // Armazena a vaga selecionada para visualização
+    const [selectedState, setSelectedState] = useState('');
+    const [selectedCity, setSelectedCity] = useState('');
+    const [states, setStates] = useState([]);
+    const [cities, setCities] = useState([]);
     const [newJob, setNewJob] = useState({
         title: '',
         location: '',
@@ -34,27 +46,31 @@ const VagasEmpresa = () => {
         requirementsActive: false,
         offersActive: false
     });
-    const [states, setStates] = useState([]);
-    const [cities, setCities] = useState([]);
-    const [selectedState, setSelectedState] = useState('');
-    const [selectedCity, setSelectedCity] = useState('');
     const [isEditMode, setIsEditMode] = useState(false);
     const [editJobId, setEditJobId] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [error, setError] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     useEffect(() => {
         const fetchJobs = async () => {
             const token = localStorage.getItem('token');
             if (token) {
                 try {
-                    const jobsResponse = await axios.get('http://localhost:5000/api/jobs', {
+                    const response = await axios.get('http://localhost:5000/api/jobs', {
                         headers: {
                             Authorization: `Bearer ${token}`
                         }
                     });
-                    setJobs(jobsResponse.data);
+                    if (Array.isArray(response.data)) {
+                        setJobs(response.data);
+                    } else if (response.data.message) {
+                        setJobs([]);
+                    }
                 } catch (error) {
                     console.error('Error fetching jobs:', error);
+                    setError('Erro ao buscar vagas. Tente novamente mais tarde.');
                 }
             }
         };
@@ -69,6 +85,7 @@ const VagasEmpresa = () => {
                 setStates(statesResponse.data);
             } catch (error) {
                 console.error('Error fetching states:', error);
+                setError('Erro ao buscar estados. Tente novamente mais tarde.');
             }
         };
 
@@ -83,6 +100,7 @@ const VagasEmpresa = () => {
                     setCities(citiesResponse.data);
                 } catch (error) {
                     console.error('Error fetching cities:', error);
+                    setError('Erro ao buscar cidades. Tente novamente mais tarde.');
                 }
             };
 
@@ -100,7 +118,7 @@ const VagasEmpresa = () => {
             setNewJob({
                 ...job,
                 status: job.status === 'Ativo',
-                pcd: job.pcd === 'Ativo',
+                pcd: job.pcd === 'Sim',  // Ajuste para garantir que PCD seja booleano
                 salaryActive: !!job.salary,
                 salary: job.salary || '',
                 descriptionActive: !!job.description,
@@ -147,47 +165,20 @@ const VagasEmpresa = () => {
         setModalIsOpen(false);
     };
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setNewJob(prevJob => ({ ...prevJob, [name]: value }));
+    const openViewModal = (job) => {
+        setSelectedJob(job);
+        setViewModalIsOpen(true);
     };
 
-    const handleToggleChange = (name) => {
-        setNewJob(prevJob => ({ ...prevJob, [name]: !prevJob[name] }));
+    const closeViewModal = () => {
+        setViewModalIsOpen(false);
     };
 
-    const handleQuillChange = (name, value) => {
-        setNewJob(prevJob => ({ ...prevJob, [name]: value }));
-    };
-
-    const formatCurrency = (value) => {
-        const numberValue = Number(value.replace(/[^0-9]/g, '')) / 100;
-        return numberValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    };
-
-    const handleSalaryChange = (e) => {
-        const { value } = e.target;
-        setNewJob(prevJob => ({ ...prevJob, salary: formatCurrency(value) }));
-    };
-
-    const handleFormSubmit = async (e) => {
-        e.preventDefault();
+    const handleJobSubmit = async (jobData) => {
         const token = localStorage.getItem('token');
         if (token) {
             try {
-                const jobData = {
-                    ...newJob,
-                    location: `${selectedCity}, ${selectedState}`,
-                    status: newJob.status ? 'Ativo' : 'Inativo',
-                    pcd: newJob.pcd ? 'Ativo' : 'Inativo',
-                    salary: newJob.salaryActive ? newJob.salary : null,
-                    description: newJob.descriptionActive ? newJob.description : null,
-                    responsibilities: newJob.responsibilitiesActive ? newJob.responsibilities : null,
-                    qualifications: newJob.qualificationsActive ? newJob.qualifications : null,
-                    additionalInfo: newJob.additionalInfoActive ? newJob.additionalInfo : null,
-                    requirements: newJob.requirementsActive ? newJob.requirements : null,
-                    offers: newJob.offersActive ? newJob.offers : null
-                };
+                jobData.location = `${selectedCity}, ${selectedState}`;
                 if (isEditMode) {
                     await axios.put(`http://localhost:5000/api/jobs/${editJobId}`, jobData, {
                         headers: {
@@ -206,6 +197,7 @@ const VagasEmpresa = () => {
                 closeModal();
             } catch (error) {
                 console.error('Error saving job:', error);
+                setError('Erro ao salvar a vaga. Verifique os dados e tente novamente.');
             }
         }
     };
@@ -222,7 +214,67 @@ const VagasEmpresa = () => {
                 setJobs(prevJobs => prevJobs.filter(job => job._id !== id));
             } catch (error) {
                 console.error('Error deleting job:', error);
+                setError('Erro ao deletar a vaga. Tente novamente mais tarde.');
             }
+        }
+    };
+
+    const handleToggleStatus = async (job) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                job.status = job.status === 'Ativo' ? 'Inativo' : 'Ativo';
+                await axios.put(`http://localhost:5000/api/jobs/${job._id}`, job, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                setJobs(prevJobs => prevJobs.map(j => j._id === job._id ? { ...j, status: job.status } : j));
+            } catch (error) {
+                console.error('Error toggling status:', error);
+                setError('Erro ao alterar status da vaga. Tente novamente mais tarde.');
+            }
+        }
+    };
+
+    const handleConfirmDelete = (id) => {
+        Swal.fire({
+            title: 'Você tem certeza?',
+            text: "Esta ação não pode ser desfeita!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sim, deletar!',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                handleDeleteJob(id);
+                Swal.fire(
+                    'Deletado!',
+                    'A vaga foi deletada com sucesso.',
+                    'success'
+                );
+            }
+        });
+    };
+
+    // Paginação
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentJobs = jobs.slice(indexOfFirstItem, indexOfLastItem);
+
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+    const nextPage = () => {
+        if (currentPage < Math.ceil(jobs.length / itemsPerPage)) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    const prevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
         }
     };
 
@@ -232,6 +284,7 @@ const VagasEmpresa = () => {
             <div className="container">
                 <div className="mt-4">
                     <h1>Minhas Vagas</h1>
+                    {error && <Alert variant="danger">{error}</Alert>}
                     <Row className="mb-3 align-items-center">
                         <Col xs={12} md={4} className="d-flex justify-content-start mb-2 mb-md-0">
                             <Button variant="primary" className="me-2 flex-grow-1" onClick={() => openModal()}>
@@ -253,354 +306,112 @@ const VagasEmpresa = () => {
                                     onChange={e => setSearchTerm(e.target.value)}
                                 />
                                 <Button variant="outline-secondary" style={{ maxWidth: '100px' }}>
-                                    <FontAwesomeIcon icon={faSearch} />
+                                    <FaSearch />
                                 </Button>
                             </InputGroup>
                         </Col>
                     </Row>
-                    <Table striped bordered hover>
-                        <thead>
-                            <tr>
-                                <th>Cargo</th>
-                                <th>Localidade</th>
-                                <th>Modelo</th>
-                                <th>Tipo</th>
-                                <th>Status</th>
-                                <th>PCD</th>
-                                <th>Salário</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {jobs.map((job, index) => (
-                                <tr key={index}>
-                                    <td>{job.title}</td>
-                                    <td>{job.location}</td>
-                                    <td>{job.modality}</td>
-                                    <td>{job.type}</td>
-                                    <td>{job.status}</td>
-                                    <td>{job.pcd}</td>
-                                    <td>{job.salary ? job.salary : 'Não informado'}</td>
-                                    <td>
-                                        <Button variant="warning" className="mr-2" onClick={() => openModal(job)}>
-                                            <FaEdit />
-                                        </Button>
-                                        <Button variant="danger" onClick={() => handleDeleteJob(job._id)}>
-                                            <FaTrash />
-                                        </Button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
+                    {currentJobs.length === 0 ? (
+                        <p className="text-center">Nenhuma vaga cadastrada, clique em "Adicionar"...</p>
+                    ) : (
+                        <>
+                            <Table striped bordered hover>
+                                <thead>
+                                    <tr>
+                                        <th>Cargo</th>
+                                        <th>Localidade</th>
+                                        <th>Modelo</th>
+                                        <th>Tipo</th>
+                                        <th>Status</th>
+                                        <th>PCD</th>
+                                        <th>Salário</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {currentJobs.map((job, index) => (
+                                        <tr key={index}>
+                                            <td>{job.title}</td>
+                                            <td>{job.location}</td>
+                                            <td>{job.modality}</td>
+                                            <td>{job.type}</td>
+                                            <td>
+                                                <span
+                                                    className={`status-indicator ${job.status === 'Ativo' ? 'active' : 'inactive'}`}
+                                                ></span>
+                                                {job.status === 'Ativo' ? 'Ativa' : 'Inativa'}
+                                            </td>
+                                            <td>{job.pcd ? 'Sim' : 'Não'}</td>
+                                            <td>{job.salary ? job.salary : 'Não informado'}</td>
+                                            <td>
+                                                <div className='btn-group'>
+                                                    <FontAwesomeIcon icon={faEye} className="icon-btn" onClick={() => openViewModal(job)} title="Visualizar detalhes" />
+                                                    <FontAwesomeIcon icon={faEdit} className="icon-btn" onClick={() => openModal(job)} title="Editar" />
+                                                    <FontAwesomeIcon icon={job.status === 'Ativo' ? faToggleOn : faToggleOff} className="icon-btn" onClick={() => handleToggleStatus(job)} title={job.status === 'Ativo' ? 'Desabilitar' : 'Habilitar'} />
+                                                    <FontAwesomeIcon icon={faTrash} className="icon-btn" onClick={() => handleConfirmDelete(job._id)} title="Excluir" />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
+                            <Pagination>
+                                <Pagination.Prev onClick={prevPage} disabled={currentPage === 1} />
+                                {Array.from({ length: Math.ceil(jobs.length / itemsPerPage) }, (_, i) => (
+                                    <Pagination.Item key={i + 1} active={i + 1 === currentPage} onClick={() => paginate(i + 1)}>
+                                        {i + 1}
+                                    </Pagination.Item>
+                                ))}
+                                <Pagination.Next onClick={nextPage} disabled={currentPage === Math.ceil(jobs.length / itemsPerPage)} />
+                            </Pagination>
+                        </>
+                    )}
                 </div>
             </div>
 
-            <Modal show={modalIsOpen} onHide={closeModal} centered>
+            <ModalVagas
+                show={modalIsOpen}
+                onHide={closeModal}
+                onSubmit={handleJobSubmit}
+                jobData={newJob}
+                isEditMode={isEditMode}
+                states={states}
+                cities={cities}
+                setSelectedState={setSelectedState}
+                setSelectedCity={setSelectedCity}
+                selectedState={selectedState}
+                selectedCity={selectedCity}
+            />
+
+            {/* Novo Modal para Visualização */}
+            <Modal show={viewModalIsOpen} onHide={closeViewModal} centered>
                 <Modal.Header closeButton>
-                    <Modal.Title>{isEditMode ? 'Editar Vaga' : 'Adicionar Vaga'}</Modal.Title>
+                    <Modal.Title>Detalhes da Vaga</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <Form onSubmit={handleFormSubmit}>
-                        <Row>
-                            <Col md={6}>
-                                <Form.Group className="form-group-custom">
-                                    <Form.Label className='fb'>Cargo</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        name="title"
-                                        value={newJob.title}
-                                        onChange={handleInputChange}
-                                        required
-                                    />
-                                </Form.Group>
-                            </Col>
-                            <Col md={6}>
-                                <Form.Group className="form-group-custom">
-                                    <Form.Label>Modelo</Form.Label>
-                                    <Form.Control
-                                        as="select"
-                                        name="modality"
-                                        value={newJob.modality}
-                                        onChange={handleInputChange}
-                                        required
-                                    >
-                                        <option value="Presencial">Presencial</option>
-                                        <option value="Híbrido">Híbrido</option>
-                                        <option value="Remoto">Remoto</option>
-                                    </Form.Control>
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col md={6}>
-                                <Form.Group className="form-group-custom">
-                                    <Form.Label>Localização</Form.Label>
-                                    <Form.Control
-                                        as="select"
-                                        value={selectedState}
-                                        onChange={(e) => setSelectedState(e.target.value)}
-                                        required
-                                        className="mb-3"
-                                    >
-                                        <option value="">Selecione o estado</option>
-                                        {states.map((state) => (
-                                            <option key={state.id} value={state.sigla}>
-                                                {state.nome}
-                                            </option>
-                                        ))}
-                                    </Form.Control>
-                                </Form.Group>
-                            </Col>
-                            <Col md={6}>
-                                <Form.Group className="form-group-custom">
-                                    <Form.Label>&nbsp;</Form.Label>
-                                    <Form.Control
-                                        as="select"
-                                        value={selectedCity}
-                                        onChange={(e) => setSelectedCity(e.target.value)}
-                                        required
-                                    >
-                                        <option value="">Selecione a cidade</option>
-                                        {cities.map((city) => (
-                                            <option key={city.id} value={city.nome}>
-                                                {city.nome}
-                                            </option>
-                                        ))}
-                                    </Form.Control>
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col md={6}>
-                                <Form.Group className="form-group-custom">
-                                    <Form.Label>Tipo</Form.Label>
-                                    <Form.Control
-                                        as="select"
-                                        name="type"
-                                        value={newJob.type}
-                                        onChange={handleInputChange}
-                                        required
-                                    >
-                                        <option value="Efetivo">Efetivo</option>
-                                        <option value="Aprendiz">Aprendiz</option>
-                                        <option value="Estágio">Estágio</option>
-                                        <option value="Pessoa Jurídica">Pessoa Jurídica</option>
-                                        <option value="Trainee">Trainee</option>
-                                        <option value="Temporário">Temporário</option>
-                                        <option value="Freelancer">Freelancer</option>
-                                        <option value="Terceiro">Terceiro</option>
-                                    </Form.Control>
-                                </Form.Group>
-                            </Col>
-                            <Col md={6}>
-                                <Form.Group className="form-group-custom">
-                                    <div className="d-flex justify-content-between align-items-center">
-                                        <Form.Label>Salário</Form.Label>
-                                        <Form.Check
-                                            type="switch"
-                                            id="salary-active-switch"
-                                            label=""
-                                            checked={newJob.salaryActive}
-                                            onChange={() => handleToggleChange('salaryActive')}
-                                            style={{ marginLeft: 'auto' }}
-                                        />
-                                    </div>
-                                    <Form.Control
-                                        type="text"
-                                        name="salary"
-                                        value={newJob.salary}
-                                        onChange={handleSalaryChange}
-                                        placeholder="R$ 0,00"
-                                        disabled={!newJob.salaryActive}
-                                    />
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col md={12}>
-                                <Form.Group className="form-group-custom">
-                                    <div className="d-flex justify-content-between align-items-center">
-                                        <Form.Label>Benefícios</Form.Label>
-                                        <Form.Check
-                                            type="switch"
-                                            id="offers-switch"
-                                            label=""
-                                            checked={newJob.offersActive}
-                                            onChange={() => handleToggleChange('offersActive')}
-                                            style={{ marginLeft: 'auto' }}
-                                        />
-                                    </div>
-                                    {newJob.offersActive && (
-                                        <div className="quill-transition">
-                                            <ReactQuill
-                                                value={newJob.offers}
-                                                onChange={(value) => handleQuillChange('offers', value)}
-                                            />
-                                        </div>
-                                    )}
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col md={12}>
-                                <Form.Group className="form-group-custom">
-                                    <div className="d-flex justify-content-between align-items-center">
-                                        <Form.Label>Descrição Completa</Form.Label>
-                                        <Form.Check
-                                            type="switch"
-                                            id="description-switch"
-                                            label=""
-                                            checked={newJob.descriptionActive}
-                                            onChange={() => handleToggleChange('descriptionActive')}
-                                            style={{ marginLeft: 'auto' }}
-                                        />
-                                    </div>
-                                    {newJob.descriptionActive && (
-                                        <div className="quill-transition">
-                                            <ReactQuill
-                                                value={newJob.description}
-                                                onChange={(value) => handleQuillChange('description', value)}
-                                            />
-                                        </div>
-                                    )}
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col md={12}>
-                                <Form.Group className="form-group-custom">
-                                    <div className="d-flex justify-content-between align-items-center">
-                                        <Form.Label>Responsabilidades e Atribuições</Form.Label>
-                                        <Form.Check
-                                            type="switch"
-                                            id="responsibilities-switch"
-                                            label=""
-                                            checked={newJob.responsibilitiesActive}
-                                            onChange={() => handleToggleChange('responsibilitiesActive')}
-                                            style={{ marginLeft: 'auto' }}
-                                        />
-                                    </div>
-                                    {newJob.responsibilitiesActive && (
-                                        <div className="quill-transition">
-                                            <ReactQuill
-                                                value={newJob.responsibilities}
-                                                onChange={(value) => handleQuillChange('responsibilities', value)}
-                                            />
-                                        </div>
-                                    )}
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col md={12}>
-                                <Form.Group className="form-group-custom">
-                                    <div className="d-flex justify-content-between align-items-center">
-                                        <Form.Label>Requisitos e Qualificações</Form.Label>
-                                        <Form.Check
-                                            type="switch"
-                                            id="qualifications-switch"
-                                            label=""
-                                            checked={newJob.qualificationsActive}
-                                            onChange={() => handleToggleChange('qualificationsActive')}
-                                            style={{ marginLeft: 'auto' }}
-                                        />
-                                    </div>
-                                    {newJob.qualificationsActive && (
-                                        <div className="quill-transition">
-                                            <ReactQuill
-                                                value={newJob.qualifications}
-                                                onChange={(value) => handleQuillChange('qualifications', value)}
-                                            />
-                                        </div>
-                                    )}
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col md={12}>
-                                <Form.Group className="form-group-custom">
-                                    <div className="d-flex justify-content-between align-items-center">
-                                        <Form.Label>Será um diferencial</Form.Label>
-                                        <Form.Check
-                                            type="switch"
-                                            id="requirements-switch"
-                                            label=""
-                                            checked={newJob.requirementsActive}
-                                            onChange={() => handleToggleChange('requirementsActive')}
-                                            style={{ marginLeft: 'auto' }}
-                                        />
-                                    </div>
-                                    {newJob.requirementsActive && (
-                                        <div className="quill-transition">
-                                            <ReactQuill
-                                                value={newJob.requirements}
-                                                onChange={(value) => handleQuillChange('requirements', value)}
-                                            />
-                                        </div>
-                                    )}
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col md={12}>
-                                <Form.Group className="form-group-custom">
-                                    <div className="d-flex justify-content-between align-items-center">
-                                        <Form.Label>Informações Adicionais</Form.Label>
-                                        <Form.Check
-                                            type="switch"
-                                            id="additional-info-switch"
-                                            label=""
-                                            checked={newJob.additionalInfoActive}
-                                            onChange={() => handleToggleChange('additionalInfoActive')}
-                                            style={{ marginLeft: 'auto' }}
-                                        />
-                                    </div>
-                                    {newJob.additionalInfoActive && (
-                                        <div className="quill-transition">
-                                            <ReactQuill
-                                                value={newJob.additionalInfo}
-                                                onChange={(value) => handleQuillChange('additionalInfo', value)}
-                                            />
-                                        </div>
-                                    )}
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col md={12} className="d-flex justify-content-between">
-                                <Form.Group className="form-group-custom">
-                                    <div className="d-flex justify-content-between">
-                                        <Form.Label className='mr-2'>Status</Form.Label>
-                                        <Form.Check
-                                            type="switch"
-                                            id="status-switch"
-                                            checked={newJob.status}
-                                            onChange={() => handleToggleChange('status')}
-                                        />
-                                    </div>
-                                </Form.Group>
-                                <Form.Group className="form-group-custom">
-                                    <div className="d-flex justify-content-between">
-                                        <Form.Label className='mr-2'>PCD</Form.Label>
-                                        <Form.Check
-                                            type="switch"
-                                            id="pcd-switch"
-                                            checked={newJob.pcd}
-                                            onChange={() => handleToggleChange('pcd')}
-                                        />
-                                    </div>
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        <Button type="submit" variant="primary" className="mr-2">
-                            {isEditMode ? 'Salvar' : 'Adicionar'}
-                        </Button>
-                        <Button variant="secondary" onClick={closeModal}>
-                            Cancelar
-                        </Button>
-                    </Form>
+                    {selectedJob && (
+                        <div>
+                            <p><strong>Cargo:</strong> {selectedJob.title}</p>
+                            <p><strong>Localidade:</strong> {selectedJob.location}</p>
+                            <p><strong>Modelo:</strong> {selectedJob.modality}</p>
+                            <p><strong>Tipo:</strong> {selectedJob.type}</p>
+                            <p><strong>Status:</strong> {selectedJob.status === 'Ativo' ? 'Ativa' : 'Inativa'}</p>
+                            <p><strong>PCD:</strong> {selectedJob.pcd === 'Sim' ? 'Sim' : 'Não'}</p>
+                            <p><strong>Salário:</strong> {selectedJob.salary ? selectedJob.salary : 'Não informado'}</p>
+                            <p><strong>Descrição:</strong> {removeHtmlTags(selectedJob.description)}</p>
+                            <p><strong>Responsabilidades:</strong> {removeHtmlTags(selectedJob.responsibilities)}</p>
+                            <p><strong>Qualificações:</strong> {removeHtmlTags(selectedJob.qualifications)}</p>
+                            <p><strong>Informações Adicionais:</strong> {removeHtmlTags(selectedJob.additionalInfo)}</p>
+                            <p><strong>Requisitos:</strong> {removeHtmlTags(selectedJob.requirements)}</p>
+                            <p><strong>Ofertas:</strong> {removeHtmlTags(selectedJob.offers)}</p>
+                        </div>
+                    )}
                 </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={closeViewModal}>
+                        Fechar
+                    </Button>
+                </Modal.Footer>
             </Modal>
         </>
     );
