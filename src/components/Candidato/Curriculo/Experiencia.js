@@ -1,10 +1,10 @@
+// Import the necessary functions and hooks
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
-const Experiencia = () => {
-    const [experiencias, setExperiencias] = useState([]);
+const Experiencia = ({ experiencias, setExperiencias }) => {
     const [showPopup, setShowPopup] = useState(false);
     const [isClosing, setIsClosing] = useState(false);
     const [newExperiencia, setNewExperiencia] = useState({
@@ -28,17 +28,18 @@ const Experiencia = () => {
         anos.push(i);
     }
 
+    const fetchExperiences = async () => {
+        try {
+            const response = await axios.get('http://localhost:5000/api/user/experiences', {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+            setExperiencias(Array.isArray(response.data) ? response.data : []);
+        } catch (error) {
+            console.error('Erro ao carregar experiências:', error);
+        }
+    };
+
     useEffect(() => {
-        const fetchExperiences = async () => {
-            try {
-                const response = await axios.get('http://localhost:5000/api/user/experiences', {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-                });
-                setExperiencias(Array.isArray(response.data) ? response.data : []);
-            } catch (error) {
-                console.error('Erro ao carregar experiências:', error);
-            }
-        };
         fetchExperiences();
     }, []);
 
@@ -47,10 +48,7 @@ const Experiencia = () => {
             await axios.post('http://localhost:5000/api/user/experiences', newExperiencia, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
-            const response = await axios.get('http://localhost:5000/api/user/experiences', {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
-            setExperiencias(Array.isArray(response.data) ? response.data : []);
+            fetchExperiences();
             closePopup();
             setNewExperiencia({
                 empresa: '',
@@ -89,11 +87,7 @@ const Experiencia = () => {
             await axios.put(`http://localhost:5000/api/user/experiences/${experiencia._id}`, experiencia, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
-            const response = await axios.get(`http://localhost:5000/api/user/experiences/${experiencia._id}`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
-            const updatedExperiencias = experiencias.map((exp, i) => (i === index ? response.data : exp));
-            setExperiencias(updatedExperiencias);
+            fetchExperiences();
         } catch (error) {
             console.error('Erro ao atualizar experiência:', error);
         }
@@ -123,10 +117,7 @@ const Experiencia = () => {
             await axios.delete(`http://localhost:5000/api/user/experiences/${experiencia._id}`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
-            const response = await axios.get('http://localhost:5000/api/user/experiences', {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
-            setExperiencias(Array.isArray(response.data) ? response.data : []);
+            fetchExperiences();
         } catch (error) {
             console.error('Erro ao remover experiência:', error);
         }

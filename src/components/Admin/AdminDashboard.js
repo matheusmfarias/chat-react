@@ -1,28 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button, Form, Table, Navbar, Nav, Container, Row, Col, InputGroup, Pagination } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faToggleOn, faToggleOff, faPlus, faSearch, faSortDown, faSortUp, faSignOutAlt, faEye, faFileExport, faFilter } from '@fortawesome/free-solid-svg-icons';
-import { CSVLink } from "react-csv";
+import { faEdit, faTrash, faToggleOn, faToggleOff, faPlus, faSearch, faSortDown, faSortUp, faSignOutAlt, faEye, faFilter } from '@fortawesome/free-solid-svg-icons';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import useFormattedCNPJ, { formatCNPJ } from '../../hooks/useFormattedCNPJ';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 import ModalComponent from './ModalComponent';
+import CurriculoTemplate from '../Candidato/Curriculo/CurriculoTemplate';
+import { createRoot } from 'react-dom/client'; // Importar createRoot do react-dom/client
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
     const [empresas, setEmpresas] = useState([]);
+    const [candidatos, setCandidatos] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [empresasPerPage] = useState(10);
+    const [itemsPerPage] = useState(10);
     const [showModal, setShowModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showDisableModal, setShowDisableModal] = useState(false);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
     const [showFilterModal, setShowFilterModal] = useState(false);
-    const [showExportModal, setShowExportModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [currentEmpresa, setCurrentEmpresa] = useState({ nome: '', cnpj: '', setor: '', email: '', senha: '', isDisabled: false });
     const [empresaToDelete, setEmpresaToDelete] = useState(null);
@@ -31,27 +30,55 @@ const AdminDashboard = () => {
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
-    const [sortColumn, setSortColumn] = useState(null);
+    const [sortColumn, setSortColumn] = useState('nome');
     const [sortDirection, setSortDirection] = useState('asc');
+    const [isModified, setIsModified] = useState(false);
+    const [isFilterModified, setIsFilterModified] = useState(false);
+    const [totalPages, setTotalPages] = useState(1);
+    const [activeTab, setActiveTab] = useState('empresas');
     const navigate = useNavigate();
 
-    useEffect(() => {
-        fetchEmpresas();
-    }, []);
-
-    const fetchEmpresas = async () => {
+    const fetchEmpresas = useCallback(async (page = 1, search = '', filter = '') => {
         setLoading(true);
         try {
             const response = await axios.get('http://localhost:5000/api/company', {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                params: { page, search, filterStatus: filter, limit: itemsPerPage, sortColumn, sortDirection }
             });
-            setEmpresas(response.data);
+            console.log("Dados recebidos:", response.data);
+            setEmpresas(response.data.companies);
+            setTotalPages(response.data.totalPages);
         } catch (error) {
             console.error('Erro ao buscar empresas:', error);
         } finally {
             setLoading(false);
         }
-    };
+    }, [itemsPerPage, sortColumn, sortDirection]);
+
+    const fetchCandidatos = useCallback(async (page = 1, search = '') => {
+        setLoading(true);
+        try {
+            const response = await axios.get('http://localhost:5000/api/user/candidatos', {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                params: { page, search, limit: itemsPerPage }
+            });
+            console.log("Dados recebidos:", response.data);
+            setCandidatos(response.data.candidates);
+            setTotalPages(response.data.totalPages);
+        } catch (error) {
+            console.error('Erro ao buscar candidatos:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, [itemsPerPage]);
+
+    useEffect(() => {
+        if (activeTab === 'empresas') {
+            fetchEmpresas(currentPage, searchTerm);
+        } else {
+            fetchCandidatos(currentPage, searchTerm);
+        }
+    }, [currentPage, searchTerm, sortColumn, sortDirection, activeTab, fetchEmpresas, fetchCandidatos]);
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -61,13 +88,15 @@ const AdminDashboard = () => {
         } else {
             setCurrentEmpresa({ ...currentEmpresa, [name]: type === 'checkbox' ? checked : value });
         }
+        setIsModified(true);
     };
 
     const handleShowModal = (empresa = { nome: '', cnpj: '', setor: '', email: '', senha: '', isDisabled: false }) => {
-        setCurrentEmpresa(empresa);
+        setCurrentEmpresa({ ...empresa });
         setFormattedCnpj(empresa.cnpj);
         setEditMode(!!empresa._id);
         setShowModal(true);
+        setIsModified(false);
     };
 
     const handleCloseModal = () => {
@@ -113,41 +142,78 @@ const AdminDashboard = () => {
 
     const handleCloseFilterModal = () => {
         setShowFilterModal(false);
+        setIsFilterModified(false);
     };
 
-    const handleShowExportModal = () => {
-        setShowExportModal(true);
-    };
-
-    const handleCloseExportModal = () => {
-        setShowExportModal(false);
+    const handleFilterChange = (e) => {
+        setFilterStatus(e.target.value);
+        setIsFilterModified(true);
     };
 
     const handleSaveEmpresa = async () => {
         setLoading(true);
         try {
             const empresaData = {
-                ...currentEmpresa,
-                cnpj: formattedCnpj.replace(/\D/g, '')
+                nome: currentEmpresa.nome,
+                cnpj: formattedCnpj.replace(/[^\d]+/g, ''), // Remove pontuações antes de enviar
+                setor: currentEmpresa.setor,
+                email: currentEmpresa.email,
+                isDisabled: currentEmpresa.isDisabled
             };
-            if (editMode) {
-                await axios.put(`http://localhost:5000/api/company/${empresaData._id}`, empresaData, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-                });
-                notify('Empresa atualizada com sucesso!', 'success');
-            } else {
-                await axios.post('http://localhost:5000/api/company/add', empresaData, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-                });
-                notify('Empresa adicionada com sucesso!', 'success');
+
+            if (currentEmpresa.senha) {
+                empresaData.senha = currentEmpresa.senha;
             }
-            fetchEmpresas();
+
+            if (!empresaData.nome || !empresaData.cnpj || !empresaData.setor || !empresaData.email) {
+                notify('Por favor, preencha todos os campos obrigatórios!', 'error');
+                setLoading(false);
+                return;
+            }
+
+            if (empresaData.nome.length > 100) {
+                notify('O nome deve ter no máximo 100 caracteres!', 'error');
+                setLoading(false);
+                return;
+            }
+
+            if (empresaData.setor.length > 50) {
+                notify('O setor deve ter no máximo 50 caracteres!', 'error');
+                setLoading(false);
+                return;
+            }
+
+            if (empresaData.email.length > 50) {
+                notify('O email deve ter no máximo 50 caracteres!', 'error');
+                setLoading(false);
+                return;
+            }
+
+            console.log("Enviando dados da empresa:", empresaData);
+            let response;
+            if (editMode) {
+                response = await axios.put(`http://localhost:5000/api/company/${currentEmpresa._id}`, empresaData, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                });
+            } else {
+                response = await axios.post('http://localhost:5000/api/company/add', empresaData, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                });
+            }
+            console.log("Resposta do servidor:", response);
+            notify(editMode ? 'Empresa atualizada com sucesso!' : 'Empresa adicionada com sucesso!', 'success');
+            fetchEmpresas(currentPage, searchTerm, filterStatus);
             handleCloseModal();
         } catch (error) {
             console.error('Erro ao salvar empresa:', error);
-            notify('Erro ao salvar empresa!', 'error');
+            if (error.response && error.response.data && error.response.data.error) {
+                notify(error.response.data.error, 'error');
+            } else {
+                notify('Erro ao salvar empresa!', 'error');
+            }
         } finally {
             setLoading(false);
+            setIsModified(false);
         }
     };
 
@@ -157,7 +223,15 @@ const AdminDashboard = () => {
             await axios.delete(`http://localhost:5000/api/company/${empresaToDelete._id}`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
-            fetchEmpresas();
+
+            const updatedEmpresas = empresas.filter(empresa => empresa._id !== empresaToDelete._id);
+
+            if (updatedEmpresas.length === 0 && currentPage > 1) {
+                setCurrentPage(currentPage - 1);
+            } else {
+                fetchEmpresas(currentPage, searchTerm, filterStatus);
+            }
+
             handleCloseDeleteModal();
             notify('Empresa deletada com sucesso!', 'success');
         } catch (error) {
@@ -175,7 +249,7 @@ const AdminDashboard = () => {
             await axios.put(`http://localhost:5000/api/company/${empresaToDisable._id}`, updatedEmpresa, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
-            fetchEmpresas();
+            fetchEmpresas(currentPage, searchTerm, filterStatus);
             handleCloseDisableModal();
             notify(`Empresa ${updatedEmpresa.isDisabled ? 'desabilitada' : 'habilitada'} com sucesso!`, 'success');
         } catch (error) {
@@ -200,29 +274,8 @@ const AdminDashboard = () => {
 
     const applyFilter = () => {
         handleCloseFilterModal();
+        fetchEmpresas(currentPage, searchTerm, filterStatus);
     };
-
-    const sortedEmpresas = [...empresas].sort((a, b) => {
-        if (!sortColumn) return 0;
-        if (sortDirection === 'asc') {
-            return a[sortColumn] > b[sortColumn] ? 1 : -1;
-        } else {
-            return a[sortColumn] < b[sortColumn] ? 1 : -1;
-        }
-    });
-
-    const filteredEmpresas = sortedEmpresas.filter(empresa =>
-        (empresa.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        empresa.cnpj.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        empresa.setor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        empresa.email.toLowerCase().includes(searchTerm.toLowerCase())) &&
-        (filterStatus === '' || (filterStatus === 'active' && !empresa.isDisabled) || (filterStatus === 'inactive' && empresa.isDisabled))
-    );
-
-    // Paginação
-    const indexOfLastEmpresa = currentPage * empresasPerPage;
-    const indexOfFirstEmpresa = indexOfLastEmpresa - empresasPerPage;
-    const currentEmpresas = filteredEmpresas.slice(indexOfFirstEmpresa, indexOfLastEmpresa);
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -239,24 +292,231 @@ const AdminDashboard = () => {
         });
     };
 
-    const handleExportPDF = () => {
-        const doc = new jsPDF();
-        doc.autoTable({
-            head: [['Nome', 'CNPJ', 'Setor', 'Email', 'Status']],
-            body: empresas.map(empresa => [empresa.nome, formatCNPJ(empresa.cnpj), empresa.setor, empresa.email, empresa.isDisabled ? 'Inativa' : 'Ativa']),
-        });
-        doc.save('empresas.pdf');
-        handleCloseExportModal();
-        notify('Empresas exportadas em PDF!', 'success');
+    const renderPagination = () => {
+        return (
+            <Pagination>
+                <Pagination.Prev onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} />
+                {[...Array(totalPages).keys()].map(number => (
+                    <Pagination.Item
+                        key={number + 1}
+                        onClick={() => paginate(number + 1)}
+                        active={number + 1 === currentPage}
+                    >
+                        {number + 1}
+                    </Pagination.Item>
+                ))}
+                <Pagination.Next onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} />
+            </Pagination>
+        );
     };
+
+    const renderEmpresasTable = () => (
+        <>
+            <Row className="mb-3 align-items-center">
+                <h2 className='display-6'>Empresas</h2>
+                <Col xs={12} md={4} className="d-flex justify-content-start mb-2 mb-md-0">
+                    <Button variant="primary" className="me-2 flex-grow-1" onClick={() => handleShowModal()}>
+                        <FontAwesomeIcon icon={faPlus} /> Adicionar
+                    </Button>
+                    <Button variant="secondary" className="me-2 flex-grow-1" onClick={handleShowFilterModal}>
+                        <FontAwesomeIcon icon={faFilter} /> Filtros
+                    </Button>
+                </Col>
+                <Col xs={12} md={8} className="d-flex justify-content-end">
+                    <InputGroup style={{ maxWidth: '500px' }}>
+                        <Form.Control
+                            type="text"
+                            placeholder="Pesquisar"
+                            aria-label="Pesquisar"
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                        />
+                        <Button variant="outline-secondary" style={{ maxWidth: '100px' }}>
+                            <FontAwesomeIcon icon={faSearch} />
+                        </Button>
+                    </InputGroup>
+                </Col>
+            </Row>
+            <div className="table-responsive position-relative">
+                {loading && (
+                    <div className="table-loader-overlay">
+                        <div className="loader"></div>
+                    </div>
+                )}
+                <Table striped bordered hover className="table">
+                    <thead>
+                        <tr>
+                            <th onClick={() => handleSort('nome')}>
+                                Nome
+                                {sortColumn === 'nome' && (
+                                    <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
+                                )}
+                            </th>
+                            <th onClick={() => handleSort('cnpj')}>
+                                CNPJ
+                                {sortColumn === 'cnpj' && (
+                                    <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
+                                )}
+                            </th>
+                            <th onClick={() => handleSort('setor')}>
+                                Setor
+                                {sortColumn === 'setor' && (
+                                    <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
+                                )}
+                            </th>
+                            <th onClick={() => handleSort('email')}>
+                                Email
+                                {sortColumn === 'email' && (
+                                    <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
+                                )}
+                            </th>
+                            <th onClick={() => handleSort('isDisabled')}>
+                                Status
+                                {sortColumn === 'isDisabled' && (
+                                    <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
+                                )}
+                            </th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {empresas.map((empresa) => (
+                            <tr key={empresa._id}>
+                                <td>{empresa.nome}</td>
+                                <td>{formatCNPJ(empresa.cnpj)}</td>
+                                <td>{empresa.setor}</td>
+                                <td>{empresa.email}</td>
+                                <td>{empresa.isDisabled ? 'Inativa' : 'Ativa'}</td>
+                                <td>
+                                    <div className="btn-group">
+                                        <FontAwesomeIcon icon={faEye} className="icon-btn" onClick={() => handleShowDetailsModal(empresa)} title="Visualizar detalhes" />
+                                        <FontAwesomeIcon icon={faEdit} className="icon-btn" onClick={() => handleShowModal(empresa)} title="Editar" />
+                                        <FontAwesomeIcon icon={empresa.isDisabled ? faToggleOff : faToggleOn} className="icon-btn" onClick={() => handleShowDisableModal(empresa)} title={empresa.isDisabled ? 'Habilitar' : 'Desabilitar'} />
+                                        <FontAwesomeIcon icon={faTrash} className="icon-btn" onClick={() => handleShowDeleteModal(empresa)} title="Excluir" />
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </Table>
+            </div>
+            {renderPagination()}
+        </>
+    );
+
+    const handleViewCurriculo = (candidatoId) => {
+        const newWindow = window.open('', '', 'width=800,height=600');
+        newWindow.document.write('<html><head><title>Currículo</title></head><body><div id="curriculo-template-root"></div></body></html>');
+
+        // Injetar link CSS do Bootstrap na nova janela
+        const bootstrapLink = newWindow.document.createElement('link');
+        bootstrapLink.rel = 'stylesheet';
+        bootstrapLink.href = 'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css';
+        newWindow.document.head.appendChild(bootstrapLink);
+
+        // Injetar link CSS personalizado na nova janela
+        const customLink = newWindow.document.createElement('link');
+        customLink.rel = 'stylesheet';
+        customLink.type = 'text/css';
+        customLink.href = `${window.location.origin}/CurriculoTemplate.css`;
+        newWindow.document.head.appendChild(customLink);
+
+        newWindow.document.close();
+
+        axios.get(`http://localhost:5000/api/user/candidato/${candidatoId}`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        }).then(response => {
+            const user = response.data;
+            const informacoes = {
+                nome: user.nome,
+                sobrenome: user.sobrenome,
+                dataNascimento: user.nascimento ? user.nascimento.split('T')[0] : '',
+                email: user.email,
+                telefoneContato: user.additionalInfo?.contactPhone || '',
+                telefoneRecado: user.additionalInfo?.backupPhone || '',
+                cnh: user.additionalInfo?.cnh || 'Não tenho',
+                tipoCnh: user.additionalInfo?.cnhTypes || [],
+                fotoPerfil: `http://localhost:5000${user.profilePicture}` || '',
+                habilidadesProfissionais: user.habilidadesProfissionais || [],
+                habilidadesComportamentais: user.habilidadesComportamentais || [],
+                cursos: user.cursos || [],
+                objetivos: user.objetivos || []
+            };
+            const experiencias = user.experiences || [];
+            const formacoes = user.formacao || [];
+
+            const root = createRoot(newWindow.document.getElementById('curriculo-template-root'));
+            root.render(
+                <CurriculoTemplate
+                    experiencias={experiencias}
+                    formacoes={formacoes}
+                    informacoes={informacoes}
+                />
+            );
+        }).catch(error => {
+            console.error('Erro ao buscar currículo do candidato:', error);
+            newWindow.close();
+        });
+    };
+
+    const renderCandidatosTable = () => (
+        <>
+            <Row className="mb-3 align-items-center">
+                <h2 className='display-6'>Candidatos</h2>
+                <Col xs={12} md={12} className="d-flex justify-content-end">
+                    <InputGroup style={{ maxWidth: '500px' }}>
+                        <Form.Control
+                            type="text"
+                            placeholder="Pesquisar"
+                            aria-label="Pesquisar"
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                        />
+                        <Button variant="outline-secondary" style={{ maxWidth: '100px' }}>
+                            <FontAwesomeIcon icon={faSearch} />
+                        </Button>
+                    </InputGroup>
+                </Col>
+            </Row>
+            <div className="table-responsive position-relative">
+                {loading && (
+                    <div className="table-loader-overlay">
+                        <div className="loader"></div>
+                    </div>
+                )}
+                <Table striped bordered hover className="table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Sobrenome</th>
+                            <th>Email</th>
+                            <th>Telefone</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {candidatos.map((candidato) => (
+                            <tr key={candidato._id}>
+                                <td>{candidato.nome}</td>
+                                <td>{candidato.sobrenome}</td>
+                                <td>{candidato.email}</td>
+                                <td>{candidato.additionalInfo?.contactPhone || ''}</td>
+                                <td>
+                                    <Button variant="primary" onClick={() => handleViewCurriculo(candidato._id)}>
+                                        <FontAwesomeIcon icon={faEye} /> Visualizar Currículo
+                                    </Button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </Table>
+            </div>
+            {renderPagination()}
+        </>
+    );
 
     return (
         <div>
-            {loading && (
-                <div className="loader-overlay">
-                    <div className="loader"></div>
-                </div>
-            )}
             <Navbar bg="dark" variant="dark" expand="lg">
                 <Container>
                     <Navbar.Brand href="#">Painel administrativo</Navbar.Brand>
@@ -271,101 +531,17 @@ const AdminDashboard = () => {
                 </Container>
             </Navbar>
             <Container className="mt-3">
-                <Row className="mb-3 align-items-center">
-                    <h2 className='display-6'>Empresas</h2>
-                    <Col xs={12} md={4} className="d-flex justify-content-start mb-2 mb-md-0">
-                        <Button variant="primary" className="me-2 flex-grow-1" onClick={() => handleShowModal()}>
-                            <FontAwesomeIcon icon={faPlus} /> Adicionar
+                <Row className="mb-3">
+                    <Col>
+                        <Button variant={activeTab === 'empresas' ? 'primary' : 'secondary'} onClick={() => setActiveTab('empresas')} className="me-2">
+                            Empresas
                         </Button>
-                        <Button variant="secondary" className="me-2 flex-grow-1" onClick={handleShowFilterModal}>
-                            <FontAwesomeIcon icon={faFilter} /> Filtros
+                        <Button variant={activeTab === 'candidatos' ? 'primary' : 'secondary'} onClick={() => setActiveTab('candidatos')}>
+                            Candidatos
                         </Button>
-                        <Button variant="secondary" className="me-2 flex-grow-1" onClick={handleShowExportModal}>
-                            <FontAwesomeIcon icon={faFileExport} /> Exportar
-                        </Button>
-                    </Col>
-                    <Col xs={12} md={8} className="d-flex justify-content-end">
-                        <InputGroup style={{ maxWidth: '500px' }}>
-                            <Form.Control
-                                type="text"
-                                placeholder="Pesquisar"
-                                aria-label="Pesquisar"
-                                value={searchTerm}
-                                onChange={e => setSearchTerm(e.target.value)}
-                            />
-                            <Button variant="outline-secondary" style={{ maxWidth: '100px' }}>
-                                <FontAwesomeIcon icon={faSearch} />
-                            </Button>
-                        </InputGroup>
                     </Col>
                 </Row>
-                <div className="table-responsive">
-                    <Table striped bordered hover className="table">
-                        <thead>
-                            <tr>
-                                <th onClick={() => handleSort('nome')}>
-                                    Nome
-                                    {sortColumn === 'nome' && (
-                                        <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
-                                    )}
-                                </th>
-                                <th onClick={() => handleSort('cnpj')}>
-                                    CNPJ
-                                    {sortColumn === 'cnpj' && (
-                                        <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
-                                    )}
-                                </th>
-                                <th onClick={() => handleSort('setor')}>
-                                    Setor
-                                    {sortColumn === 'setor' && (
-                                        <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
-                                    )}
-                                </th>
-                                <th onClick={() => handleSort('email')}>
-                                    Email
-                                    {sortColumn === 'email' && (
-                                        <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
-                                    )}
-                                </th>
-                                <th onClick={() => handleSort('isDisabled')}>
-                                    Status
-                                    {sortColumn === 'isDisabled' && (
-                                        <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
-                                    )}
-                                </th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {currentEmpresas.map((empresa) => (
-                                <tr key={empresa._id}>
-                                    <td>{empresa.nome}</td>
-                                    <td>{formatCNPJ(empresa.cnpj)}</td>
-                                    <td>{empresa.setor}</td>
-                                    <td>{empresa.email}</td>
-                                    <td>{empresa.isDisabled ? 'Inativa' : 'Ativa'}</td>
-                                    <td>
-                                        <div className="btn-group">
-                                            <FontAwesomeIcon icon={faEye} className="icon-btn" onClick={() => handleShowDetailsModal(empresa)} title="Visualizar detalhes" />
-                                            <FontAwesomeIcon icon={faEdit} className="icon-btn" onClick={() => handleShowModal(empresa)} title="Editar" />
-                                            <FontAwesomeIcon icon={empresa.isDisabled ? faToggleOff : faToggleOn} className="icon-btn" onClick={() => handleShowDisableModal(empresa)} title={empresa.isDisabled ? 'Habilitar' : 'Desabilitar'} />
-                                            <FontAwesomeIcon icon={faTrash} className="icon-btn" onClick={() => handleShowDeleteModal(empresa)} title="Excluir" />
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                </div>
-                <Pagination>
-                    <Pagination.Prev onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} />
-                    {[...Array(Math.ceil(filteredEmpresas.length / empresasPerPage)).keys()].map(number => (
-                        <Pagination.Item key={number + 1} onClick={() => paginate(number + 1)} active={number + 1 === currentPage}>
-                            {number + 1}
-                        </Pagination.Item>
-                    ))}
-                    <Pagination.Next onClick={() => paginate(currentPage + 1)} disabled={currentPage === Math.ceil(filteredEmpresas.length / empresasPerPage)} />
-                </Pagination>
+                {activeTab === 'empresas' ? renderEmpresasTable() : renderCandidatosTable()}
             </Container>
 
             <ModalComponent
@@ -422,7 +598,6 @@ const AdminDashboard = () => {
                                 name="senha"
                                 value={currentEmpresa.senha}
                                 onChange={handleInputChange}
-                                required
                             />
                         </Form.Group>
                         <Form.Group className='campos-empresa'>
@@ -441,7 +616,7 @@ const AdminDashboard = () => {
                         <Button variant="secondary" onClick={handleCloseModal}>
                             Cancelar
                         </Button>
-                        <Button variant="primary" onClick={handleSaveEmpresa}>
+                        <Button variant="primary" onClick={handleSaveEmpresa} disabled={!isModified}>
                             {editMode ? 'Salvar' : 'Adicionar'}
                         </Button>
                     </>
@@ -510,7 +685,7 @@ const AdminDashboard = () => {
                     <Form>
                         <Form.Group>
                             <Form.Label>Status</Form.Label>
-                            <Form.Control as="select" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+                            <Form.Control as="select" value={filterStatus} onChange={handleFilterChange}>
                                 <option value="">Todos</option>
                                 <option value="active">Ativo</option>
                                 <option value="inactive">Inativo</option>
@@ -523,33 +698,10 @@ const AdminDashboard = () => {
                         <Button variant="secondary" onClick={handleCloseFilterModal}>
                             Cancelar
                         </Button>
-                        <Button variant="primary" onClick={applyFilter}>
+                        <Button variant="primary" onClick={applyFilter} disabled={!isFilterModified}>
                             Aplicar
                         </Button>
                     </>
-                }
-            />
-
-            <ModalComponent
-                show={showExportModal}
-                handleClose={handleCloseExportModal}
-                title="Exportar Dados"
-                body={
-                    <>
-                        <Button variant="secondary" className="me-2">
-                            <CSVLink data={empresas} filename={"empresas.csv"} className="text-white text-decoration-none">
-                                Exportar como CSV
-                            </CSVLink>
-                        </Button>
-                        <Button variant="secondary" onClick={handleExportPDF}>
-                            Exportar como PDF
-                        </Button>
-                    </>
-                }
-                footer={
-                    <Button variant="secondary" onClick={handleCloseExportModal}>
-                        Fechar
-                    </Button>
                 }
             />
 

@@ -3,8 +3,7 @@ import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
-const Formacao = () => {
-    const [formacao, setFormacao] = useState([]);
+const Formacao = ({ formacoes, setFormacoes }) => {
     const [showPopup, setShowPopup] = useState(false);
     const [isClosing, setIsClosing] = useState(false);
     const [newFormacao, setNewFormacao] = useState({
@@ -27,17 +26,18 @@ const Formacao = () => {
         'Tecnólogo', 'Graduação', 'Pós-graduação', 'Mestrado', 'Doutorado'
     ];
 
+    const fetchFormacao = async () => {
+        try {
+            const response = await axios.get('http://localhost:5000/api/user/formacao', {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+            setFormacoes(Array.isArray(response.data) ? response.data : []);
+        } catch (error) {
+            console.error('Erro ao carregar formações:', error);
+        }
+    };
+
     useEffect(() => {
-        const fetchFormacao = async () => {
-            try {
-                const response = await axios.get('http://localhost:5000/api/user/formacao', {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-                });
-                setFormacao(Array.isArray(response.data) ? response.data : []);
-            } catch (error) {
-                console.error('Erro ao carregar formações:', error);
-            }
-        };
         fetchFormacao();
     }, []);
 
@@ -46,10 +46,7 @@ const Formacao = () => {
             await axios.post('http://localhost:5000/api/user/formacao', newFormacao, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
-            const response = await axios.get('http://localhost:5000/api/user/formacao', {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
-            setFormacao(Array.isArray(response.data) ? response.data : []);
+            fetchFormacao();
             closePopup();
             setNewFormacao({
                 escolaridade: '',
@@ -70,26 +67,22 @@ const Formacao = () => {
 
     const handleEditChange = (index, e) => {
         const { name, value, type, checked } = e.target;
-        const updatedFormacao = formacao.map((exp, i) => {
+        const updatedFormacao = formacoes.map((exp, i) => {
             if (i === index) {
                 return { ...exp, [name]: type === 'checkbox' ? checked : value || '', edited: true };
             }
             return exp;
         });
-        setFormacao(updatedFormacao);
+        setFormacoes(updatedFormacao);
     };
 
     const handleSaveEdit = async (index) => {
-        const currentFormacao = formacao[index];
+        const currentFormacao = formacoes[index];
         try {
             await axios.put(`http://localhost:5000/api/user/formacao/${currentFormacao._id}`, currentFormacao, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
-            const response = await axios.get(`http://localhost:5000/api/user/formacao/${currentFormacao._id}`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
-            const updatedFormacao = formacao.map((exp, i) => (i === index ? response.data : exp));
-            setFormacao(updatedFormacao);
+            fetchFormacao();
         } catch (error) {
             console.error('Erro ao atualizar formação:', error);
         }
@@ -104,25 +97,22 @@ const Formacao = () => {
     };
 
     const toggleExpand = (index) => {
-        const updatedFormacao = formacao.map((exp, i) => {
+        const updatedFormacao = formacoes.map((exp, i) => {
             if (i === index) {
                 return { ...exp, expanded: !exp.expanded };
             }
             return exp;
         });
-        setFormacao(updatedFormacao);
+        setFormacoes(updatedFormacao);
     };
 
     const handleDeleteFormacao = async (index) => {
-        const currentFormacao = formacao[index];
+        const currentFormacao = formacoes[index];
         try {
             await axios.delete(`http://localhost:5000/api/user/formacao/${currentFormacao._id}`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
-            const response = await axios.get('http://localhost:5000/api/user/formacao', {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
-            setFormacao(Array.isArray(response.data) ? response.data : []);
+            fetchFormacao();
         } catch (error) {
             console.error('Erro ao remover formação:', error);
         }
@@ -131,10 +121,10 @@ const Formacao = () => {
     return (
         <>
             <div className='form-columns-container'>
-                {formacao.length === 0 ? (
+                {formacoes.length === 0 ? (
                     <p>Nenhuma formação informada. Clique em "Adicionar" para cadastrar.</p>
                 ) : (
-                    formacao.map((exp, index) => (
+                    formacoes.map((exp, index) => (
                         <div key={index} className={`experience-card ${exp.expanded ? 'expanded' : ''}`}>
                             <div className="card-header" onClick={() => toggleExpand(index)}>
                                 <div className="header-left">

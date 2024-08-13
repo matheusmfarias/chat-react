@@ -75,7 +75,7 @@ const LoginEmpresa = () => {
                     <button type="submit" className="btn btn-primary btn-entrar">
                         Entrar
                     </button>
-                    <p>Não possui cadastro? <a href='/cadastro'>Cadastrar</a></p>
+                    <p>Não possui cadastro? <a href='https://web.whatsapp.com/send?phone=5555992128613' target="_blank" rel="noreferrer">Solicitar</a></p>
                 </form>
             </div>
         </div>

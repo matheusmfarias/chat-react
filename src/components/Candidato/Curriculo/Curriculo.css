@@ -168,7 +168,8 @@
     color: #c0392b;
 }
 
-.add-experience-btn {
+.add-experience-btn,
+.btn-visualizar-curriculo {
     justify-content: center;
     background-color: #1F5291;
     color: white;
@@ -180,7 +181,8 @@
     width: auto;
 }
 
-.add-experience-btn:hover {
+.add-experience-btn:hover,
+.btn-visualizar-curriculo:hover {
     background-color: #286abb;
 }
 

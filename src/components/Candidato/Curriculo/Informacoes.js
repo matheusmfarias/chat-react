@@ -79,7 +79,7 @@ const Informacoes = () => {
     return (
         <div className="informacoes-container">
             <InformacaoCard
-                title="Cursos/Qualificações"
+                title="Cursos e qualificações"
                 inputName="curso"
                 inputValue={inputValues.curso}
                 handleInputChange={handleInputChange}
@@ -89,7 +89,7 @@ const Informacoes = () => {
                 handleRemoveTag={(value) => handleRemoveTag('cursos', value)}
             />
             <InformacaoCard
-                title="Habilidades Profissionais"
+                title="Habilidades profissionais"
                 inputName="habilidadeProfissional"
                 inputValue={inputValues.habilidadeProfissional}
                 handleInputChange={handleInputChange}
@@ -99,7 +99,7 @@ const Informacoes = () => {
                 handleRemoveTag={(value) => handleRemoveTag('habilidadesProfissionais', value)}
             />
             <InformacaoCard
-                title="Habilidades Comportamentais"
+                title="Habilidades comportamentais"
                 inputName="habilidadeComportamental"
                 inputValue={inputValues.habilidadeComportamental}
                 handleInputChange={handleInputChange}
