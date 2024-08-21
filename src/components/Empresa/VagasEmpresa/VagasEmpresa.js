@@ -14,10 +14,12 @@ const VagasEmpresa = () => {
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [viewModalIsOpen, setViewModalIsOpen] = useState(false); // Novo modal para visualização
     const [selectedJob, setSelectedJob] = useState(null); // Armazena a vaga selecionada para visualização
-    const [selectedState, setSelectedState] = useState('');
-    const [selectedCity, setSelectedCity] = useState('');
     const [states, setStates] = useState([]);
     const [cities, setCities] = useState([]);
+    const [selectedStateFilter, setSelectedStateFilter] = useState('');
+    const [selectedCityFilter, setSelectedCityFilter] = useState('');
+    const [selectedStateModal, setSelectedStateModal] = useState('');
+    const [selectedCityModal, setSelectedCityModal] = useState('');
     const [newJob, setNewJob] = useState({
         title: '',
         location: '',
@@ -63,7 +65,7 @@ const VagasEmpresa = () => {
         if (filters.type) params.append('type', filters.type);
         if (filters.status) params.append('status', filters.status);
         if (filters.pcd) params.append('pcd', filters.pcd);
-        if (selectedState) params.append('location', `${selectedCity}, ${selectedState}`);
+        if (selectedStateFilter) params.append('location', `${selectedCityFilter}, ${selectedStateFilter}`);
 
         try {
             const token = localStorage.getItem('token');
@@ -76,11 +78,11 @@ const VagasEmpresa = () => {
         } catch (error) {
             console.error('Erro ao buscar vagas:', error);
         }
-    }, [searchTerm, filters, selectedCity, selectedState]);
+    }, [searchTerm, filters, selectedCityFilter, selectedStateFilter]);
 
     useEffect(() => {
         handleFilterSearch();
-    }, [filters, selectedState, selectedCity, handleFilterSearch]);
+    }, [filters, selectedStateFilter, selectedCityFilter, handleFilterSearch]);
 
     useEffect(() => {
         const fetchJobs = async () => {
@@ -117,10 +119,10 @@ const VagasEmpresa = () => {
     }, []);
 
     useEffect(() => {
-        if (selectedState) {
+        if (selectedStateFilter) {
             const fetchCities = async () => {
                 try {
-                    const citiesResponse = await axios.get(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedState}/municipios`);
+                    const citiesResponse = await axios.get(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedStateFilter}/municipios`);
                     setCities(citiesResponse.data);
                 } catch (error) {
                     console.error('Error fetching cities:', error);
@@ -132,7 +134,25 @@ const VagasEmpresa = () => {
         } else {
             setCities([]);
         }
-    }, [selectedState]);
+    }, [selectedStateFilter]);
+
+    useEffect(() => {
+        if (selectedStateModal) {
+            const fetchCities = async () => {
+                try {
+                    const citiesResponse = await axios.get(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedStateModal}/municipios`);
+                    setCities(citiesResponse.data);
+                } catch (error) {
+                    console.error('Error fetching cities:', error);
+                    setError('Erro ao buscar cidades. Tente novamente mais tarde.');
+                }
+            };
+
+            fetchCities();
+        } else {
+            setCities([]);
+        }
+    }, [selectedStateModal]);
 
     function renderHtmlOrFallback(htmlContent) {
         if (htmlContent && htmlContent.trim() !== "") {
@@ -142,17 +162,11 @@ const VagasEmpresa = () => {
         }
     }
 
-    
-
-    useEffect(() => {
-        handleFilterSearch();
-    }, [filters, selectedState, selectedCity, handleFilterSearch]);
-
     const openModal = (job = null) => {
         if (job) {
             const [city, state] = job.location.split(', ');
-            setSelectedState(state);
-            setSelectedCity(city);
+            setSelectedStateModal(state);
+            setSelectedCityModal(city);
             setNewJob({
                 ...job,
                 status: job.status === 'Ativo',
@@ -191,14 +205,13 @@ const VagasEmpresa = () => {
                 requirementsActive: false,
                 offersActive: false
             });
-            setSelectedState('');
-            setSelectedCity('');
+            setSelectedStateModal('');
+            setSelectedCityModal('');
             setIsEditMode(false);
             setEditJobId(null);
         }
         setModalIsOpen(true);
     };
-
 
     const closeModal = () => {
         setModalIsOpen(false);
@@ -217,7 +230,7 @@ const VagasEmpresa = () => {
         const token = localStorage.getItem('token');
         if (token) {
             try {
-                jobData.location = `${selectedCity}, ${selectedState}`;
+                jobData.location = `${selectedCityModal}, ${selectedStateModal}`;
                 if (isEditMode) {
                     await axios.put(`http://localhost:5000/api/jobs/${editJobId}`, jobData, {
                         headers: {
@@ -357,8 +370,8 @@ const VagasEmpresa = () => {
                                 <Col xs={12} md={4}>
                                     <Form.Control
                                         as="select"
-                                        value={selectedState}
-                                        onChange={(e) => setSelectedState(e.target.value)}
+                                        value={selectedStateFilter}
+                                        onChange={(e) => setSelectedStateFilter(e.target.value)}
                                     >
                                         <option value="">Selecione o estado</option>
                                         {states.map((state) => (
@@ -371,8 +384,8 @@ const VagasEmpresa = () => {
                                 <Col xs={12} md={4}>
                                     <Form.Control
                                         as="select"
-                                        value={selectedCity}
-                                        onChange={(e) => setSelectedCity(e.target.value)}
+                                        value={selectedCityFilter}
+                                        onChange={(e) => setSelectedCityFilter(e.target.value)}
                                     >
                                         <option value="">Selecione a cidade</option>
                                         {cities.map((city) => (
@@ -507,10 +520,10 @@ const VagasEmpresa = () => {
                 isEditMode={isEditMode}
                 states={states}
                 cities={cities}
-                setSelectedState={setSelectedState}
-                setSelectedCity={setSelectedCity}
-                selectedState={selectedState}
-                selectedCity={selectedCity}
+                setSelectedState={setSelectedStateModal}
+                setSelectedCity={setSelectedCityModal}
+                selectedState={selectedStateModal}
+                selectedCity={selectedCityModal}
             />
 
             {/* Novo Modal para Visualização */}
