@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
 import { Table, Row, Col, Button, InputGroup, Form, Alert, Pagination, Modal } from 'react-bootstrap';
 import { FaPlus, FaFilter, FaSearch } from 'react-icons/fa';
@@ -8,12 +8,6 @@ import HeaderEmpresa from '../HeaderEmpresa';
 import ModalVagas from './ModalVagas';
 import Swal from 'sweetalert2';
 import './VagasEmpresa.css';
-
-// Função para remover tags HTML
-const removeHtmlTags = (str) => {
-    if (!str) return "Não informado";
-    return str.replace(/<\/?[^>]+(>|$)/g, "");
-};
 
 const VagasEmpresa = () => {
     const [jobs, setJobs] = useState([]);
@@ -52,6 +46,41 @@ const VagasEmpresa = () => {
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
+    const [filters, setFilters] = useState({
+        modality: '',
+        type: '',
+        status: '',
+        pcd: '',
+        keyword: ''
+    });
+    const [showFilters, setShowFilters] = useState(false);
+
+    const handleFilterSearch = useCallback(async () => {
+        const params = new URLSearchParams();
+
+        if (searchTerm) params.append('keyword', searchTerm); // O termo de pesquisa busca apenas no campo title
+        if (filters.modality) params.append('modality', filters.modality);
+        if (filters.type) params.append('type', filters.type);
+        if (filters.status) params.append('status', filters.status);
+        if (filters.pcd) params.append('pcd', filters.pcd);
+        if (selectedState) params.append('location', `${selectedCity}, ${selectedState}`);
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get(`http://localhost:5000/api/jobs?${params.toString()}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            setJobs(response.data);
+        } catch (error) {
+            console.error('Erro ao buscar vagas:', error);
+        }
+    }, [searchTerm, filters, selectedCity, selectedState]);
+
+    useEffect(() => {
+        handleFilterSearch();
+    }, [filters, selectedState, selectedCity, handleFilterSearch]);
 
     useEffect(() => {
         const fetchJobs = async () => {
@@ -105,6 +134,20 @@ const VagasEmpresa = () => {
         }
     }, [selectedState]);
 
+    function renderHtmlOrFallback(htmlContent) {
+        if (htmlContent && htmlContent.trim() !== "") {
+            return <div dangerouslySetInnerHTML={{ __html: htmlContent }} />;
+        } else {
+            return <p>Não informado</p>;
+        }
+    }
+
+    
+
+    useEffect(() => {
+        handleFilterSearch();
+    }, [filters, selectedState, selectedCity, handleFilterSearch]);
+
     const openModal = (job = null) => {
         if (job) {
             const [city, state] = job.location.split(', ');
@@ -155,7 +198,7 @@ const VagasEmpresa = () => {
         }
         setModalIsOpen(true);
     };
-    
+
 
     const closeModal = () => {
         setModalIsOpen(false);
@@ -219,7 +262,7 @@ const VagasEmpresa = () => {
         const token = localStorage.getItem('token');
         if (token) {
             try {
-                job.status = job.status === 'Ativo' ? 'Inativo' : 'Ativo';
+                job.status = job.status === 'Ativo' ? 'Inativa' : 'Ativo';
                 await axios.put(`http://localhost:5000/api/jobs/${job._id}`, job, {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -287,7 +330,7 @@ const VagasEmpresa = () => {
                                 <FaPlus className="mr-2" />
                                 Adicionar
                             </Button>
-                            <Button variant="secondary" className="me-2 flex-grow-1">
+                            <Button variant="secondary" className="me-2 flex-grow-1" onClick={() => setShowFilters(!showFilters)}>
                                 <FaFilter className="mr-2" />
                                 Filtro
                             </Button>
@@ -296,22 +339,112 @@ const VagasEmpresa = () => {
                             <InputGroup style={{ maxWidth: '500px' }}>
                                 <Form.Control
                                     type="text"
-                                    placeholder="Pesquisar"
+                                    placeholder="Pesquisar por cargo"
                                     aria-label="Pesquisar"
                                     value={searchTerm}
                                     onChange={e => setSearchTerm(e.target.value)}
                                 />
-                                <Button variant="outline-secondary" style={{ maxWidth: '100px' }}>
+                                <Button variant="outline-secondary" style={{ maxWidth: '100px' }} onClick={handleFilterSearch}>
                                     <FaSearch />
                                 </Button>
                             </InputGroup>
                         </Col>
                     </Row>
+
+                    {showFilters && (
+                        <>
+                            <Row className="mb-3">
+                                <Col xs={12} md={4}>
+                                    <Form.Control
+                                        as="select"
+                                        value={selectedState}
+                                        onChange={(e) => setSelectedState(e.target.value)}
+                                    >
+                                        <option value="">Selecione o estado</option>
+                                        {states.map((state) => (
+                                            <option key={state.id} value={state.sigla}>
+                                                {state.nome}
+                                            </option>
+                                        ))}
+                                    </Form.Control>
+                                </Col>
+                                <Col xs={12} md={4}>
+                                    <Form.Control
+                                        as="select"
+                                        value={selectedCity}
+                                        onChange={(e) => setSelectedCity(e.target.value)}
+                                    >
+                                        <option value="">Selecione a cidade</option>
+                                        {cities.map((city) => (
+                                            <option key={city.id} value={city.nome}>
+                                                {city.nome}
+                                            </option>
+                                        ))}
+                                    </Form.Control>
+                                </Col>
+                                <Col xs={12} md={4}>
+                                    <Form.Control
+                                        as="select"
+                                        value={filters.modality}
+                                        onChange={e => setFilters({ ...filters, modality: e.target.value })}
+                                    >
+                                        <option value="">Modalidade</option>
+                                        <option value="Presencial">Presencial</option>
+                                        <option value="Híbrido">Híbrido</option>
+                                        <option value="Remoto">Remoto</option>
+                                    </Form.Control>
+                                </Col>
+                            </Row>
+                            <Row className="mb-3">
+                                <Col xs={12} md={4}>
+                                    <Form.Control
+                                        as="select"
+                                        value={filters.type}
+                                        onChange={e => setFilters({ ...filters, type: e.target.value })}
+                                    >
+                                        <option value="">Tipo</option>
+                                        <option value="Efetivo">Efetivo</option>
+                                        <option value="Aprendiz">Aprendiz</option>
+                                        <option value="Estágio">Estágio</option>
+                                        <option value="Pessoa Jurídica">Pessoa Jurídica</option>
+                                        <option value="Trainee">Trainee</option>
+                                        <option value="Temporário">Temporário</option>
+                                        <option value="Freelancer">Freelancer</option>
+                                        <option value="Terceiro">Terceiro</option>
+                                    </Form.Control>
+                                </Col>
+                                <Col xs={12} md={4}>
+                                    <Form.Control
+                                        as="select"
+                                        value={filters.status}
+                                        onChange={e => setFilters({ ...filters, status: e.target.value })}
+                                    >
+                                        <option value="">Status</option>
+                                        <option value="Ativo">Ativo</option>
+                                        <option value="Inativa">Inativa</option>
+                                    </Form.Control>
+                                </Col>
+                                <Col xs={12} md={4}>
+                                    <Form.Control
+                                        as="select"
+                                        value={filters.pcd}
+                                        onChange={e => setFilters({ ...filters, pcd: e.target.value })}
+                                    >
+                                        <option value="">PCD</option>
+                                        <option value="true">Sim</option>
+                                        <option value="false">Não</option>
+                                    </Form.Control>
+                                </Col>
+                            </Row>
+                        </>
+                    )}
+
+                    {/* Tabela de Vagas */}
                     {currentJobs.length === 0 ? (
-                        <p className="text-center">Nenhuma vaga cadastrada, clique em "Adicionar"...</p>
+                        <p className="text-center">Nenhuma vaga encontrada...</p>
                     ) : (
                         <>
-                            <Table striped bordered hover>
+                            <Table striped bordered hover className="mt-3">
                                 <thead>
                                     <tr>
                                         <th>Cargo</th>
@@ -351,6 +484,7 @@ const VagasEmpresa = () => {
                                     ))}
                                 </tbody>
                             </Table>
+                            {/* Paginação */}
                             <Pagination>
                                 <Pagination.Prev onClick={prevPage} disabled={currentPage === 1} />
                                 {Array.from({ length: Math.ceil(jobs.length / itemsPerPage) }, (_, i) => (
@@ -363,7 +497,7 @@ const VagasEmpresa = () => {
                         </>
                     )}
                 </div>
-            </div>
+            </div >
 
             <ModalVagas
                 show={modalIsOpen}
@@ -388,18 +522,30 @@ const VagasEmpresa = () => {
                     {selectedJob && (
                         <div>
                             <p><strong>Cargo:</strong> {selectedJob.title}</p>
-                            <p><strong>Localidade:</strong> {selectedJob.location}</p>
+                            <p><strong>Localização:</strong> {selectedJob.location}</p>
                             <p><strong>Modelo:</strong> {selectedJob.modality}</p>
                             <p><strong>Tipo:</strong> {selectedJob.type}</p>
+                            <p><strong>Salário:</strong> {selectedJob.salary ? selectedJob.salary : 'Não informado'}</p>
+                            <p><strong>Benefícios:</strong></p>
+                            {renderHtmlOrFallback(selectedJob.offers)}
+
+                            <p><strong>Descrição:</strong></p>
+                            {renderHtmlOrFallback(selectedJob.description)}
+
+                            <p><strong>Responsabilidades e atribuições:</strong></p>
+                            {renderHtmlOrFallback(selectedJob.responsibilities)}
+
+                            <p><strong>Requisitos e qualificações:</strong></p>
+                            {renderHtmlOrFallback(selectedJob.qualifications)}
+
+                            <p><strong>Será um diferencial:</strong></p>
+                            {renderHtmlOrFallback(selectedJob.requirements)}
+
+                            <p><strong>Informações Adicionais:</strong></p>
+                            {renderHtmlOrFallback(selectedJob.additionalInfo)}
+
                             <p><strong>Status:</strong> {selectedJob.status === 'Ativo' ? 'Ativa' : 'Inativa'}</p>
                             <p><strong>PCD:</strong> {selectedJob.pcd === 'Sim' ? 'Sim' : 'Não'}</p>
-                            <p><strong>Salário:</strong> {selectedJob.salary ? selectedJob.salary : 'Não informado'}</p>
-                            <p><strong>Descrição:</strong> {removeHtmlTags(selectedJob.description)}</p>
-                            <p><strong>Responsabilidades:</strong> {removeHtmlTags(selectedJob.responsibilities)}</p>
-                            <p><strong>Qualificações:</strong> {removeHtmlTags(selectedJob.qualifications)}</p>
-                            <p><strong>Informações Adicionais:</strong> {removeHtmlTags(selectedJob.additionalInfo)}</p>
-                            <p><strong>Requisitos:</strong> {removeHtmlTags(selectedJob.requirements)}</p>
-                            <p><strong>Ofertas:</strong> {removeHtmlTags(selectedJob.offers)}</p>
                         </div>
                     )}
                 </Modal.Body>

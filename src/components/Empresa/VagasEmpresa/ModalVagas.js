@@ -34,12 +34,27 @@ const ModalVagas = ({
     };
 
     const handleToggleChange = (name) => {
-        setNewJob(prevJob => ({ ...prevJob, [name]: !prevJob[name] }));
+        setNewJob(prevJob => ({
+            ...prevJob,
+            [name]: !prevJob[name],
+            // Limpa os campos correspondentes ao desativar os toggles
+            salary: name === 'salaryActive' && prevJob[name] ? '' : prevJob.salary,
+            offers: name === 'offersActive' && prevJob[name] ? '' : prevJob.offers,
+            description: name === 'descriptionActive' && prevJob[name] ? '' : prevJob.description,
+            responsibilities: name === 'responsibilitiesActive' && prevJob[name] ? '' : prevJob.responsibilities,
+            qualifications: name === 'qualificationsActive' && prevJob[name] ? '' : prevJob.qualifications,
+            requirements: name === 'requirementsActive' && prevJob[name] ? '' : prevJob.requirements,
+            additionalInfo: name === 'additionalInfoActive' && prevJob[name] ? '' : prevJob.additionalInfo
+        }));
     };
 
     const handleQuillChange = (name, value) => {
-        setNewJob(prevJob => ({ ...prevJob, [name]: value }));
+        // Atualiza o valor somente se o toggle correspondente estiver ativo
+        if (newJob[`${name}Active`]) {
+            setNewJob(prevJob => ({ ...prevJob, [name]: value }));
+        }
     };
+
 
     const formatCurrency = (value) => {
         const numberValue = Number(value.replace(/[^0-9]/g, '')) / 100;
@@ -48,7 +63,10 @@ const ModalVagas = ({
 
     const handleSalaryChange = (e) => {
         const { value } = e.target;
-        setNewJob(prevJob => ({ ...prevJob, salary: formatCurrency(value) }));
+        // Atualiza o valor formatado para o campo de salário, mas somente se o toggle estiver ativo
+        if (newJob.salaryActive) {
+            setNewJob(prevJob => ({ ...prevJob, salary: formatCurrency(value) }));
+        }
     };
 
     const validateForm = useCallback(() => {
