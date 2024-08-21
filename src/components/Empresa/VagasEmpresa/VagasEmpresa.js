@@ -63,14 +63,9 @@ const VagasEmpresa = () => {
                             Authorization: `Bearer ${token}`
                         }
                     });
-                    if (Array.isArray(response.data)) {
-                        setJobs(response.data);
-                    } else if (response.data.message) {
-                        setJobs([]);
-                    }
+                    setJobs(response.data);
                 } catch (error) {
                     console.error('Error fetching jobs:', error);
-                    setError('Erro ao buscar vagas. Tente novamente mais tarde.');
                 }
             }
         };
@@ -118,7 +113,7 @@ const VagasEmpresa = () => {
             setNewJob({
                 ...job,
                 status: job.status === 'Ativo',
-                pcd: job.pcd === 'Sim',  // Ajuste para garantir que PCD seja booleano
+                pcd: !!job.pcd, // Verifique se o valor booleano está sendo atribuído corretamente
                 salaryActive: !!job.salary,
                 salary: job.salary || '',
                 descriptionActive: !!job.description,
@@ -160,6 +155,7 @@ const VagasEmpresa = () => {
         }
         setModalIsOpen(true);
     };
+    
 
     const closeModal = () => {
         setModalIsOpen(false);

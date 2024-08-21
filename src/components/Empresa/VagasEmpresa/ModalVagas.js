@@ -20,7 +20,12 @@ const ModalVagas = ({
     const [isFormValid, setIsFormValid] = useState(false);
 
     useEffect(() => {
-        setNewJob(jobData);
+        if (jobData) {
+            setNewJob({
+                ...jobData,
+                pcd: !!jobData.pcd // Converte para booleano
+            });
+        }
     }, [jobData]);
 
     const handleInputChange = (e) => {
@@ -363,9 +368,10 @@ const ModalVagas = ({
                                     <Form.Check
                                         type="switch"
                                         id="pcd-switch"
-                                        checked={newJob.pcd}
+                                        checked={newJob.pcd} // Certifique-se de que o estado correto está sendo passado aqui
                                         onChange={() => handleToggleChange('pcd')}
                                     />
+
                                 </div>
                             </Form.Group>
                         </Col>
