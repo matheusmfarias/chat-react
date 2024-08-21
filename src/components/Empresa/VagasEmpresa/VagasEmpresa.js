@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, Row, Col, Button, InputGroup, Form, Alert, Pagination, Modal } from 'react-bootstrap';
-import { FaPlus, FaFilter, FaSearch } from 'react-icons/fa';
+import { Table, Row, Col, Button, InputGroup, Form, Alert, Pagination, Modal, Spinner, Badge } from 'react-bootstrap';
+import { FaPlus, FaFilter, FaSearch, FaTimes } from 'react-icons/fa';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faToggleOn, faToggleOff, faEye } from '@fortawesome/free-solid-svg-icons';
 import HeaderEmpresa from '../HeaderEmpresa';
@@ -11,15 +11,12 @@ import './VagasEmpresa.css';
 
 const VagasEmpresa = () => {
     const [jobs, setJobs] = useState([]);
+    const [loading, setLoading] = useState(false);  // Indicador de carregamento
     const [modalIsOpen, setModalIsOpen] = useState(false);
-    const [viewModalIsOpen, setViewModalIsOpen] = useState(false); // Novo modal para visualização
-    const [selectedJob, setSelectedJob] = useState(null); // Armazena a vaga selecionada para visualização
+    const [viewModalIsOpen, setViewModalIsOpen] = useState(false);
+    const [selectedJob, setSelectedJob] = useState(null);
     const [states, setStates] = useState([]);
     const [cities, setCities] = useState([]);
-    const [selectedStateFilter, setSelectedStateFilter] = useState('');
-    const [selectedCityFilter, setSelectedCityFilter] = useState('');
-    const [selectedStateModal, setSelectedStateModal] = useState('');
-    const [selectedCityModal, setSelectedCityModal] = useState('');
     const [newJob, setNewJob] = useState({
         title: '',
         location: '',
@@ -58,14 +55,15 @@ const VagasEmpresa = () => {
     const [showFilters, setShowFilters] = useState(false);
 
     const handleFilterSearch = useCallback(async () => {
+        setLoading(true);
         const params = new URLSearchParams();
 
-        if (searchTerm) params.append('keyword', searchTerm); // O termo de pesquisa busca apenas no campo title
+        if (searchTerm) params.append('keyword', searchTerm);
         if (filters.modality) params.append('modality', filters.modality);
         if (filters.type) params.append('type', filters.type);
         if (filters.status) params.append('status', filters.status);
         if (filters.pcd) params.append('pcd', filters.pcd);
-        if (selectedStateFilter) params.append('location', `${selectedCityFilter}, ${selectedStateFilter}`);
+        if (filters.selectedState) params.append('location', `${filters.selectedCity}, ${filters.selectedState}`);
 
         try {
             const token = localStorage.getItem('token');
@@ -77,15 +75,18 @@ const VagasEmpresa = () => {
             setJobs(response.data);
         } catch (error) {
             console.error('Erro ao buscar vagas:', error);
+        } finally {
+            setLoading(false);
         }
-    }, [searchTerm, filters, selectedCityFilter, selectedStateFilter]);
+    }, [searchTerm, filters]);
 
     useEffect(() => {
         handleFilterSearch();
-    }, [filters, selectedStateFilter, selectedCityFilter, handleFilterSearch]);
+    }, [filters, handleFilterSearch]);
 
     useEffect(() => {
         const fetchJobs = async () => {
+            setLoading(true);
             const token = localStorage.getItem('token');
             if (token) {
                 try {
@@ -97,6 +98,8 @@ const VagasEmpresa = () => {
                     setJobs(response.data);
                 } catch (error) {
                     console.error('Error fetching jobs:', error);
+                } finally {
+                    setLoading(false);
                 }
             }
         };
@@ -119,10 +122,10 @@ const VagasEmpresa = () => {
     }, []);
 
     useEffect(() => {
-        if (selectedStateFilter) {
+        if (filters.selectedState) {
             const fetchCities = async () => {
                 try {
-                    const citiesResponse = await axios.get(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedStateFilter}/municipios`);
+                    const citiesResponse = await axios.get(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${filters.selectedState}/municipios`);
                     setCities(citiesResponse.data);
                 } catch (error) {
                     console.error('Error fetching cities:', error);
@@ -134,25 +137,7 @@ const VagasEmpresa = () => {
         } else {
             setCities([]);
         }
-    }, [selectedStateFilter]);
-
-    useEffect(() => {
-        if (selectedStateModal) {
-            const fetchCities = async () => {
-                try {
-                    const citiesResponse = await axios.get(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedStateModal}/municipios`);
-                    setCities(citiesResponse.data);
-                } catch (error) {
-                    console.error('Error fetching cities:', error);
-                    setError('Erro ao buscar cidades. Tente novamente mais tarde.');
-                }
-            };
-
-            fetchCities();
-        } else {
-            setCities([]);
-        }
-    }, [selectedStateModal]);
+    }, [filters.selectedState]);
 
     function renderHtmlOrFallback(htmlContent) {
         if (htmlContent && htmlContent.trim() !== "") {
@@ -165,12 +150,11 @@ const VagasEmpresa = () => {
     const openModal = (job = null) => {
         if (job) {
             const [city, state] = job.location.split(', ');
-            setSelectedStateModal(state);
-            setSelectedCityModal(city);
+            setFilters({ ...filters, selectedState: state, selectedCity: city });
             setNewJob({
                 ...job,
                 status: job.status === 'Ativo',
-                pcd: !!job.pcd, // Verifique se o valor booleano está sendo atribuído corretamente
+                pcd: !!job.pcd,
                 salaryActive: !!job.salary,
                 salary: job.salary || '',
                 descriptionActive: !!job.description,
@@ -205,13 +189,13 @@ const VagasEmpresa = () => {
                 requirementsActive: false,
                 offersActive: false
             });
-            setSelectedStateModal('');
-            setSelectedCityModal('');
+            setFilters({ ...filters, selectedState: '', selectedCity: '' });
             setIsEditMode(false);
             setEditJobId(null);
         }
         setModalIsOpen(true);
     };
+
 
     const closeModal = () => {
         setModalIsOpen(false);
@@ -230,7 +214,7 @@ const VagasEmpresa = () => {
         const token = localStorage.getItem('token');
         if (token) {
             try {
-                jobData.location = `${selectedCityModal}, ${selectedStateModal}`;
+                jobData.location = `${filters.selectedCity}, ${filters.selectedState}`;
                 if (isEditMode) {
                     await axios.put(`http://localhost:5000/api/jobs/${editJobId}`, jobData, {
                         headers: {
@@ -311,6 +295,18 @@ const VagasEmpresa = () => {
         });
     };
 
+    const resetFilters = () => {
+        setFilters({
+            modality: '',
+            type: '',
+            status: '',
+            pcd: '',
+            selectedState: '',
+            selectedCity: '',
+            keyword: ''
+        });
+    };
+
     // Paginação
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -370,8 +366,8 @@ const VagasEmpresa = () => {
                                 <Col xs={12} md={4}>
                                     <Form.Control
                                         as="select"
-                                        value={selectedStateFilter}
-                                        onChange={(e) => setSelectedStateFilter(e.target.value)}
+                                        value={filters.selectedState}
+                                        onChange={(e) => setFilters({ ...filters, selectedState: e.target.value })}
                                     >
                                         <option value="">Selecione o estado</option>
                                         {states.map((state) => (
@@ -384,8 +380,8 @@ const VagasEmpresa = () => {
                                 <Col xs={12} md={4}>
                                     <Form.Control
                                         as="select"
-                                        value={selectedCityFilter}
-                                        onChange={(e) => setSelectedCityFilter(e.target.value)}
+                                        value={filters.selectedCity}
+                                        onChange={(e) => setFilters({ ...filters, selectedCity: e.target.value })}
                                     >
                                         <option value="">Selecione a cidade</option>
                                         {cities.map((city) => (
@@ -449,11 +445,37 @@ const VagasEmpresa = () => {
                                     </Form.Control>
                                 </Col>
                             </Row>
+                            <Row>
+                                <Col>
+                                    <Button variant="secondary" onClick={resetFilters}>
+                                        <FaTimes /> Resetar Filtros
+                                    </Button>
+                                </Col>
+                            </Row>
                         </>
                     )}
 
-                    {/* Tabela de Vagas */}
-                    {currentJobs.length === 0 ? (
+                    {/* Exibição de Chips de Filtros Ativos */}
+                    <Row className="mb-3">
+                        <Col>
+                            {filters.modality && <Badge pill bg="primary" className="me-2">Modalidade: {filters.modality}</Badge>}
+                            {filters.type && <Badge pill bg="primary" className="me-2">Tipo: {filters.type}</Badge>}
+                            {filters.status && <Badge pill bg="primary" className="me-2">Status: {filters.status}</Badge>}
+                            {filters.pcd && <Badge pill bg="primary" className="me-2">PCD: {filters.pcd === 'true' ? 'Sim' : 'Não'}</Badge>}
+                            {(filters.selectedState || filters.selectedCity) && (
+                                <Badge pill bg="primary" className="me-2">
+                                    Localização: {filters.selectedCity ? `${filters.selectedCity}, ${filters.selectedState}` : filters.selectedState}
+                                </Badge>
+                            )}
+                        </Col>
+                    </Row>
+
+                    {/* Indicador de Carregamento */}
+                    {loading ? (
+                        <div className="text-center">
+                            <Spinner animation="border" />
+                        </div>
+                    ) : currentJobs.length === 0 ? (
                         <p className="text-center">Nenhuma vaga encontrada...</p>
                     ) : (
                         <>
@@ -497,7 +519,6 @@ const VagasEmpresa = () => {
                                     ))}
                                 </tbody>
                             </Table>
-                            {/* Paginação */}
                             <Pagination>
                                 <Pagination.Prev onClick={prevPage} disabled={currentPage === 1} />
                                 {Array.from({ length: Math.ceil(jobs.length / itemsPerPage) }, (_, i) => (
@@ -520,13 +541,12 @@ const VagasEmpresa = () => {
                 isEditMode={isEditMode}
                 states={states}
                 cities={cities}
-                setSelectedState={setSelectedStateModal}
-                setSelectedCity={setSelectedCityModal}
-                selectedState={selectedStateModal}
-                selectedCity={selectedCityModal}
+                setSelectedState={setFilters}
+                setSelectedCity={setFilters}
+                selectedState={filters.selectedState}
+                selectedCity={filters.selectedCity}
             />
 
-            {/* Novo Modal para Visualização */}
             <Modal show={viewModalIsOpen} onHide={closeViewModal} centered>
                 <Modal.Header closeButton>
                     <Modal.Title>Detalhes da Vaga</Modal.Title>
