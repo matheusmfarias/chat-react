@@ -1,3 +1,14 @@
+
+.loader {
+    border: 4px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 4px solid #3498db;
+    width: 40px;
+    height: 40px;
+    animation: spin 2s linear infinite;
+    margin: 0 auto;
+}
+
 .mt-4 {
     margin-top: 1.5rem;
 }
@@ -54,32 +65,28 @@ button {
     .d-flex {
         flex-direction: column;
     }
+
     .ml-2 {
         margin-left: 0;
         margin-top: 0.5rem;
     }
 }
 
-.table {
-    background-color: rgba(31, 82, 145, 0.1);
-    border-radius: 8px 8px 0 0;
-    width: 100%;
-    border-collapse: collapse;
+.table-responsive table th,
+.table-responsive table td {
+    width: 200px; /* Defina uma largura fixa para cada coluna */
+    max-width: 200px; /* Limite a largura máxima */
 }
 
-.table th,
-.table td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #e9ecef;
+.table-responsive table td {
+    text-overflow: clip; /* Adicione elipses para o conteúdo que ultrapassar */
+    white-space: nowrap; /* Impede a quebra de linha */
+    overflow-x: auto;
 }
 
-.table th {
-    color: #3B6A96;
-}
-
-.table td {
-    background-color: #fff;
+.table-responsive {
+    margin-bottom: 20px;
+    overflow-x: auto;
 }
 
 .Modal {
@@ -117,4 +124,25 @@ button {
     background-color: red;
 }
 
+.table-loader-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
+.filters-container {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-in-out;
+}
+
+.filters-container.show {
+    max-height: 500px; /* Ajuste conforme o conteúdo */
+}

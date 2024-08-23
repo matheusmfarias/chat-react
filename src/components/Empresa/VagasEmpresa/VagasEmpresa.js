@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, Row, Col, Button, InputGroup, Form, Alert, Pagination, Modal, Spinner, Badge } from 'react-bootstrap';
-import { FaPlus, FaFilter, FaSearch, FaTimes } from 'react-icons/fa';
+import { Table, Row, Col, Button, InputGroup, Form, Alert, Pagination, Modal } from 'react-bootstrap';
+import { FaPlus, FaFilter, FaSearch } from 'react-icons/fa';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faToggleOn, faToggleOff, faEye } from '@fortawesome/free-solid-svg-icons';
 import HeaderEmpresa from '../HeaderEmpresa';
@@ -11,12 +11,17 @@ import './VagasEmpresa.css';
 
 const VagasEmpresa = () => {
     const [jobs, setJobs] = useState([]);
-    const [loading, setLoading] = useState(false);  // Indicador de carregamento
     const [modalIsOpen, setModalIsOpen] = useState(false);
-    const [viewModalIsOpen, setViewModalIsOpen] = useState(false);
-    const [selectedJob, setSelectedJob] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [viewModalIsOpen, setViewModalIsOpen] = useState(false); // Novo modal para visualização
+    const [selectedJob, setSelectedJob] = useState(null); // Armazena a vaga selecionada para visualização
+    const [isQueryCompleted, setIsQueryCompleted] = useState(false);
     const [states, setStates] = useState([]);
     const [cities, setCities] = useState([]);
+    const [selectedStateFilter, setSelectedStateFilter] = useState('');
+    const [selectedCityFilter, setSelectedCityFilter] = useState('');
+    const [selectedStateModal, setSelectedStateModal] = useState('');
+    const [selectedCityModal, setSelectedCityModal] = useState('');
     const [newJob, setNewJob] = useState({
         title: '',
         location: '',
@@ -55,17 +60,17 @@ const VagasEmpresa = () => {
     const [showFilters, setShowFilters] = useState(false);
 
     const handleFilterSearch = useCallback(async () => {
-        setLoading(true);
         const params = new URLSearchParams();
 
-        if (searchTerm) params.append('keyword', searchTerm);
+        if (searchTerm) params.append('keyword', searchTerm); // O termo de pesquisa busca apenas no campo title
         if (filters.modality) params.append('modality', filters.modality);
         if (filters.type) params.append('type', filters.type);
         if (filters.status) params.append('status', filters.status);
         if (filters.pcd) params.append('pcd', filters.pcd);
-        if (filters.selectedState) params.append('location', `${filters.selectedCity}, ${filters.selectedState}`);
+        if (selectedStateFilter) params.append('location', `${selectedCityFilter}, ${selectedStateFilter}`);
 
         try {
+            setLoading(true);
             const token = localStorage.getItem('token');
             const response = await axios.get(`http://localhost:5000/api/jobs?${params.toString()}`, {
                 headers: {
@@ -78,15 +83,16 @@ const VagasEmpresa = () => {
         } finally {
             setLoading(false);
         }
-    }, [searchTerm, filters]);
+    }, [searchTerm, filters, selectedCityFilter, selectedStateFilter]);
 
     useEffect(() => {
         handleFilterSearch();
-    }, [filters, handleFilterSearch]);
+    }, [filters, selectedStateFilter, selectedCityFilter, handleFilterSearch]);
 
     useEffect(() => {
         const fetchJobs = async () => {
             setLoading(true);
+            setIsQueryCompleted(false);  // Inicia a consulta e define que ainda não está concluída
             const token = localStorage.getItem('token');
             if (token) {
                 try {
@@ -100,6 +106,7 @@ const VagasEmpresa = () => {
                     console.error('Error fetching jobs:', error);
                 } finally {
                     setLoading(false);
+                    setIsQueryCompleted(true);  // Marca a consulta como concluída após o carregamento
                 }
             }
         };
@@ -122,10 +129,10 @@ const VagasEmpresa = () => {
     }, []);
 
     useEffect(() => {
-        if (filters.selectedState) {
+        if (selectedStateFilter) {
             const fetchCities = async () => {
                 try {
-                    const citiesResponse = await axios.get(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${filters.selectedState}/municipios`);
+                    const citiesResponse = await axios.get(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedStateFilter}/municipios`);
                     setCities(citiesResponse.data);
                 } catch (error) {
                     console.error('Error fetching cities:', error);
@@ -137,7 +144,25 @@ const VagasEmpresa = () => {
         } else {
             setCities([]);
         }
-    }, [filters.selectedState]);
+    }, [selectedStateFilter]);
+
+    useEffect(() => {
+        if (selectedStateModal) {
+            const fetchCities = async () => {
+                try {
+                    const citiesResponse = await axios.get(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedStateModal}/municipios`);
+                    setCities(citiesResponse.data);
+                } catch (error) {
+                    console.error('Error fetching cities:', error);
+                    setError('Erro ao buscar cidades. Tente novamente mais tarde.');
+                }
+            };
+
+            fetchCities();
+        } else {
+            setCities([]);
+        }
+    }, [selectedStateModal]);
 
     function renderHtmlOrFallback(htmlContent) {
         if (htmlContent && htmlContent.trim() !== "") {
@@ -150,11 +175,12 @@ const VagasEmpresa = () => {
     const openModal = (job = null) => {
         if (job) {
             const [city, state] = job.location.split(', ');
-            setFilters({ ...filters, selectedState: state, selectedCity: city });
+            setSelectedStateModal(state);
+            setSelectedCityModal(city);
             setNewJob({
                 ...job,
                 status: job.status === 'Ativo',
-                pcd: !!job.pcd,
+                pcd: !!job.pcd, // Verifique se o valor booleano está sendo atribuído corretamente
                 salaryActive: !!job.salary,
                 salary: job.salary || '',
                 descriptionActive: !!job.description,
@@ -189,13 +215,13 @@ const VagasEmpresa = () => {
                 requirementsActive: false,
                 offersActive: false
             });
-            setFilters({ ...filters, selectedState: '', selectedCity: '' });
+            setSelectedStateModal('');
+            setSelectedCityModal('');
             setIsEditMode(false);
             setEditJobId(null);
         }
         setModalIsOpen(true);
     };
-
 
     const closeModal = () => {
         setModalIsOpen(false);
@@ -214,7 +240,7 @@ const VagasEmpresa = () => {
         const token = localStorage.getItem('token');
         if (token) {
             try {
-                jobData.location = `${filters.selectedCity}, ${filters.selectedState}`;
+                jobData.location = `${selectedCityModal}, ${selectedStateModal}`;
                 if (isEditMode) {
                     await axios.put(`http://localhost:5000/api/jobs/${editJobId}`, jobData, {
                         headers: {
@@ -258,24 +284,44 @@ const VagasEmpresa = () => {
     const handleToggleStatus = async (job) => {
         const token = localStorage.getItem('token');
         if (token) {
-            try {
-                job.status = job.status === 'Ativo' ? 'Inativa' : 'Ativo';
-                await axios.put(`http://localhost:5000/api/jobs/${job._id}`, job, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
+            Swal.fire({
+                title: `Tem certeza que deseja ${job.status === 'Ativo' ? 'inativar' : 'ativar'} a vaga?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: `Sim, ${job.status === 'Ativo' ? 'inativar' : 'ativar'}!`,
+                cancelButtonText: 'Cancelar'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    setLoading(true);
+                    try {
+                        job.status = job.status === 'Ativo' ? 'Inativa' : 'Ativo';
+                        await axios.put(`http://localhost:5000/api/jobs/${job._id}`, job, {
+                            headers: {
+                                Authorization: `Bearer ${token}`
+                            }
+                        });
+                        setJobs(prevJobs => prevJobs.map(j => j._id === job._id ? { ...j, status: job.status } : j));
+                        Swal.fire(
+                            `Vaga ${job.status === 'Ativo' ? 'ativada' : 'inativada'}!`,
+                            ``,
+                            'success'
+                        );
+                    } catch (error) {
+                        console.error('Error toggling status:', error);
+                        setError('Erro ao alterar status da vaga. Tente novamente mais tarde.');
+                    } finally {
+                        setLoading(false);
                     }
-                });
-                setJobs(prevJobs => prevJobs.map(j => j._id === job._id ? { ...j, status: job.status } : j));
-            } catch (error) {
-                console.error('Error toggling status:', error);
-                setError('Erro ao alterar status da vaga. Tente novamente mais tarde.');
-            }
+                }
+            });
         }
     };
 
     const handleConfirmDelete = (id) => {
         Swal.fire({
-            title: 'Você tem certeza?',
+            title: 'Tem certeza que deseja deletar a vaga?',
             text: "Esta ação não pode ser desfeita!",
             icon: 'warning',
             showCancelButton: true,
@@ -287,23 +333,11 @@ const VagasEmpresa = () => {
             if (result.isConfirmed) {
                 handleDeleteJob(id);
                 Swal.fire(
-                    'Deletado!',
+                    'Vaga deletada!',
                     'A vaga foi deletada com sucesso.',
                     'success'
                 );
             }
-        });
-    };
-
-    const resetFilters = () => {
-        setFilters({
-            modality: '',
-            type: '',
-            status: '',
-            pcd: '',
-            selectedState: '',
-            selectedCity: '',
-            keyword: ''
         });
     };
 
@@ -366,8 +400,8 @@ const VagasEmpresa = () => {
                                 <Col xs={12} md={4}>
                                     <Form.Control
                                         as="select"
-                                        value={filters.selectedState}
-                                        onChange={(e) => setFilters({ ...filters, selectedState: e.target.value })}
+                                        value={selectedStateFilter}
+                                        onChange={(e) => setSelectedStateFilter(e.target.value)}
                                     >
                                         <option value="">Selecione o estado</option>
                                         {states.map((state) => (
@@ -380,8 +414,8 @@ const VagasEmpresa = () => {
                                 <Col xs={12} md={4}>
                                     <Form.Control
                                         as="select"
-                                        value={filters.selectedCity}
-                                        onChange={(e) => setFilters({ ...filters, selectedCity: e.target.value })}
+                                        value={selectedCityFilter}
+                                        onChange={(e) => setSelectedCityFilter(e.target.value)}
                                     >
                                         <option value="">Selecione a cidade</option>
                                         {cities.map((city) => (
@@ -445,91 +479,75 @@ const VagasEmpresa = () => {
                                     </Form.Control>
                                 </Col>
                             </Row>
-                            <Row>
-                                <Col>
-                                    <Button variant="secondary" onClick={resetFilters}>
-                                        <FaTimes /> Resetar Filtros
-                                    </Button>
-                                </Col>
-                            </Row>
                         </>
                     )}
 
-                    {/* Exibição de Chips de Filtros Ativos */}
-                    <Row className="mb-3">
-                        <Col>
-                            {filters.modality && <Badge pill bg="primary" className="me-2">Modalidade: {filters.modality}</Badge>}
-                            {filters.type && <Badge pill bg="primary" className="me-2">Tipo: {filters.type}</Badge>}
-                            {filters.status && <Badge pill bg="primary" className="me-2">Status: {filters.status}</Badge>}
-                            {filters.pcd && <Badge pill bg="primary" className="me-2">PCD: {filters.pcd === 'true' ? 'Sim' : 'Não'}</Badge>}
-                            {(filters.selectedState || filters.selectedCity) && (
-                                <Badge pill bg="primary" className="me-2">
-                                    Localização: {filters.selectedCity ? `${filters.selectedCity}, ${filters.selectedState}` : filters.selectedState}
-                                </Badge>
-                            )}
-                        </Col>
-                    </Row>
-
-                    {/* Indicador de Carregamento */}
-                    {loading ? (
-                        <div className="text-center">
-                            <Spinner animation="border" />
-                        </div>
-                    ) : currentJobs.length === 0 ? (
-                        <p className="text-center">Nenhuma vaga encontrada...</p>
-                    ) : (
-                        <>
-                            <Table striped bordered hover className="mt-3">
-                                <thead>
-                                    <tr>
-                                        <th>Cargo</th>
-                                        <th>Localidade</th>
-                                        <th>Modelo</th>
-                                        <th>Tipo</th>
-                                        <th>Status</th>
-                                        <th>PCD</th>
-                                        <th>Salário</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {currentJobs.map((job, index) => (
-                                        <tr key={index}>
-                                            <td>{job.title}</td>
-                                            <td>{job.location}</td>
-                                            <td>{job.modality}</td>
-                                            <td>{job.type}</td>
-                                            <td>
-                                                <span
-                                                    className={`status-indicator ${job.status === 'Ativo' ? 'active' : 'inactive'}`}
-                                                ></span>
-                                                {job.status === 'Ativo' ? 'Ativa' : 'Inativa'}
-                                            </td>
-                                            <td>{job.pcd ? 'Sim' : 'Não'}</td>
-                                            <td>{job.salary ? job.salary : 'Não informado'}</td>
-                                            <td>
-                                                <div className='btn-group'>
-                                                    <FontAwesomeIcon icon={faEye} className="icon-btn" onClick={() => openViewModal(job)} title="Visualizar detalhes" />
-                                                    <FontAwesomeIcon icon={faEdit} className="icon-btn" onClick={() => openModal(job)} title="Editar" />
-                                                    <FontAwesomeIcon icon={job.status === 'Ativo' ? faToggleOn : faToggleOff} className="icon-btn" onClick={() => handleToggleStatus(job)} title={job.status === 'Ativo' ? 'Desabilitar' : 'Habilitar'} />
-                                                    <FontAwesomeIcon icon={faTrash} className="icon-btn" onClick={() => handleConfirmDelete(job._id)} title="Excluir" />
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </Table>
-                            <Pagination>
-                                <Pagination.Prev onClick={prevPage} disabled={currentPage === 1} />
-                                {Array.from({ length: Math.ceil(jobs.length / itemsPerPage) }, (_, i) => (
-                                    <Pagination.Item key={i + 1} active={i + 1 === currentPage} onClick={() => paginate(i + 1)}>
-                                        {i + 1}
-                                    </Pagination.Item>
-                                ))}
-                                <Pagination.Next onClick={nextPage} disabled={currentPage === Math.ceil(jobs.length / itemsPerPage)} />
-                            </Pagination>
-                        </>
-                    )}
+                    <div className="table-responsive position-relative">
+                        {loading ? (
+                            <div className="spinner-overlay">
+                                <div className="loading-spinner"></div>
+                            </div>
+                        ) : (
+                            isQueryCompleted && (
+                                currentJobs.length !== 0 ? (
+                                    <>
+                                        <Table striped bordered hover className="mt-3">
+                                            <thead>
+                                                <tr>
+                                                    <th>Cargo</th>
+                                                    <th>Localidade</th>
+                                                    <th>Modelo</th>
+                                                    <th>Tipo</th>
+                                                    <th>Status</th>
+                                                    <th>PCD</th>
+                                                    <th>Salário</th>
+                                                    <th>Ações</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {currentJobs.map((job, index) => (
+                                                    <tr key={index}>
+                                                        <td>{job.title}</td>
+                                                        <td>{job.location}</td>
+                                                        <td>{job.modality}</td>
+                                                        <td>{job.type}</td>
+                                                        <td>
+                                                            <span
+                                                                className={`status-indicator ${job.status === 'Ativo' ? 'active' : 'inactive'}`}
+                                                            ></span>
+                                                            {job.status === 'Ativo' ? 'Ativa' : 'Inativa'}
+                                                        </td>
+                                                        <td>{job.pcd ? 'Sim' : 'Não'}</td>
+                                                        <td>{job.salary ? job.salary : 'Não informado'}</td>
+                                                        <td>
+                                                            <div className='btn-group'>
+                                                                <FontAwesomeIcon icon={faEye} className="icon-btn" onClick={() => openViewModal(job)} title="Visualizar detalhes" />
+                                                                <FontAwesomeIcon icon={faEdit} className="icon-btn" onClick={() => openModal(job)} title="Editar" />
+                                                                <FontAwesomeIcon icon={job.status === 'Ativo' ? faToggleOn : faToggleOff} className="icon-btn" onClick={() => handleToggleStatus(job)} title={job.status === 'Ativo' ? 'Desabilitar' : 'Habilitar'} />
+                                                                <FontAwesomeIcon icon={faTrash} className="icon-btn" onClick={() => handleConfirmDelete(job._id)} title="Excluir" />
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </Table>
+                                        {/* Paginação */}
+                                        <Pagination>
+                                            <Pagination.Prev onClick={prevPage} disabled={currentPage === 1} />
+                                            {Array.from({ length: Math.ceil(jobs.length / itemsPerPage) }, (_, i) => (
+                                                <Pagination.Item key={i + 1} active={i + 1 === currentPage} onClick={() => paginate(i + 1)}>
+                                                    {i + 1}
+                                                </Pagination.Item>
+                                            ))}
+                                            <Pagination.Next onClick={nextPage} disabled={currentPage === Math.ceil(jobs.length / itemsPerPage)} />
+                                        </Pagination>
+                                    </>
+                                ) : (
+                                    <p className="text-center">Nenhuma vaga encontrada...</p>
+                                )
+                            )
+                        )}
+                    </div>
                 </div>
             </div >
 
@@ -541,12 +559,13 @@ const VagasEmpresa = () => {
                 isEditMode={isEditMode}
                 states={states}
                 cities={cities}
-                setSelectedState={setFilters}
-                setSelectedCity={setFilters}
-                selectedState={filters.selectedState}
-                selectedCity={filters.selectedCity}
+                setSelectedState={setSelectedStateModal}
+                setSelectedCity={setSelectedCityModal}
+                selectedState={selectedStateModal}
+                selectedCity={selectedCityModal}
             />
 
+            {/* Novo Modal para Visualização */}
             <Modal show={viewModalIsOpen} onHide={closeViewModal} centered>
                 <Modal.Header closeButton>
                     <Modal.Title>Detalhes da Vaga</Modal.Title>
