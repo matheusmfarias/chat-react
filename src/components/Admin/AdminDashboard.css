@@ -30,6 +30,7 @@
 .container {
     max-width: 1200px;
     padding: 10px;
+    margin: 0 auto;
 }
 
 .table-responsive {
@@ -45,11 +46,19 @@
 }
 
 .table th, .table td {
+    width: 200px;
+    max-width: 200px;
     padding: 10px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: left;
+}
+
+.table td {
+    text-overflow: clip; /* Adicione elipses para o conteúdo que ultrapassar */
+    white-space: nowrap; /* Impede a quebra de linha */
+    overflow-x: auto;
 }
 
 .table th {

@@ -1,4 +1,3 @@
-
 .loader {
     border: 4px solid #f3f3f3;
     border-radius: 50%;
@@ -72,23 +71,6 @@ button {
     }
 }
 
-.table-responsive table th,
-.table-responsive table td {
-    width: 200px; /* Defina uma largura fixa para cada coluna */
-    max-width: 200px; /* Limite a largura máxima */
-}
-
-.table-responsive table td {
-    text-overflow: clip; /* Adicione elipses para o conteúdo que ultrapassar */
-    white-space: nowrap; /* Impede a quebra de linha */
-    overflow-x: auto;
-}
-
-.table-responsive {
-    margin-bottom: 20px;
-    overflow-x: auto;
-}
-
 .Modal {
     position: absolute;
     top: 50%;
@@ -122,27 +104,4 @@ button {
 
 .status-indicator.inactive {
     background-color: red;
-}
-
-.table-loader-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.8);
-    z-index: 1050;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.filters-container {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.5s ease-in-out;
-}
-
-.filters-container.show {
-    max-height: 500px; /* Ajuste conforme o conteúdo */
 }
