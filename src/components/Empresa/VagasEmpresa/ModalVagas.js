@@ -23,7 +23,8 @@ const ModalVagas = ({
         if (jobData) {
             setNewJob({
                 ...jobData,
-                pcd: !!jobData.pcd // Converte para booleano
+                pcd: !!jobData.pcd,
+                status: !!jobData.status
             });
         }
     }, [jobData]);
@@ -386,7 +387,7 @@ const ModalVagas = ({
                                     <Form.Check
                                         type="switch"
                                         id="pcd-switch"
-                                        checked={newJob.pcd} // Certifique-se de que o estado correto está sendo passado aqui
+                                        checked={newJob.pcd}
                                         onChange={() => handleToggleChange('pcd')}
                                     />
 

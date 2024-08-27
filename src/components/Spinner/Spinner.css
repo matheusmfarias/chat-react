@@ -1,13 +1,15 @@
 .spinner-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     display: flex;
     justify-content: center;
     align-items: center;
-    top: 0; /* Ajuste se necessário */
-    left: 0; /* Ajuste se necessário */
-    width: 100%;
-    height: 100%;
-    z-index: 999;
-    background-color: rgba(255, 255, 255, 0.8); /* Adiciona um fundo transparente para visualizar o spinner */
+    z-index: 999; /* Certifique-se de que o spinner fique sobre o conteúdo */
+    width: 100%; /* Garante que o spinner cubra toda a largura */
+    height: 100%; /* Garante que o spinner cubra toda a altura */
+    background: rgba(255, 255, 255, 0.7); /* Mantém o fundo semitransparente */
 }
 
 .loading-spinner {
@@ -23,7 +25,6 @@
     0% {
         transform: rotate(0deg);
     }
-
     100% {
         transform: rotate(360deg);
     }

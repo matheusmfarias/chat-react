@@ -45,6 +45,7 @@ const AdminDashboard = () => {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
                 params: { page, search, filterStatus: filter, limit: itemsPerPage, sortColumn, sortDirection }
             });
+            console.log("Dados recebidos:", response.data);
             setEmpresas(response.data.companies);
             setTotalPages(response.data.totalPages);
         } catch (error) {
@@ -187,7 +188,8 @@ const AdminDashboard = () => {
                 setLoading(false);
                 return;
             }
-  
+
+            console.log("Enviando dados da empresa:", empresaData);
             let response;
             if (editMode) {
                 response = await axios.put(`http://localhost:5000/api/company/${currentEmpresa._id}`, empresaData, {
@@ -311,7 +313,7 @@ const AdminDashboard = () => {
     const renderEmpresasTable = () => (
         <>
             <Row className="mb-3 align-items-center">
-                <h1>Empresas</h1>
+                <h2 className='display-6'>Empresas</h2>
                 <Col xs={12} md={4} className="d-flex justify-content-start mb-2 mb-md-0">
                     <Button variant="primary" className="me-2 flex-grow-1" onClick={() => handleShowModal()}>
                         <FontAwesomeIcon icon={faPlus} /> Adicionar

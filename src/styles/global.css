@@ -4,6 +4,10 @@
     font-family: 'Poppins', sans-serif;
 }
 
+body {
+    overflow-y: scroll;
+}
+
 html, body {
     height: 100%;
     margin: 0;
