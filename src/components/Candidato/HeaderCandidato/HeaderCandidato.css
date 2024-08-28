@@ -13,7 +13,7 @@
     background-color: var(--background-color);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     position: relative;
-    
+    z-index: 1000;
 }
 
 .logo-container {
@@ -24,24 +24,65 @@
 }
 
 .logo-container img {
-    max-width: 100%;
     width: 100%;
     height: auto;
 }
 
+.hamburger-menu {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 24px;
+}
+
+.header-candidato nav {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
 .header-candidato nav ul {
     display: flex;
-    justify-content: center; 
+    justify-content: center;
     align-items: center;
     list-style: none;
     padding: 0;
     margin: 0;
-    flex: 1;
 }
 
 .header-link {
     margin: 20px;
+    border-radius: 10px;
     text-decoration: none;
+    color: var(--primary-color);
+    padding: 10px;
+    position: relative;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.header-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -6px; /* Posiciona a linha logo abaixo do elemento */
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: var(--primary-color);
+    border-radius: 2px;
+}
+
+.header-link:hover {
+    color: var(--hover-text-color);
+    background-color: var(--hover-background-color);
+    border-radius: 10px;
+}
+
+.usuario-btn:hover {
+    color: var(--hover-text-color);
+    background-color: var(--hover-background-color);
+    border-radius: 10px;
 }
 
 .opcoes-area {
@@ -50,11 +91,11 @@
     position: relative;
 }
 
-.usuario-btn,
-.header-link {
+.usuario-btn {
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 160px;
     background-color: var(--hover-text-color);
     color: var(--primary-color);
     border: none;
@@ -62,18 +103,15 @@
     border-radius: 10px;
     cursor: pointer;
     padding: 10px;
-    width: auto;
 }
 
-.header-link {
-    border-bottom: 2px solid transparent;
-}
-
-.header-link.active {
-    border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 0px;
-    border-bottom: 2px solid var(--primary-color);
-    color: var(--primary-color);
+/* Novo estilo para o nome do usuário */
+.usuario-btn span {
+    display: inline-block;
+    max-width: 160px; /* Define o tamanho fixo máximo */
+    overflow: hidden; /* Esconde o texto que ultrapassa o limite */
+    text-overflow: ellipsis; /* Adiciona reticências (...) */
+    white-space: nowrap; /* Impede que o texto quebre para uma nova linha */
 }
 
 .setas-container {
@@ -85,21 +123,11 @@
     transform: rotate(360deg);
 }
 
-.usuario-btn:hover,
-.header-link:hover {
-    color: var(--hover-text-color);
-    background-color: var(--hover-background-color);
-}
-
-.link {
-    text-decoration: none;
-}
-
 .usuario-btn.active {
-    background-color: var(--hover-background-color);
-    color: var(--hover-text-color);
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
+    background-color: var(--hover-background-color);
+    color: var(--hover-text-color);
 }
 
 .opcoes-usuario {
@@ -135,16 +163,41 @@
     color: var(--hover-text-color);
 }
 
-@media (max-width: 605px) {
+/* Estilos responsivos */
+@media (max-width: 768px) {
     .header-candidato {
-        padding: 10px 5%;
+        flex-wrap: wrap;
+        padding: 10px 3%;
     }
 
-    .logo-container img {
+    .logo-container {
+        width: 140px;
+    }
+
+    .hamburger-menu {
+        display: flex;
+    }
+
+    nav {
+        display: none;
         width: 100%;
     }
 
-    .usuario-btn {
-        margin-right: 10px;
+    nav.active {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .header-link {
+        margin: 10px 0;
+        width: 100%;
+        text-align: center;
+        padding: 10px 0;
+    }
+
+    .opcoes-area {
+        width: 100%;
+        justify-content: flex-end;
     }
 }

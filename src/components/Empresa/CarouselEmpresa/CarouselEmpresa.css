@@ -30,12 +30,23 @@
 }
 
 .job-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 300px;
+    height: 350px;
     background-color: #e9ecef;
     border-radius: 10px;
     text-align: center;
     width: 100%;
     color: #1F5291;
-    padding: 20px;
+    padding: 25px 20px;
+    transition: transform 0.2s ease-in-out;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.job-card:hover {
+    transform: scale(1.05);
 }
 
 .job-details {

@@ -41,7 +41,6 @@
 .table-responsive {
     width: 100%;
     overflow-x: auto;
-    /* Certifique-se de que a tabela seja rolável horizontalmente se necessário */
 }
 
 .table {
@@ -49,9 +48,8 @@
     margin-bottom: 20px;
     border-collapse: collapse;
     table-layout: fixed;
-    /* Garante que todas as colunas tenham largura fixa */
     min-width: 1000px;
-    /* Defina uma largura mínima, ajuste conforme necessário */
+    overflow: hidden; /* Garante que o conteúdo da tabela não ultrapasse os cantos arredondados */
 }
 
 .table th,
@@ -88,7 +86,10 @@
 
 .table th:first-child,
 .table td:first-child,
-.table th:nth-child(2),
+.table th:nth-child(2) {
+    width: calc(100% / 6);
+}
+
 .table td:nth-child(2),
 .table th:nth-child(3),
 .table td:nth-child(3),

@@ -10,48 +10,7 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 const CarouselEmpresa = () => {
-    const [jobs, setJobs] = useState([
-        {
-            title: 'Engenheiro de Software',
-            location: 'Panambi, RS',
-            type: 'Efetivo',
-            modality: 'Remoto',
-            pcd: true,
-            publishedDate: '20/06/2024'
-        },
-        {
-            title: 'Desenvolvedor',
-            location: 'Panambi, RS',
-            type: 'Efetivo',
-            modality: 'Remoto',
-            pcd: true,
-            publishedDate: '18/06/2024'
-        },
-        {
-            title: 'Analista de Sistemas',
-            location: 'Panambi, RS',
-            type: 'Efetivo',
-            modality: 'Remoto',
-            pcd: true,
-            publishedDate: '15/04/2024'
-        },
-        {
-            title: 'Técnico em TI',
-            location: 'Panambi, RS',
-            type: 'Efetivo',
-            modality: 'Remoto',
-            pcd: true,
-            publishedDate: '27/12/2023'
-        },
-        {
-            title: 'DBA',
-            location: 'Panambi, RS',
-            type: 'Efetivo',
-            modality: 'Remoto',
-            pcd: true,
-            publishedDate: '05/02/2024'
-        }
-    ]);
+    const [jobs, setJobs] = useState('');
 
     useEffect(() => {
         const fetchJobs = async () => {
