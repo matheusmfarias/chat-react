@@ -431,10 +431,10 @@ const VagasEmpresa = () => {
                                 </Button>
                             </Col>
                             <Col xs={12} md={8} className="d-flex justify-content-end">
-                                <InputGroup className="shadow" style={{ maxWidth: '500px' }}>
+                                <InputGroup className="shadow" style={{ maxWidth: '500px', borderRadius: '10px' }}>
                                     <Form.Control
                                         type="text"
-                                        placeholder="Pesquisar por cargo"
+                                        placeholder="Pesquisar por cargo..."
                                         aria-label="Pesquisar"
                                         value={searchTerm}
                                         onChange={e => setSearchTerm(e.target.value)}
@@ -555,7 +555,7 @@ const VagasEmpresa = () => {
                         <div className="table-responsive position-relative">
                             {jobs.length > 0 ? (
                                 <>
-                                    <Table striped bordered hover className="shadow mt-3">
+                                    <Table striped bordered hover className="shadow-sm mt-3">
                                         <thead>
                                             <tr>
                                                 <th>Cargo</th>

@@ -8,8 +8,10 @@ import 'swiper/css/scrollbar';
 import { FaMapMarkerAlt, FaBriefcase, FaLaptop, FaWheelchair } from 'react-icons/fa';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import useFormattedDate from '../../../hooks/useFormattedDate';
 
 const CarouselEmpresa = () => {
+    const { formatDate } = useFormattedDate();
     const [jobs, setJobs] = useState('');
 
     useEffect(() => {
@@ -91,7 +93,7 @@ const CarouselEmpresa = () => {
                                     <div className="detail-item"><FaWheelchair /> {job.pcd ? 'PcD' : 'Não PcD'}</div>
                                 </div>
                                 <div className='linha-vaga' />
-                                <p className="publish-date">Vaga publicada em {job.publishedDate}</p>
+                                <p className="publish-date">Vaga publicada em {formatDate(job.publicationDate)}</p>
                             </div>
                         </SwiperSlide>
                     ))}

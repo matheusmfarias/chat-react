@@ -1,9 +1,12 @@
 import React from 'react';
 import { Container, Row, Col, Button, Card } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBriefcase, faSackDollar, faWheelchair } from '@fortawesome/free-solid-svg-icons';
+import { faBriefcase, faCalendarDays, faSackDollar, faWheelchair } from '@fortawesome/free-solid-svg-icons';
+import useFormattedDate from '../../../hooks/useFormattedDate';
 
 const DetalhesVagas = ({ job, onBack }) => {
+    const { formatDate } = useFormattedDate();
+    
     if (!job) return null;
 
     // Função para renderizar conteúdo HTML com segurança
@@ -28,6 +31,9 @@ const DetalhesVagas = ({ job, onBack }) => {
                 <Col md={12} className="shadow-sm mb-1 p-3 rounded">
                     <Card className="border-0 p-3">
                         <h4>Dados da vaga</h4>
+                        <Card.Text className="text-secondary">
+                            <FontAwesomeIcon icon={faCalendarDays} title="Data de publicação" /> {formatDate(job.publicationDate)}
+                        </Card.Text>
                         <Card.Text className="text-secondary"><FontAwesomeIcon icon={faBriefcase} title="Tipo" /> {job.type}</Card.Text>
                         <Card.Text className="text-secondary"><FontAwesomeIcon icon={faSackDollar} title="Salário" /> {job.salary ? job.salary : 'A combinar'}</Card.Text>
                         <Card.Text className="text-secondary"><FontAwesomeIcon icon={faWheelchair} title="PCD" /> {job.pcd ? 'Sim' : 'Não'}</Card.Text>
