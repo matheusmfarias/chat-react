@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, Row, Col, Button, InputGroup, Form, Alert, Pagination, Modal } from 'react-bootstrap';
+import { Table, Row, Col, Button, InputGroup, Form, Alert, Pagination } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faToggleOn, faToggleOff, faEye, faPlus, faFilter, faSearch, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import HeaderEmpresa from '../HeaderEmpresa';
@@ -14,7 +14,6 @@ import DetalhesVagas from './DetalhesVagas';
 const VagasEmpresa = () => {
     const [jobs, setJobs] = useState([]);
     const [modalIsOpen, setModalIsOpen] = useState(false);
-    const [viewModalIsOpen, setViewModalIsOpen] = useState(false);
     const [selectedJob, setSelectedJob] = useState(null);
     const [states, setStates] = useState([]);
     const [cities, setCities] = useState([]);
@@ -43,7 +42,8 @@ const VagasEmpresa = () => {
         qualificationsActive: false,
         additionalInfoActive: false,
         requirementsActive: false,
-        offersActive: false
+        offersActive: false,
+        identifyCompany: true
     });
     const [isEditMode, setIsEditMode] = useState(false);
     const [editJobId, setEditJobId] = useState(null);
@@ -180,14 +180,6 @@ const VagasEmpresa = () => {
         }
     }, [selectedStateModal]);
 
-    function renderHtmlOrFallback(htmlContent) {
-        if (htmlContent && htmlContent.trim() !== "") {
-            return <div dangerouslySetInnerHTML={{ __html: htmlContent }} />;
-        } else {
-            return <p>Não informado</p>;
-        }
-    }
-
     const openViewJob = (job) => {
         setSelectedJob(job);
         setViewingJob(true);
@@ -214,7 +206,8 @@ const VagasEmpresa = () => {
                 qualificationsActive: !!job.qualifications,
                 additionalInfoActive: !!job.additionalInfo,
                 requirementsActive: !!job.requirements,
-                offersActive: !!job.offers
+                offersActive: !!job.offers,
+                identifyCompany: !!job.identifyCompany
             });
             setIsEditMode(true);
             setEditJobId(job._id);
@@ -239,7 +232,8 @@ const VagasEmpresa = () => {
                 qualificationsActive: false,
                 additionalInfoActive: false,
                 requirementsActive: false,
-                offersActive: false
+                offersActive: false,
+                identifyCompany: true
             });
             setSelectedStateModal('');
             setSelectedCityModal('');
@@ -251,15 +245,6 @@ const VagasEmpresa = () => {
 
     const closeModal = () => {
         setModalIsOpen(false);
-    };
-
-    const openViewModal = (job) => {
-        setSelectedJob(job);
-        setViewModalIsOpen(true);
-    };
-
-    const closeViewModal = () => {
-        setViewModalIsOpen(false);
     };
 
     const handleJobSubmit = async (jobData) => {
@@ -633,49 +618,6 @@ const VagasEmpresa = () => {
                 selectedState={selectedStateModal}
                 selectedCity={selectedCityModal}
             />
-
-            {/* Novo Modal para Visualização */}
-            <Modal show={viewModalIsOpen} onHide={closeViewModal} centered>
-                <Modal.Header closeButton>
-                    <Modal.Title>Detalhes da Vaga</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    {selectedJob && (
-                        <div>
-                            <p><strong>Cargo:</strong> {selectedJob.title}</p>
-                            <p><strong>Localização:</strong> {selectedJob.location}</p>
-                            <p><strong>Modelo:</strong> {selectedJob.modality}</p>
-                            <p><strong>Tipo:</strong> {selectedJob.type}</p>
-                            <p><strong>Salário:</strong> {selectedJob.salary ? selectedJob.salary : 'Não informado'}</p>
-                            <p><strong>Benefícios:</strong></p>
-                            {renderHtmlOrFallback(selectedJob.offers)}
-
-                            <p><strong>Descrição:</strong></p>
-                            {renderHtmlOrFallback(selectedJob.description)}
-
-                            <p><strong>Responsabilidades e atribuições:</strong></p>
-                            {renderHtmlOrFallback(selectedJob.responsibilities)}
-
-                            <p><strong>Requisitos e qualificações:</strong></p>
-                            {renderHtmlOrFallback(selectedJob.qualifications)}
-
-                            <p><strong>Será um diferencial:</strong></p>
-                            {renderHtmlOrFallback(selectedJob.requirements)}
-
-                            <p><strong>Informações Adicionais:</strong></p>
-                            {renderHtmlOrFallback(selectedJob.additionalInfo)}
-
-                            <p><strong>Status:</strong> {selectedJob.status === 'true' ? 'Ativa' : 'Inativa'}</p>
-                            <p><strong>PCD:</strong> {selectedJob.pcd === 'Sim' ? 'Sim' : 'Não'}</p>
-                        </div>
-                    )}
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={closeViewModal}>
-                        Fechar
-                    </Button>
-                </Modal.Footer>
-            </Modal>
         </>
     );
 };

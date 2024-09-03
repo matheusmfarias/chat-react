@@ -24,7 +24,8 @@ const ModalVagas = ({
             setNewJob({
                 ...jobData,
                 pcd: !!jobData.pcd,
-                status: !!jobData.status
+                status: !!jobData.status,
+                identifyCompany: !!jobData.identifyCompany
             });
         }
     }, [jobData]);
@@ -389,6 +390,18 @@ const ModalVagas = ({
                                         id="pcd-switch"
                                         checked={newJob.pcd}
                                         onChange={() => handleToggleChange('pcd')}
+                                    />
+
+                                </div>
+                            </Form.Group>
+                            <Form.Group className="form-group-custom">
+                                <div className="d-flex justify-content-between">
+                                    <Form.Label className='mr-2'>Identificação</Form.Label>
+                                    <Form.Check
+                                        type="switch"
+                                        id="identificacao-switch"
+                                        checked={newJob.identifyCompany}
+                                        onChange={() => handleToggleChange('identifyCompany')}
                                     />
 
                                 </div>

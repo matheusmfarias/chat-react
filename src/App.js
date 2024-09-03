@@ -19,6 +19,7 @@ import AdminDashboard from './components/Admin/AdminDashboard';
 import LoginEmpresa from './components/Login/LoginEmpresa';
 import DashboardEmpresa from './components/Empresa/DashboardEmpresa';
 import VagasEmpresa from './components/Empresa/VagasEmpresa/VagasEmpresa';
+import BuscarVagas from './components/Candidato/BuscarVagas/BuscarVagas';
 
 const App = () => {
   const { isLoading } = useContext(LoadingContext);
@@ -76,6 +77,11 @@ const App = () => {
           <Route path='/curriculo' element={
             <Layout>
               <Curriculo />
+            </Layout>
+          } />
+          <Route path='/buscar-vagas' element={
+            <Layout>
+              <BuscarVagas />
             </Layout>
           } />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
