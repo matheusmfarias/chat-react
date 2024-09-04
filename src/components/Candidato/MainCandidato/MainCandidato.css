@@ -1,68 +1,11 @@
-.main-content-usuario {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    background-image: url('../../../assets/images/fundo.png');
-    background-position: center center;
-    background-repeat: no-repeat;
+.bg-cover {
     background-size: cover;
+}
+
+.bg-center {
+    background-position: center;
+}
+
+.vh-50 {
     height: 50vh;
-}
-
-.central-container-usuario {
-    color: #ffffff;
-}
-
-.central-container-usuario h1 {
-    font-size: 40px;
-}
-
-.central-container-usuario h4 {
-    margin-top: 3%;
-    font-size: 20px;
-    font-weight: 300;
-}
-
-.input-busca {
-    width: 100%;
-    background-color: #ffffff;
-    border: none;
-    border-radius: 0;
-    border-top-left-radius: 10px;
-    border-bottom-left-radius: 10px;
-    padding: 10px;
-}
-
-.container-busca {
-    display: flex;
-    flex-direction: row;
-    padding: 10px;
-}
-
-.container-busca button {
-    background-color: #ffffff;
-    color: #1876ea;
-    width: 50px;
-    border: none;
-    border-radius: 0;
-    border-top-right-radius: 10px;
-    border-bottom-right-radius: 10px;
-    margin: 0;
-}
-
-.container-busca button:hover {
-    background-color: #e3e3e3;
-}
-
-@media (max-width: 605px) {
-    .central-container h1 {
-        font-size: 32px;
-    }
-    
-    .central-container h4 {
-        margin-top: 3%;
-        font-size: 16px;
-        font-weight: 300;
-    }
 }

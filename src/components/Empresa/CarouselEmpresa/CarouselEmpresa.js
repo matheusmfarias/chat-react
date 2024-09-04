@@ -125,7 +125,7 @@ const CarouselEmpresa = () => {
                                                 <FontAwesomeIcon
                                                     className="me-2"
                                                     icon={faCircle}
-                                                    style={{ color: job.status ? "#1eff00" : "#ff0000" }}
+                                                    style={{ color: job.status ? "#008000" : "#ff0000" }}
                                                     title="Status"
                                                 />
                                                 {job.status ? "Ativa" : "Inativa"}

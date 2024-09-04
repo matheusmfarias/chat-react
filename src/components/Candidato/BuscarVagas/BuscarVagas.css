@@ -1,0 +1,11 @@
+/* Estilos padrão para o card */
+.vaga-card {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Estilo para o card selecionado */
+.vaga-card-selecionada {
+    z-index: 10; /* Traz o card selecionado para frente */
+    box-shadow: 0px 4px 12px rgba(0, 123, 255, 0.6); /* Sombra com cor primária */
+    transform: scale(1.05); /* Aumenta levemente o tamanho do card */
+}
