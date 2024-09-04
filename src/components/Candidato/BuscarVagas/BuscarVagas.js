@@ -1,19 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import HeaderCandidato from "../HeaderCandidato/HeaderCandidato";
 import { useLocation } from 'react-router-dom';
-import { Row, Col, Card, Container } from "react-bootstrap";
-import { faBriefcase, faBuilding, faHome, faLaptopHouse, faLocationDot, faMoneyBillWave, faWheelchair } from "@fortawesome/free-solid-svg-icons";
+import { Row, Col, Card, Container, Button } from "react-bootstrap";
+import { faBriefcase, faBuilding, faChevronLeft, faChevronRight, faHome, faLaptopHouse, faLocationDot, faMoneyBillWave, faWheelchair } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import './BuscarVagas.css'; // Adicionar o arquivo CSS para a transição
 
 const BuscarVagas = () => {
     const location = useLocation();
-    const results = location.state?.results;
+    const results = useMemo(() => location.state?.results || [], [location.state]);
     const [selectedJob, setSelectedJob] = useState(null); // Estado para controlar a vaga selecionada
+    const [currentPage, setCurrentPage] = useState(1); // Estado para controlar a página atual
+    const itemsPerPage = 10; // Definindo 10 vagas por página
 
     // Efeito para abrir automaticamente a primeira vaga encontrada
     useEffect(() => {
-        if (results && results.length > 0) {
+        if (results.length > 0) {
             setSelectedJob(results[0]);
         }
     }, [results]);
@@ -22,19 +24,50 @@ const BuscarVagas = () => {
         setSelectedJob(job); // Atualiza o estado com a vaga selecionada
     };
 
+    // Função para calcular o número total de páginas
+    const totalPages = Math.ceil(results.length / itemsPerPage);
+
+    // Função para mudar de página
+    const handlePageChange = (direction) => {
+        if (direction === 'next' && currentPage < totalPages) {
+            setCurrentPage(currentPage + 1);
+        } else if (direction === 'prev' && currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
+
+    // Calculando as vagas para a página atual
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentItems = results.slice(startIndex, endIndex);
+
+    useEffect(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const firstJobOnPage = results.slice(startIndex, startIndex + itemsPerPage)[0];
+        setSelectedJob(firstJobOnPage);
+    }, [currentPage, results, itemsPerPage]);
+
+    const renderHtmlContent = (content) => {
+        return { __html: content };
+    };
+
     return (
         <>
             <HeaderCandidato />
             <Container className="mt-3">
                 <Row>
-                    <Col md={4}>
-                        {/* Coluna da esquerda para exibir os cards das vagas */}
-                        {results && results.map(result => (
+                    <Col md={4} style={{ position: 'relative' }} className="p-2 ">
+                        {currentItems && currentItems.map(result => (
                             <Card
                                 key={result._id}
-                                className={`vaga-card mb-4 border-0 shadow-sm rounded ${selectedJob && selectedJob._id === result._id ? 'vaga-card-selecionada shadow-lg' : ''}`} // Adiciona sombra especial se for o card selecionado
-                                onClick={() => handleCardClick(result)} // Define a vaga selecionada ao clicar no card
-                                style={{ cursor: 'pointer' }}
+                                className={`vaga-card p-2 mb-4 border-0 shadow-sm rounded ${selectedJob && selectedJob._id === result._id ? 'vaga-card-selecionada shadow-lg' : ''}`}
+                                onClick={() => handleCardClick(result)}
+                                style={{
+                                    cursor: 'pointer',
+                                    position: selectedJob && selectedJob._id === result._id ? 'sticky' : 'static',
+                                    top: selectedJob && selectedJob._id === result._id ? '0' : 'auto',
+                                    zIndex: selectedJob && selectedJob._id === result._id ? '1000' : 'auto'
+                                }}
                             >
                                 <Card.Body>
                                     <Card.Title>{result.title}</Card.Title>
@@ -93,11 +126,60 @@ const BuscarVagas = () => {
                                 </Card.Body>
                             </Card>
                         ))}
+
+                        <div className="d-flex justify-content-center align-items-center mt-4">
+                            <Button
+                                className="me-2 mb-2"
+                                onClick={() => handlePageChange('prev')}
+                                disabled={currentPage === 1}
+                            >
+                                <FontAwesomeIcon icon={faChevronLeft} />
+                            </Button>
+
+                            {/* Página Anterior */}
+                            {currentPage > 1 && (
+                                <Button
+                                    className="me-2 mb-2"
+                                    onClick={() => handlePageChange('prev')}
+                                >
+                                    {currentPage - 1}
+                                </Button>
+                            )}
+
+                            {/* Página Atual */}
+                            <Button
+                                className="me-2 mb-2"
+                                variant="primary"
+                                disabled
+                            >
+                                {currentPage}
+                            </Button>
+
+                            {/* Próxima Página */}
+                            {currentPage < totalPages && (
+                                <Button
+                                    className="me-2 mb-2"
+                                    onClick={() => handlePageChange('next')}
+                                >
+                                    {currentPage + 1}
+                                </Button>
+                            )}
+
+                            <Button
+                                className="me-2 mb-2"
+                                onClick={() => handlePageChange('next')}
+                                disabled={currentPage === totalPages}
+                            >
+                                <FontAwesomeIcon icon={faChevronRight} />
+                            </Button>
+                        </div>
+
+
                     </Col>
-                    <Col md={8}>
+                    <Col md={8} style={{ position: 'sticky', top: '0', height: '100vh', overflowY: 'auto', zIndex: '1000' }}>
                         {/* Coluna da direita para exibir a descrição detalhada da vaga selecionada */}
                         {selectedJob ? (
-                            <Card className="vaga-detalhe mb-4 border-0 shadow-sm rounded">
+                            <Card className="vaga-detalhe mb-4 border-0 shadow rounded" >
                                 <Card.Body>
                                     <Card.Title><strong>{selectedJob.title}</strong></Card.Title>
                                     {selectedJob.identifyCompany && selectedJob.company ? (
@@ -108,12 +190,49 @@ const BuscarVagas = () => {
                                     <Row>
                                         <Card.Text>{selectedJob.location}</Card.Text>
                                         <Card.Text>{selectedJob.modality}</Card.Text>
+                                        <Card.Text><strong>Salário:</strong> {selectedJob.salary ? `${selectedJob.salary}` : "A combinar"}</Card.Text>
+                                        <Card.Text><strong>PCD:</strong> {selectedJob.pcd ? "Sim" : "Não"}</Card.Text>
                                     </Row>
-                                    <Card.Text><strong>Tipo:</strong> {selectedJob.type}</Card.Text>
-                                    <Card.Text><strong>Publicação:</strong> {new Date(selectedJob.publicationDate).toLocaleDateString()}</Card.Text>
-                                    <Card.Text><strong>Descrição:</strong> {selectedJob.description}</Card.Text>
-                                    <Card.Text><strong>Salário:</strong> {selectedJob.salary ? `R$ ${selectedJob.salary}` : "Não informado"}</Card.Text>
-                                    <Card.Text><strong>PCD:</strong> {selectedJob.pcd ? "Sim" : "Não"}</Card.Text>
+                                    <Card.Text>{selectedJob.type}</Card.Text>
+
+                                    {selectedJob.offers ? (
+                                        <>
+                                            <Card.Title><strong>Benefícios</strong></Card.Title>
+                                            <Card.Text dangerouslySetInnerHTML={renderHtmlContent(selectedJob.offers)} />
+                                        </>
+                                    ) : null}
+
+                                    {selectedJob.description ? (
+                                        <>
+                                            <Card.Title><strong>Descrição</strong></Card.Title>
+                                            <Card.Text dangerouslySetInnerHTML={renderHtmlContent(selectedJob.description)} />
+                                        </>
+                                    ) : null}
+                                    {selectedJob.responsibilities ? (
+                                        <>
+                                            <Card.Title><strong>Responsabilidades e atribuições</strong></Card.Title>
+                                            <Card.Text dangerouslySetInnerHTML={renderHtmlContent(selectedJob.responsibilities)} />
+                                        </>
+                                    ) : null}
+                                    {selectedJob.qualifications ? (
+                                        <>
+                                            <Card.Title><strong>Requisitos e qualificações</strong></Card.Title>
+                                            <Card.Text dangerouslySetInnerHTML={renderHtmlContent(selectedJob.qualifications)} />
+                                        </>
+                                    ) : null}
+                                    {selectedJob.requiriments ? (
+                                        <>
+                                            <Card.Title><strong>Será um diferencial</strong></Card.Title>
+                                            <Card.Text dangerouslySetInnerHTML={renderHtmlContent(selectedJob.requiriments)} />
+                                        </>
+                                    ) : null}
+                                    {selectedJob.additionalInfo ? (
+                                        <>
+                                            <Card.Title><strong>Informações adicionais</strong></Card.Title>
+                                            <Card.Text dangerouslySetInnerHTML={renderHtmlContent(selectedJob.additionalInfo)} />
+                                        </>
+                                    ) : null}
+
                                 </Card.Body>
                             </Card>
                         ) : (
