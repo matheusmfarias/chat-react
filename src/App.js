@@ -20,6 +20,7 @@ import LoginEmpresa from './components/Login/LoginEmpresa';
 import DashboardEmpresa from './components/Empresa/DashboardEmpresa';
 import VagasEmpresa from './components/Empresa/VagasEmpresa/VagasEmpresa';
 import BuscarVagas from './components/Candidato/BuscarVagas/BuscarVagas';
+import DetalhesVaga from './components/Candidato/BuscarVagas/DetalhesVaga';
 
 const App = () => {
   const { isLoading } = useContext(LoadingContext);
@@ -82,6 +83,11 @@ const App = () => {
           <Route path='/buscar-vagas' element={
             <Layout>
               <BuscarVagas />
+            </Layout>
+          } />
+          <Route path='/detalhes-vaga' element={
+            <Layout>
+              <DetalhesVaga />
             </Layout>
           } />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
