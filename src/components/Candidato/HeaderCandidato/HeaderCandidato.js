@@ -52,7 +52,7 @@ const HeaderCandidato = () => {
     const handleLogout = () => {
         localStorage.removeItem('token');
         sessionStorage.removeItem('userName'); // Remove o nome da sessão ao fazer logout
-        navigate('/login', { replace: true });
+        navigate('/', { replace: true });
     };
 
     const toggleMenu = () => {

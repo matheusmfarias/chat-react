@@ -56,7 +56,7 @@ const BuscarVagas = () => {
             <HeaderCandidato />
             <Container className="mt-3">
                 <Row>
-                    <Col md={4} style={{ position: 'relative' }} className="p-2 ">
+                    <Col md={4} style={{ position: 'relative' }} className="p-2">
                         {currentItems && currentItems.map(result => (
                             <Card
                                 key={result._id}
@@ -176,10 +176,11 @@ const BuscarVagas = () => {
 
 
                     </Col>
-                    <Col md={8} style={{ position: 'sticky', top: '0', height: '100vh', overflowY: 'auto', zIndex: '1000' }}>
+                    <Col md={8} className="mb-3">
                         {/* Coluna da direita para exibir a descrição detalhada da vaga selecionada */}
                         {selectedJob ? (
-                            <Card className="vaga-detalhe mb-4 border-0 shadow rounded" >
+                            <Card className="vaga-detalhe mb-4 border-0 shadow rounded">
+                                {/* Primeiro Card.Body com as informações fixas */}
                                 <Card.Body>
                                     <Card.Title><strong>{selectedJob.title}</strong></Card.Title>
                                     {selectedJob.identifyCompany && selectedJob.company ? (
@@ -194,7 +195,10 @@ const BuscarVagas = () => {
                                         <Card.Text><strong>PCD:</strong> {selectedJob.pcd ? "Sim" : "Não"}</Card.Text>
                                     </Row>
                                     <Card.Text>{selectedJob.type}</Card.Text>
+                                </Card.Body>
 
+                                {/* Segundo Card.Body com o conteúdo rolável apenas se necessário */}
+                                <Card.Body style={{ maxHeight: '293vh', overflowY: 'auto' }} >
                                     {selectedJob.offers ? (
                                         <>
                                             <Card.Title><strong>Benefícios</strong></Card.Title>
@@ -232,13 +236,13 @@ const BuscarVagas = () => {
                                             <Card.Text dangerouslySetInnerHTML={renderHtmlContent(selectedJob.additionalInfo)} />
                                         </>
                                     ) : null}
-
                                 </Card.Body>
                             </Card>
                         ) : (
                             <p>Selecione uma vaga à esquerda para ver os detalhes.</p>
                         )}
                     </Col>
+
                 </Row>
             </Container>
         </>

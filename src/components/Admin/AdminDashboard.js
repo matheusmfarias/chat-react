@@ -91,8 +91,10 @@ const AdminDashboard = () => {
         setIsModified(true);
     };
 
-    const handleShowModal = (empresa = { nome: '', cnpj: '', setor: '', email: '', senha: '', isDisabled: false }) => {
-        setCurrentEmpresa({ ...empresa });
+    const handleShowModal = (empresa = { nome: '', cnpj: '', setor: '', email: '', isDisabled: false }) => {
+        // Remova a senha do objeto empresa antes de setar o estado
+        const { senha, ...empresaSemSenha } = empresa;
+        setCurrentEmpresa({ ...empresaSemSenha, senha: '' });  // Sete a senha como vazia
         setFormattedCnpj(empresa.cnpj);
         setEditMode(!!empresa._id);
         setShowModal(true);
@@ -598,6 +600,7 @@ const AdminDashboard = () => {
                                 name="senha"
                                 value={currentEmpresa.senha}
                                 onChange={handleInputChange}
+                                placeholder="Digite uma nova senha para alterar"
                             />
                         </Form.Group>
                         <Form.Group className='campos-empresa'>
