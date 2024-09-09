@@ -73,6 +73,11 @@ const DetalhesVaga = () => {
                             Voltar
                         </Button>
                     </Col>
+                    <Col md={11} className="mt-2">
+                        <h1>Revisão do currículo</h1>
+                    </Col>
+                </Row>
+                <Row>
                     <Col md={6} className="curriculo-container">
                         <CurriculoTemplate
                             experiencias={experiencias}
@@ -80,7 +85,7 @@ const DetalhesVaga = () => {
                             informacoes={informacoes}
                         />
                     </Col>
-                    <Col md={5} style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000' }}>
+                    <Col md={6} style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000' }}>
                         <Card className="vaga-detalhe border-0">
                             <Card.Body className="shadow rounded">
                                 <Card.Title><strong>{job.title}</strong></Card.Title>

@@ -4,25 +4,21 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Row, Col, Card, Container, Button, Form, InputGroup } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBriefcase, faBuilding, faChevronLeft, faChevronRight, faHome, faLaptopHouse, faLocationDot, faMoneyBillWave, faUpRightFromSquare, faWheelchair, faSearch, faFilter, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
-import './BuscarVagas.css'; 
+import './BuscarVagas.css';
 import axios from "axios";
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 const BuscarVagas = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const [jobs, setJobs] = useState([]);
+    const keyword = location.state?.keyword || '';
     const results = useMemo(() => location.state?.results || [], [location.state]);
     const [selectedJob, setSelectedJob] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
     // Estados para busca e filtros
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filterParam, setFilterParam] = useState(''); // Filtros como cidade, estado, tipo, modalidade
-
-    // Estado para controle dos filtros visíveis
-    const [showFilters, setShowFilters] = useState(false); 
+    const [searchTerm, setSearchTerm] = useState(keyword);
     const [selectedStateFilter, setSelectedStateFilter] = useState('');
     const [selectedCityFilter, setSelectedCityFilter] = useState('');
     const [filters, setFilters] = useState({
@@ -30,16 +26,83 @@ const BuscarVagas = () => {
         type: '',
         pcd: '',
     });
+    const [states, setStates] = useState([]);
+    const [cities, setCities] = useState([]);
 
-    // Função para buscar vagas com base nos filtros
-    const handleSearch = useCallback(async () => {
+    // Estado para controle dos filtros visíveis
+    const [showFilters, setShowFilters] = useState(false);
+
+    // Log para verificar se o valor do keyword foi recebido corretamente
+    console.log('Valor do keyword recebido na tela BuscarVagas:', keyword);
+
+    useEffect(() => {
+        // Realiza a busca no backend apenas se o keyword não for vazio
+        if (keyword) {
+            const fetchJobs = async () => {
+                try {
+                    const token = localStorage.getItem('token');
+                    const response = await axios.get(`http://localhost:5000/api/jobsSearch?keyword=${keyword}`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    setJobs(response.data);
+                } catch (error) {
+                    console.error('Erro ao buscar vagas:', error);
+                }
+            };
+
+            fetchJobs();  // Executa a busca no backend
+        }
+    }, [keyword]);  // O useEffect é disparado apenas quando o keyword muda
+
+    // Função para buscar estados via API do IBGE
+    const fetchStates = useCallback(async () => {
+        try {
+            const response = await axios.get('https://servicodados.ibge.gov.br/api/v1/localidades/estados');
+            setStates(response.data);
+        } catch (error) {
+            console.error('Erro ao buscar estados:', error);
+        }
+    }, []);
+
+    // Função para buscar cidades baseado no estado selecionado
+    const fetchCities = useCallback(async (state) => {
+        try {
+            const response = await axios.get(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${state}/municipios`);
+            setCities(response.data);
+        } catch (error) {
+            console.error('Erro ao buscar cidades:', error);
+        }
+    }, []);
+
+    // Buscar cidades quando o estado for selecionado
+    useEffect(() => {
+        if (selectedStateFilter) {
+            fetchCities(selectedStateFilter);
+        } else {
+            setCities([]);
+        }
+    }, [selectedStateFilter, fetchCities]);
+
+    // Carregar os estados ao carregar o componente
+    useEffect(() => {
+        fetchStates();
+    }, [fetchStates]);
+
+    // Função para buscar vagas com base nos filtros de cargo e filtros aplicados
+    const handleSearchByJob = useCallback(async () => {
         const params = new URLSearchParams();
+
+        // Busca por cargo (termo digitado)
         if (searchTerm.trim()) {
-            params.append('keyword', searchTerm); // Busca por cargo
+            params.append('keyword', searchTerm);
         }
-        if (filterParam.trim()) {
-            params.append('filter', filterParam); // Filtro por cidade, estado, tipo, modalidade
-        }
+
+        // Filtros aplicados
+        if (selectedStateFilter) params.append('state', selectedStateFilter);
+        if (selectedCityFilter) params.append('city', selectedCityFilter);
+        if (filters.modality) params.append('modality', filters.modality);
+        if (filters.type) params.append('type', filters.type);
+        if (filters.pcd) params.append('pcd', filters.pcd);
 
         try {
             const token = localStorage.getItem('token');
@@ -49,27 +112,27 @@ const BuscarVagas = () => {
             navigate('/buscar-vagas', { state: { results: response.data } });
         } catch (error) {
             console.error('Erro ao buscar vagas:', error);
-            toast.error('Erro ao buscar vagas. Tente novamente mais tarde.');
         }
-    }, [searchTerm, filterParam, navigate]);
+    }, [searchTerm, selectedStateFilter, selectedCityFilter, filters, navigate]);
 
-    const handleFilter = useCallback(async () => {
-        const params = new URLSearchParams();
-        if (filterParam.trim()) {
-            params.append('filter', filterParam); // Filtro por cidade, estado, tipo, modalidade
-        }
+    // Atualização na busca enquanto o usuário digita
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            handleSearchByJob();
+        }, 500); // Aguarda 500ms após o usuário parar de digitar
 
-        try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get(`http://localhost:5000/api/jobsSearch?${params.toString()}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            navigate('/buscar-vagas', { state: { results: response.data } });
-        } catch (error) {
-            console.error('Erro ao aplicar filtros:', error);
-            toast.error('Erro ao aplicar filtros. Tente novamente mais tarde.');
-        }
-    }, [filterParam, navigate]);
+        return () => clearTimeout(timeoutId); // Limpa o timeout anterior a cada nova digitação
+    }, [searchTerm, selectedStateFilter, selectedCityFilter, filters, handleSearchByJob]);
+
+    // Função para resetar a busca
+    const handleResetSearch = () => {
+        setSearchTerm(''); // Limpa o termo de busca
+        setSelectedStateFilter('');
+        setSelectedCityFilter('');
+        setFilters({ modality: '', type: '', pcd: '' });
+        setJobs([]); // Limpa as vagas
+        handleSearchByJob(); // Executa a busca com todos os filtros resetados
+    };
 
     const handleCandidatarClick = () => {
         navigate('/detalhes-vaga', { state: { job: selectedJob } });
@@ -100,7 +163,6 @@ const BuscarVagas = () => {
     const currentItems = results.slice(startIndex, endIndex);
 
     useEffect(() => {
-        const startIndex = (currentPage - 1) * itemsPerPage;
         const firstJobOnPage = results.slice(startIndex, startIndex + itemsPerPage)[0];
         setSelectedJob(firstJobOnPage);
     }, [currentPage, results, itemsPerPage]);
@@ -108,6 +170,7 @@ const BuscarVagas = () => {
     // Funções para resetar filtros individualmente
     const resetStateFilter = () => {
         setSelectedStateFilter('');
+        setCities([]);
     };
 
     const resetCityFilter = () => {
@@ -132,27 +195,36 @@ const BuscarVagas = () => {
             <Container className="mt-3">
                 {/* Barra de busca e filtros */}
                 <Row className="mb-4 justify-content-center">
-                    <Col md={10}>
-                        <InputGroup className="shadow">
+                    <Col md={10} style={{ position: 'relative' }}> {/* Container relativo para o ícone */}
+                        <InputGroup className="rounded">
                             <Form.Control
                                 type="text"
-                                placeholder="Pesquisar por cargos..."
+                                placeholder="Pesquisar por cargos, cidade, modelo..."
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
-                                className="rounded-start border-primary"
+                                className="border-primary shadow"
+                                style={{ paddingRight: '40px' }} // Espaço para o ícone de reset
                             />
-                            <Form.Control
-                                type="text"
-                                placeholder="Cidade, estado, tipo ou modelo"
-                                value={filterParam}
-                                onChange={e => setFilterParam(e.target.value)}
-                                className="rounded-0 border-primary"
-                            />
-                            <Button variant="light" onClick={handleSearch} className="btn-outline-primary rounded-end w-auto px-5">
+                            {searchTerm && (
+                                <FontAwesomeIcon
+                                    icon={faTimesCircle}
+                                    onClick={handleResetSearch}
+                                    title="Limpar busca"
+                                    style={{
+                                        position: 'absolute',
+                                        left: '770px',
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        cursor: 'pointer',
+                                        color: '#d33',
+                                    }}
+                                />
+                            )}
+                            <Button variant="light" className="btn-outline-primary rounded-end w-auto px-5">
                                 <FontAwesomeIcon icon={faSearch} />
                             </Button>
                             {/* Botão para abrir/fechar filtros */}
-                            <Button variant="light" onClick={() => setShowFilters(!showFilters)} className="btn-outline-primary w-auto px-5 ms-2">
+                            <Button variant="light" onClick={() => setShowFilters(!showFilters)} className="btn-outline-primary w-auto px-5 ms-2 rounded">
                                 <FontAwesomeIcon icon={faFilter} /> Filtrar
                             </Button>
                         </InputGroup>
@@ -161,49 +233,94 @@ const BuscarVagas = () => {
 
                 {/* Filtros */}
                 {showFilters && (
-                    <Row className="mb-4">
-                        <Col xs={12} md={4} className="d-flex align-items-center">
-                            <Form.Control
-                                as="select"
-                                value={selectedStateFilter}
-                                onChange={(e) => setSelectedStateFilter(e.target.value)}
-                            >
-                                <option value="">Selecione o estado</option>
-                                {/* Adicione aqui as opções de estados */}
-                            </Form.Control>
-                            {selectedStateFilter && (
-                                <FontAwesomeIcon icon={faTimesCircle} className="icon-reset" onClick={resetStateFilter} title="Resetar Estado" />
-                            )}
-                        </Col>
-                        <Col xs={12} md={4} className="d-flex align-items-center">
-                            <Form.Control
-                                as="select"
-                                value={selectedCityFilter}
-                                onChange={(e) => setSelectedCityFilter(e.target.value)}
-                            >
-                                <option value="">Selecione a cidade</option>
-                                {/* Adicione aqui as opções de cidades */}
-                            </Form.Control>
-                            {selectedCityFilter && (
-                                <FontAwesomeIcon icon={faTimesCircle} className="icon-reset" onClick={resetCityFilter} title="Resetar Cidade" />
-                            )}
-                        </Col>
-                        <Col xs={12} md={4} className="d-flex align-items-center">
-                            <Form.Control
-                                as="select"
-                                value={filters.modality}
-                                onChange={(e) => setFilters({ ...filters, modality: e.target.value })}
-                            >
-                                <option value="">Modalidade</option>
-                                <option value="Presencial">Presencial</option>
-                                <option value="Híbrido">Híbrido</option>
-                                <option value="Remoto">Remoto</option>
-                            </Form.Control>
-                            {filters.modality && (
-                                <FontAwesomeIcon icon={faTimesCircle} className="icon-reset" onClick={resetModalityFilter} title="Resetar Modalidade" />
-                            )}
-                        </Col>
-                    </Row>
+                    <>
+                        <Row className="mb-3 align-items-center justify-content-center">
+                            <Col xs={12} md={2} className="d-flex align-items-center">
+                                <Form.Control
+                                    as="select"
+                                    value={selectedStateFilter}
+                                    onChange={(e) => setSelectedStateFilter(e.target.value)}
+                                >
+                                    <option value="">Selecione o estado</option>
+                                    {states.map((state) => (
+                                        <option key={state.id} value={state.sigla}>
+                                            {state.nome}
+                                        </option>
+                                    ))}
+                                </Form.Control>
+                                {selectedStateFilter && (
+                                    <FontAwesomeIcon icon={faTimesCircle} className="icon-reset" onClick={resetStateFilter} title="Resetar Estado" />
+                                )}
+                            </Col>
+                            <Col xs={12} md={2} className="d-flex align-items-center">
+                                <Form.Control
+                                    as="select"
+                                    value={selectedCityFilter}
+                                    onChange={(e) => setSelectedCityFilter(e.target.value)}
+                                    disabled={!selectedStateFilter}
+                                >
+                                    <option value="">Selecione a cidade</option>
+                                    {cities.map((city) => (
+                                        <option key={city.id} value={city.nome}>
+                                            {city.nome}
+                                        </option>
+                                    ))}
+                                </Form.Control>
+                                {selectedCityFilter && (
+                                    <FontAwesomeIcon icon={faTimesCircle} className="icon-reset" onClick={resetCityFilter} title="Resetar Cidade" />
+                                )}
+                            </Col>
+                            <Col xs={12} md={2} className="d-flex align-items-center">
+                                <Form.Control
+                                    as="select"
+                                    value={filters.modality}
+                                    onChange={(e) => setFilters({ ...filters, modality: e.target.value })}
+                                >
+                                    <option value="">Modalidade</option>
+                                    <option value="Presencial">Presencial</option>
+                                    <option value="Híbrido">Híbrido</option>
+                                    <option value="Remoto">Remoto</option>
+                                </Form.Control>
+                                {filters.modality && (
+                                    <FontAwesomeIcon icon={faTimesCircle} className="icon-reset" onClick={resetModalityFilter} title="Resetar Modalidade" />
+                                )}
+                            </Col>
+                            <Col xs={12} md={2} className="d-flex align-items-center">
+                                <Form.Control
+                                    as="select"
+                                    value={filters.type}
+                                    onChange={(e) => setFilters({ ...filters, type: e.target.value })}
+                                >
+                                    <option value="">Tipo</option>
+                                    <option value="Efetivo">Efetivo</option>
+                                    <option value="Aprendiz">Aprendiz</option>
+                                    <option value="Estágio">Estágio</option>
+                                    <option value="Pessoa Jurídica">Pessoa Jurídica</option>
+                                    <option value="Trainee">Trainee</option>
+                                    <option value="Temporário">Temporário</option>
+                                    <option value="Freelancer">Freelancer</option>
+                                    <option value="Terceiro">Terceiro</option>
+                                </Form.Control>
+                                {filters.type && (
+                                    <FontAwesomeIcon icon={faTimesCircle} className="icon-reset" onClick={resetTypeFilter} title="Resetar Tipo" />
+                                )}
+                            </Col>
+                            <Col xs={12} md={2} className="d-flex align-items-center">
+                                <Form.Control
+                                    as="select"
+                                    value={filters.pcd}
+                                    onChange={(e) => setFilters({ ...filters, pcd: e.target.value })}
+                                >
+                                    <option value="">PCD</option>
+                                    <option value="true">Sim</option>
+                                    <option value="false">Não</option>
+                                </Form.Control>
+                                {filters.pcd && (
+                                    <FontAwesomeIcon icon={faTimesCircle} className="icon-reset" onClick={resetPcdFilter} title="Resetar PCD" />
+                                )}
+                            </Col>
+                        </Row>
+                    </>
                 )}
 
                 <Row className="justify-content-center">
@@ -266,51 +383,53 @@ const BuscarVagas = () => {
                         ))}
 
                         {/* Paginação */}
-                        <div className="d-flex justify-content-center align-items-center mt-4">
-                            <Button
-                                className="btn-sm me-2 mb-2"
-                                onClick={() => handlePageChange('prev')}
-                                disabled={currentPage === 1}
-                                variant="outline-primary"
-                            >
-                                <FontAwesomeIcon icon={faChevronLeft} />
-                            </Button>
-                            {currentPage > 1 && (
+                        {currentItems.length > 0 && (
+                            <div className="d-flex justify-content-center align-items-center mt-4">
                                 <Button
                                     className="btn-sm me-2 mb-2"
                                     onClick={() => handlePageChange('prev')}
+                                    disabled={currentPage === 1}
                                     variant="outline-primary"
                                 >
-                                    {currentPage - 1}
+                                    <FontAwesomeIcon icon={faChevronLeft} />
                                 </Button>
-                            )}
-                            <Button
-                                className="btn-sm me-2 mb-2"
-                                variant="outline-primary"
-                                disabled
-                            >
-                                {currentPage}
-                            </Button>
-                            {currentPage < totalPages && (
+                                {currentPage > 1 && (
+                                    <Button
+                                        className="btn-sm me-2 mb-2"
+                                        onClick={() => handlePageChange('prev')}
+                                        variant="outline-primary"
+                                    >
+                                        {currentPage - 1}
+                                    </Button>
+                                )}
+                                <Button
+                                    className="btn-sm me-2 mb-2"
+                                    variant="outline-primary"
+                                    disabled
+                                >
+                                    {currentPage}
+                                </Button>
+                                {currentPage < totalPages && (
+                                    <Button
+                                        className="btn-sm me-2 mb-2"
+                                        onClick={() => handlePageChange('next')}
+                                        variant="outline-primary"
+                                    >
+                                        {currentPage + 1}
+                                    </Button>
+                                )}
                                 <Button
                                     className="btn-sm me-2 mb-2"
                                     onClick={() => handlePageChange('next')}
+                                    disabled={currentPage === totalPages}
                                     variant="outline-primary"
                                 >
-                                    {currentPage + 1}
+                                    <FontAwesomeIcon icon={faChevronRight} />
                                 </Button>
-                            )}
-                            <Button
-                                className="btn-sm me-2 mb-2"
-                                onClick={() => handlePageChange('next')}
-                                disabled={currentPage === totalPages}
-                                variant="outline-primary"
-                            >
-                                <FontAwesomeIcon icon={faChevronRight} />
-                            </Button>
-                        </div>
+                            </div>
+                        )}
                     </Col>
-                    
+
                     {/* Detalhes da vaga à direita */}
                     <Col md={6} style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000' }}>
                         {selectedJob ? (
@@ -333,8 +452,8 @@ const BuscarVagas = () => {
                                                     className="me-2"
                                                     icon={
                                                         selectedJob.modality === 'Remoto' ? faHome :
-                                                        selectedJob.modality === 'Presencial' ? faBuilding :
-                                                        faLaptopHouse
+                                                            selectedJob.modality === 'Presencial' ? faBuilding :
+                                                                faLaptopHouse
                                                     }
                                                     title="Modelo"
                                                 />

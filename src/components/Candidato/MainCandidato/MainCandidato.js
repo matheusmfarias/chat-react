@@ -15,9 +15,8 @@ const Main = () => {
     const navigate = useNavigate();
 
     const handleSearch = useCallback(async () => {
-        // Verifica se pelo menos um dos campos está preenchido
-        if (!searchTerm.trim() && !filterParam.trim()) {
-            notify('Por favor, insira um termo de pesquisa ou filtro', 'error');
+        if (!searchTerm.trim()) {
+            notify('Por favor, insira um termo de pesquisa', 'error');
             return;
         }
 
@@ -27,25 +26,15 @@ const Main = () => {
         if (searchTerm.trim()) {
             params.append('keyword', searchTerm); // Busca pelo cargo
         }
-
-        // Adiciona os filtros (cidade, estado, tipo ou modelo) se estiver preenchido
-        if (filterParam.trim()) {
-            params.append('filter', filterParam); // Busca por cidade, estado, tipo ou modelo
-        }
-
+        console.log('Valor do keyword enviado:', searchTerm);
+        // Redireciona para a tela de buscar vagas com os parâmetros da barra de pesquisa
         try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get(`http://localhost:5000/api/jobsSearch?${params.toString()}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            navigate('/buscar-vagas', { state: { results: response.data } });
+            navigate('/buscar-vagas', { state: { keyword: searchTerm } });
         } catch (error) {
-            console.error('Erro ao buscar vagas:', error);
-            notify('Erro ao buscar vagas. Tente novamente mais tarde', 'error');
+            console.error('Erro ao redirecionar para busca de vagas:', error);
+            notify('Erro ao redirecionar para busca de vagas', 'error');
         }
-    }, [searchTerm, filterParam, navigate]);
+    }, [searchTerm, navigate]);
 
     const notify = (message, type) => {
         toast[type](message, {
@@ -68,25 +57,16 @@ const Main = () => {
                 <Row className="d-flex flex-row align-items-center justify-content-center mt-4">
                     <Col xs={10} md={10}>
                         <InputGroup className="shadow">
-                            {/* FormControl para o campo de pesquisa */}
+                            {/* Campo de pesquisa de cargos */}
                             <Form.Control
                                 type="text"
-                                placeholder="Pesquisar por cargos..."
+                                placeholder="Pesquisar por cargos, cidade, modelo..."
                                 aria-label="Pesquisar"
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
                                 className="rounded-start border-primary"
                             />
-                            {/* FormControl para o filtro */}
-                            <Form.Control
-                                type="text"
-                                placeholder="Cidade, estado, tipo ou modelo"
-                                aria-label="Filtro"
-                                value={filterParam}
-                                onChange={e => setFilterParam(e.target.value)}
-                                className="rounded-0 border-primary"
-                            />
-                            {/* Botão com largura reduzida */}
+                            {/* Botão de busca */}
                             <Button variant="light" onClick={handleSearch} className="btn-outline-primary rounded-end w-auto px-5">
                                 <FontAwesomeIcon icon={faMagnifyingGlass} />
                             </Button>
