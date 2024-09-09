@@ -57,11 +57,19 @@ const DetalhesVaga = () => {
         navigate(-1); // Volta para a página anterior
     };
 
-    // Função para submeter o currículo à vaga
-    const handleSubmeterCurriculo = () => {
-        // Aqui será implementada a lógica para submeter o currículo à vaga (a fazer)
-        alert('Currículo submetido! (implementar backend)');
-    };
+    const handleSubmeterCurriculo = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.post(`http://localhost:5000/api/jobs/${job._id}/submit-curriculum`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+    
+            alert('Currículo submetido com sucesso!');
+        } catch (error) {
+            console.error('Erro ao submeter currículo:', error);
+            alert('Ocorreu um erro ao submeter o currículo. Tente novamente mais tarde.');
+        }
+    };    
 
     return (
         <>
@@ -78,7 +86,7 @@ const DetalhesVaga = () => {
                     </Col>
                 </Row>
                 <Row>
-                    <Col md={6} className="curriculo-container">
+                    <Col md={6} style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000', overflowY: 'auto' }} className="curriculo-container shadow rounded" >
                         <CurriculoTemplate
                             experiencias={experiencias}
                             formacoes={formacoes}
@@ -141,7 +149,7 @@ const DetalhesVaga = () => {
                                 </Col>
                             </Card.Body>
 
-                            <Card.Body style={{ maxHeight: '69vh', height: 'auto', overflowY: 'auto' }} className="shadow rounded">
+                            <Card.Body style={{ maxHeight: '72vh', height: 'auto', overflowY: 'auto' }} className="shadow rounded">
                                 {job.offers || job.description || job.responsibilities || job.qualifications || job.requiriments || job.additionalInfo ? (
                                     <>
                                         {job.offers && (

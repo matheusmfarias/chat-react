@@ -220,11 +220,11 @@ const BuscarVagas = () => {
                                     }}
                                 />
                             )}
-                            <Button variant="light" className="btn-outline-primary rounded-end w-auto px-5">
+                            <Button variant="light" className="btn-outline-primary rounded-end w-auto px-5 shadow">
                                 <FontAwesomeIcon icon={faSearch} />
                             </Button>
                             {/* Botão para abrir/fechar filtros */}
-                            <Button variant="light" onClick={() => setShowFilters(!showFilters)} className="btn-outline-primary w-auto px-5 ms-2 rounded">
+                            <Button variant="light" onClick={() => setShowFilters(!showFilters)} className="btn-outline-primary w-auto px-5 ms-2 rounded shadow">
                                 <FontAwesomeIcon icon={faFilter} /> Filtrar
                             </Button>
                         </InputGroup>
@@ -342,13 +342,14 @@ const BuscarVagas = () => {
                                     <Card.Title>{result.title}</Card.Title>
                                     <Card.Text>{result.company ? result.company.nome : 'Empresa confidencial'}</Card.Text>
                                     <Card.Text className="bg-light rounded text-center text-primary p-2">
-                                        <FontAwesomeIcon icon={faLocationDot} title="Localização" />
+                                        <FontAwesomeIcon icon={faLocationDot} title="Localização" className="mr-2"/>
                                         {result.location}
                                     </Card.Text>
                                     <Row>
                                         <Col>
                                             <Card.Text className="bg-light rounded text-center text-primary p-2">
                                                 <FontAwesomeIcon
+                                                className="mr-2"
                                                     icon={result.modality === 'Remoto' ? faHome : result.modality === 'Presencial' ? faBuilding : faLaptopHouse}
                                                     title="Modelo"
                                                 />
@@ -357,7 +358,8 @@ const BuscarVagas = () => {
                                         </Col>
                                         <Col>
                                             <Card.Text className="bg-light rounded text-center text-primary p-2">
-                                                <FontAwesomeIcon icon={faBriefcase} title="Tipo" />
+                                                <FontAwesomeIcon 
+                                                className="mr-2" icon={faBriefcase} title="Tipo" />
                                                 {result.type}
                                             </Card.Text>
                                         </Col>
@@ -365,7 +367,7 @@ const BuscarVagas = () => {
                                     <Row>
                                         <Col>
                                             <Card.Text className="bg-light rounded text-center text-primary p-2">
-                                                <FontAwesomeIcon icon={faMoneyBillWave} title="Salário" />
+                                                <FontAwesomeIcon className="mr-2" icon={faMoneyBillWave} title="Salário" />
                                                 {result.salary ? result.salary : 'A combinar'}
                                             </Card.Text>
                                         </Col>
