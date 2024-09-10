@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom'; // Adicione o useNavigate
-import { Container, Row, Col, Card, Button } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Spinner } from 'react-bootstrap';
 import axios from 'axios';
 import CurriculoTemplate from '../Curriculo/CurriculoTemplate';
 import HeaderCandidato from '../HeaderCandidato/HeaderCandidato';
@@ -11,7 +11,7 @@ const DetalhesVaga = () => {
     const location = useLocation();
     const navigate = useNavigate(); // Hook para navegação
     const { job } = location.state;
-
+    const [loading, setLoading] = useState(true);
     const [experiencias, setExperiencias] = useState([]);
     const [formacoes, setFormacoes] = useState([]);
     const [informacoes, setInformacoes] = useState({});
@@ -45,6 +45,8 @@ const DetalhesVaga = () => {
 
         } catch (error) {
             console.error('Erro ao buscar informações do usuário', error);
+        } finally {
+            setLoading(false);
         }
     }, []);
 
@@ -63,13 +65,13 @@ const DetalhesVaga = () => {
             const response = await axios.post(`http://localhost:5000/api/jobs/${job._id}/submit-curriculum`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-    
+
             alert('Currículo submetido com sucesso!');
         } catch (error) {
             console.error('Erro ao submeter currículo:', error);
             alert('Ocorreu um erro ao submeter o currículo. Tente novamente mais tarde.');
         }
-    };    
+    };
 
     return (
         <>
@@ -86,17 +88,24 @@ const DetalhesVaga = () => {
                     </Col>
                 </Row>
                 <Row>
-                    <Col md={6} style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000', overflowY: 'auto' }} className="curriculo-container shadow rounded" >
-                        <CurriculoTemplate
-                            experiencias={experiencias}
-                            formacoes={formacoes}
-                            informacoes={informacoes}
-                        />
+                    <Col md={7} style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000', overflowY: 'auto' }} className="curriculo-container shadow rounded" >
+                        {loading ? (
+                            <div className="d-flex justify-content-center">
+                                <Spinner animation="border" variant="primary" />
+                            </div>
+                        ) : (
+                            <CurriculoTemplate
+                                experiencias={experiencias}
+                                formacoes={formacoes}
+                                informacoes={informacoes}
+                            />
+                        )}  
                     </Col>
-                    <Col md={6} style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000' }}>
+
+                    <Col md={5} style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000', overflowY: 'hidden' }}>
                         <Card className="vaga-detalhe border-0">
                             <Card.Body className="shadow rounded">
-                                <Card.Title><strong>{job.title}</strong></Card.Title>
+                                <Card.Title>{job.title}</Card.Title>
                                 {job.identifyCompany && job.company ? (
                                     <Card.Text>{job.company.nome}</Card.Text>
                                 ) : (
@@ -149,42 +158,42 @@ const DetalhesVaga = () => {
                                 </Col>
                             </Card.Body>
 
-                            <Card.Body style={{ maxHeight: '72vh', height: 'auto', overflowY: 'auto' }} className="shadow rounded">
+                            <Card.Body style={{ maxHeight: '60vh', overflowY: 'auto' }} className="shadow rounded">
                                 {job.offers || job.description || job.responsibilities || job.qualifications || job.requiriments || job.additionalInfo ? (
                                     <>
                                         {job.offers && (
                                             <>
-                                                <Card.Title><strong>Benefícios</strong></Card.Title>
+                                                <Card.Title>Benefícios</Card.Title>
                                                 <Card.Text dangerouslySetInnerHTML={{ __html: job.offers }} />
                                             </>
                                         )}
                                         {job.description && (
                                             <>
-                                                <Card.Title><strong>Descrição</strong></Card.Title>
+                                                <Card.Title>Descrição</Card.Title>
                                                 <Card.Text dangerouslySetInnerHTML={{ __html: job.description }} />
                                             </>
                                         )}
                                         {job.responsibilities && (
                                             <>
-                                                <Card.Title><strong>Responsabilidades e atribuições</strong></Card.Title>
+                                                <Card.Title>Responsabilidades e atribuições</Card.Title>
                                                 <Card.Text dangerouslySetInnerHTML={{ __html: job.responsibilities }} />
                                             </>
                                         )}
                                         {job.qualifications && (
                                             <>
-                                                <Card.Title><strong>Requisitos e qualificações</strong></Card.Title>
+                                                <Card.Title>Requisitos e qualificações</Card.Title>
                                                 <Card.Text dangerouslySetInnerHTML={{ __html: job.qualifications }} />
                                             </>
                                         )}
                                         {job.requiriments && (
                                             <>
-                                                <Card.Title><strong>Será um diferencial</strong></Card.Title>
+                                                <Card.Title>Será um diferencial</Card.Title>
                                                 <Card.Text dangerouslySetInnerHTML={{ __html: job.requiriments }} />
                                             </>
                                         )}
                                         {job.additionalInfo && (
                                             <>
-                                                <Card.Title><strong>Informações adicionais</strong></Card.Title>
+                                                <Card.Title>Informações adicionais</Card.Title>
                                                 <Card.Text dangerouslySetInnerHTML={{ __html: job.additionalInfo }} />
                                             </>
                                         )}

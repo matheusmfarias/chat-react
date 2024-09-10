@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, Row, Col, Button, InputGroup, Form, Alert, Pagination } from 'react-bootstrap';
+import { Table, Row, Col, Button, InputGroup, Form, Alert, Spinner, Pagination } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faToggleOn, faToggleOff, faEye, faPlus, faFilter, faSearch, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import HeaderEmpresa from '../HeaderEmpresa';
@@ -13,6 +13,7 @@ import DetalhesVagas from './DetalhesVagas';
 
 const VagasEmpresa = () => {
     const [jobs, setJobs] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [selectedJob, setSelectedJob] = useState(null);
     const [states, setStates] = useState([]);
@@ -88,6 +89,7 @@ const VagasEmpresa = () => {
             params.append('location', selectedStateFilter);  // Adiciona apenas o estado se a cidade não for selecionada
         }
 
+        setLoading(true);
         try {
             const token = localStorage.getItem('token');
             const response = await axios.get(`http://localhost:5000/api/jobs?${params.toString()}`, {
@@ -99,6 +101,8 @@ const VagasEmpresa = () => {
         } catch (error) {
             console.error('Erro ao buscar vagas:', error);
             notify('Erro ao buscar vagas. Tente novamente mais tarde.', 'error');
+        } finally {
+            setLoading(false);
         }
     }, [searchTerm, filters, selectedCityFilter, selectedStateFilter]);
 
@@ -120,6 +124,8 @@ const VagasEmpresa = () => {
                 } catch (error) {
                     console.error('Error fetching jobs:', error);
                     notify('Erro ao buscar vagas. Tente novamente mais tarde.', 'error');
+                } finally {
+                    setLoading(false);
                 }
             }
         };
@@ -250,6 +256,7 @@ const VagasEmpresa = () => {
     const handleJobSubmit = async (jobData) => {
         const token = localStorage.getItem('token');
         if (token) {
+            setLoading(true);
             try {
                 jobData.location = `${selectedCityModal}, ${selectedStateModal}`;
                 if (isEditMode) {
@@ -274,12 +281,15 @@ const VagasEmpresa = () => {
                 console.error('Error saving job:', error);
                 setError('Erro ao salvar a vaga. Verifique os dados e tente novamente.');
                 notify('Erro ao salvar a vaga.', 'error');
+            } finally {
+                setLoading(false);
             }
         }
     };
 
     const handleDeleteJob = async (id) => {
         const token = localStorage.getItem('token');
+        setLoading(true);
         if (token) {
             try {
                 await axios.delete(`http://localhost:5000/api/jobs/${id}`, {
@@ -293,6 +303,8 @@ const VagasEmpresa = () => {
                 console.error('Error deleting job:', error);
                 setError('Erro ao deletar a vaga. Tente novamente mais tarde.');
                 notify('Erro ao deletar a vaga.', 'error');
+            } finally {
+                setLoading(false);
             }
         }
     };
@@ -310,6 +322,7 @@ const VagasEmpresa = () => {
                 cancelButtonText: 'Cancelar'
             }).then(async (result) => {
                 if (result.isConfirmed) {
+                    setLoading(true);
                     try {
                         const updatedJob = { ...job, status: !job.status };
 
@@ -327,6 +340,8 @@ const VagasEmpresa = () => {
                         console.error('Error toggling status:', error);
                         setError('Erro ao alterar status da vaga. Tente novamente mais tarde.');
                         notify('Erro ao alterar o status.', 'error');
+                    } finally {
+                        setLoading(false);
                     }
                 }
             });
@@ -537,72 +552,73 @@ const VagasEmpresa = () => {
                             </>
                         )}
 
-                        <div className="table-responsive position-relative">
-                            {jobs.length > 0 ? (
-                                <>
-                                    <Table striped bordered hover className="shadow-sm mt-3">
-                                        <thead>
-                                            <tr>
-                                                <th>Cargo</th>
-                                                <th>Localidade</th>
-                                                <th>Modelo</th>
-                                                <th>Tipo</th>
-                                                <th>Status</th>
-                                                <th>PCD</th>
-                                                <th>Salário</th>
-                                                <th>Ações</th>
+                        {loading ? (
+                            <div className="d-flex justify-content-center">
+                                <Spinner animation='border' variant='primary' />
+                            </div>
+                        ) : jobs.length > 0 ? (
+                            <>
+                                <Table striped bordered hover className="shadow-sm mt-3">
+                                    <thead>
+                                        <tr>
+                                            <th>Cargo</th>
+                                            <th>Localidade</th>
+                                            <th>Modelo</th>
+                                            <th>Tipo</th>
+                                            <th>Status</th>
+                                            <th>PCD</th>
+                                            <th>Salário</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {currentJobs.map((job, index) => (
+                                            <tr key={index}>
+                                                <td>{job.title}</td>
+                                                <td>{job.location}</td>
+                                                <td>{job.modality}</td>
+                                                <td>{job.type}</td>
+                                                <td>
+                                                    <span className={`status-indicator ${job.status ? 'active' : 'inactive'}`} />
+                                                    {job.status ? 'Ativa' : 'Inativa'}
+                                                </td>
+                                                <td>{job.pcd ? 'Sim' : 'Não'}</td>
+                                                <td>{job.salary ? job.salary : 'Não informado'}</td>
+                                                <td>
+                                                    <div className='btn-group'>
+                                                        <FontAwesomeIcon icon={faEye} className="icon-btn" onClick={() => openViewJob(job)} title="Visualizar detalhes" />
+                                                        <FontAwesomeIcon icon={faEdit} className="icon-btn" onClick={() => openModal(job)} title="Editar" />
+                                                        <FontAwesomeIcon
+                                                            icon={job.status ? faToggleOn : faToggleOff}
+                                                            className="icon-btn"
+                                                            onClick={() => handleToggleStatus(job)}
+                                                            title={job.status ? 'Desabilitar' : 'Habilitar'}
+                                                        />
+                                                        <FontAwesomeIcon icon={faTrash} className="icon-btn" onClick={() => handleConfirmDelete(job._id)} title="Excluir" />
+                                                    </div>
+                                                </td>
                                             </tr>
-                                        </thead>
-                                        <tbody>
-                                            {currentJobs.map((job, index) => (
-                                                <tr key={index}>
-                                                    <td>{job.title}</td>
-                                                    <td>{job.location}</td>
-                                                    <td>{job.modality}</td>
-                                                    <td>{job.type}</td>
-                                                    <td>
-                                                        <span className={`status-indicator ${job.status ? 'active' : 'inactive'}`} />
-                                                        {job.status ? 'Ativa' : 'Inativa'}
-                                                    </td>
-                                                    <td>{job.pcd ? 'Sim' : 'Não'}</td>
-                                                    <td>{job.salary ? job.salary : 'Não informado'}</td>
-                                                    <td>
-                                                        <div className='btn-group'>
-                                                            <FontAwesomeIcon icon={faEye} className="icon-btn" onClick={() => openViewJob(job)} title="Visualizar detalhes" />
-                                                            <FontAwesomeIcon icon={faEdit} className="icon-btn" onClick={() => openModal(job)} title="Editar" />
-                                                            <FontAwesomeIcon
-                                                                icon={job.status ? faToggleOn : faToggleOff}
-                                                                className="icon-btn"
-                                                                onClick={() => handleToggleStatus(job)}
-                                                                title={job.status ? 'Desabilitar' : 'Habilitar'}
-                                                            />
-                                                            <FontAwesomeIcon icon={faTrash} className="icon-btn" onClick={() => handleConfirmDelete(job._id)} title="Excluir" />
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </Table>
-                                    {/* Paginação */}
-                                    {jobs.length > itemsPerPage && (
-                                        <Pagination>
-                                            <Pagination.Prev onClick={prevPage} disabled={currentPage === 1} />
-                                            {Array.from({ length: Math.ceil(jobs.length / itemsPerPage) }, (_, i) => (
-                                                <Pagination.Item key={i + 1} active={i + 1 === currentPage} onClick={() => paginate(i + 1)}>
-                                                    {i + 1}
-                                                </Pagination.Item>
-                                            ))}
-                                            <Pagination.Next onClick={nextPage} disabled={currentPage === Math.ceil(jobs.length / itemsPerPage)} />
-                                        </Pagination>
-                                    )}
-                                </>
-                            ) : (
-                                <p className="text-center">Nenhuma vaga encontrada...</p>
-                            )
-                            }
-                        </div>
+                                        ))}
+                                    </tbody>
+                                </Table>
+                                {/* Paginação */}
+                                {jobs.length > itemsPerPage && (
+                                    <Pagination>
+                                        <Pagination.Prev onClick={prevPage} disabled={currentPage === 1} />
+                                        {Array.from({ length: Math.ceil(jobs.length / itemsPerPage) }, (_, i) => (
+                                            <Pagination.Item key={i + 1} active={i + 1 === currentPage} onClick={() => paginate(i + 1)}>
+                                                {i + 1}
+                                            </Pagination.Item>
+                                        ))}
+                                        <Pagination.Next onClick={nextPage} disabled={currentPage === Math.ceil(jobs.length / itemsPerPage)} />
+                                    </Pagination>
+                                )}
+                            </>
+                        ) : (
+                            <p className="text-center">Nenhuma vaga encontrada...</p>
+                        )}
                     </div>
-                </div >
+                </div>
             )}
 
             <ModalVagas
