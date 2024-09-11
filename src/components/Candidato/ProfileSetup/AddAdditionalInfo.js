@@ -13,8 +13,8 @@ const AddAdditionalInfo = ({ onComplete, onBack }) => {
             contactPhone: '',
             backupPhone: '',
             rg: '',
-            cnh: '',
-            cnhTypes: []
+            cnh: '', // Inicializando como 'Não tenho'
+            cnhTypes: [] // Inicializando como array vazio
         };
     });
 
@@ -23,7 +23,7 @@ const AddAdditionalInfo = ({ onComplete, onBack }) => {
     useEffect(() => {
         const allFieldsFilled = Object.entries(userData).every(([key, value]) => {
             if (key === 'rg' || key === 'cnhTypes') {
-                return true;
+                return true; // Esses campos não são obrigatórios
             }
             if (typeof value === 'string') {
                 return value.trim() !== '';
@@ -36,6 +36,7 @@ const AddAdditionalInfo = ({ onComplete, onBack }) => {
         setIsFormValid(allFieldsFilled && isCnhValid);
     }, [userData]);
 
+    // Lida com mudanças nos campos de texto
     const handleChange = (e) => {
         const { name, value } = e.target;
         setUserData(prevState => ({
@@ -44,6 +45,7 @@ const AddAdditionalInfo = ({ onComplete, onBack }) => {
         }));
     };
 
+    // Lida com o campo RG
     const handleRgChange = (e) => {
         const { name, value } = e.target;
         if (/^\d*$/.test(value)) {
@@ -54,21 +56,23 @@ const AddAdditionalInfo = ({ onComplete, onBack }) => {
         }
     };
 
+    // Lida com a mudança de CNH (Tenho ou Não tenho)
     const handleCnhChange = (e) => {
         const { value } = e.target;
         setUserData(prevState => ({
             ...prevState,
             cnh: value,
-            cnhTypes: value === 'Tenho' ? prevState.cnhTypes || [] : []
+            cnhTypes: value === 'Tenho' ? prevState.cnhTypes || [] : [] // Limpa cnhTypes se "Não tenho" for selecionado
         }));
     };
 
+    // Lida com os checkboxes dos tipos de CNH
     const handleCnhTypesChange = (e) => {
         const { value, checked } = e.target;
         setUserData(prevState => {
             const newCnhTypes = checked
-                ? [...(prevState.cnhTypes || []), value]
-                : (prevState.cnhTypes || []).filter(type => type !== value);
+                ? [...(prevState.cnhTypes || []), value] // Adiciona tipo de CNH se marcado
+                : (prevState.cnhTypes || []).filter(type => type !== value); // Remove tipo de CNH se desmarcado
             return {
                 ...prevState,
                 cnhTypes: newCnhTypes
@@ -76,20 +80,28 @@ const AddAdditionalInfo = ({ onComplete, onBack }) => {
         });
     };
 
+    // Salva os dados no localStorage sempre que o userData for alterado
     useEffect(() => {
         localStorage.setItem('additionalInfoData', JSON.stringify(userData));
     }, [userData]);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
+    
+        const dataToSend = {
+            ...userData,
+            cnh: userData.cnh === 'Tenho', // Converte para booleano: true para "Tenho" e false para "Não tenho"
+        };
+    
+        console.log("Dados enviados:", dataToSend); // Verificar os dados corrigidos
+    
         try {
-            await axios.post('http://localhost:5000/api/user/additional-info', userData, {
+            await axios.post('http://localhost:5000/api/user/additional-info', dataToSend, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             await axios.post('http://localhost:5000/api/user/complete-setup', {}, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
-            // Limpar valores armazenados no localStorage, mantendo apenas o token
             const token = localStorage.getItem('token');
             localStorage.clear();
             localStorage.setItem('token', token);
@@ -97,7 +109,7 @@ const AddAdditionalInfo = ({ onComplete, onBack }) => {
         } catch (error) {
             console.error('Error updating additional info', error);
         }
-    };
+    };    
 
     return (
         <div className="additional-info-container">
@@ -164,7 +176,7 @@ const AddAdditionalInfo = ({ onComplete, onBack }) => {
                                     <input
                                         type="checkbox"
                                         value={type}
-                                        checked={(userData.cnhTypes || []).includes(type)}
+                                        checked={(userData.cnhTypes || []).includes(type)} // Garante que o checkbox esteja marcado
                                         onChange={handleCnhTypesChange}
                                     />
                                     {type}
@@ -180,7 +192,7 @@ const AddAdditionalInfo = ({ onComplete, onBack }) => {
                         className="submit-setup-btn"
                         disabled={
                             !isFormValid ||
-                            (userData.cnh === 'Tenho' && userData.cnhTypes.length === 0)
+                            (userData.cnh === 'Tenho' && userData.cnhTypes.length === 0) // Validação: pelo menos um tipo de CNH selecionado
                         }
                     >
                         Finalizar

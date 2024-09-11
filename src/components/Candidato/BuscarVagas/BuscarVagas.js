@@ -353,8 +353,7 @@ const BuscarVagas = () => {
                                 {currentItems.map(result => (
                                     <Card
                                         key={result._id}
-                                        className={`vaga-card p-2 mb-4 border-0 shadow-sm rounded ${selectedJob && selectedJob._id === result._id ? 'vaga-card-selecionada shadow-lg' : ''
-                                            }`}
+                                        className={`vaga-card p-2 mb-4 border-0 shadow-sm rounded ${selectedJob && selectedJob._id === result._id ? 'vaga-card-selecionada shadow-lg' : ''}`}
                                         onClick={() => handleCardClick(result)}
                                         style={{
                                             cursor: 'pointer',
@@ -450,7 +449,6 @@ const BuscarVagas = () => {
                                         </Button>
                                     </div>
                                 )}
-
                             </Col>
 
                             {/* Detalhes da vaga à direita */}

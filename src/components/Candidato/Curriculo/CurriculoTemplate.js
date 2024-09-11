@@ -161,12 +161,17 @@ const formatarData = (data) => {
 };
 
 // Função para formatar a CNH
-const formatarCNH = (cnh, tiposCnh) => {
+const formatarCNH = (cnh, cnhTypes) => {
     if (cnh === 'Não tenho') {
         return 'Não tem';
     }
-    if (cnh === 'Tenho' && tiposCnh.length > 0) {
-        return `Tem - ${tiposCnh.join(', ')}`;
+    
+    // Filtra o array para garantir que só tipos válidos sejam exibidos
+    const tiposValidos = (cnhTypes || []).filter(type => type.trim() !== '');
+
+    if (tiposValidos.length > 0) {
+        return `Tem - ${tiposValidos.join(', ')}`; // Exibe os tipos de CNH, se existirem
     }
+
     return 'Tem';
 };

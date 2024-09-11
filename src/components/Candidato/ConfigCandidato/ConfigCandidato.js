@@ -6,6 +6,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleUser, faPencil } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Config = () => {
     const [userData, setUserData] = useState({
@@ -26,10 +28,25 @@ const Config = () => {
         cnh: '',
         cnhTypes: []
     });
-    const [loading, setLoading] = useState('true');
-    const [message, setMessage] = useState('');
+
+    const notify = (message, type) => {
+        toast[type](message, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            closeButton: false
+        });
+    };
+
+    const [loading, setLoading] = useState(true);
+    const [loadingSubmit, setLoadingSubmit] = useState(false);
     const [preview, setPreview] = useState(null);
     const [activeTab, setActiveTab] = useState('general');
+    const [initialUserData, setInitialUserData] = useState({}); // Armazena o estado inicial
     const [isFormChanged, setIsFormChanged] = useState(false);
 
     const navigate = useNavigate();
@@ -46,14 +63,11 @@ const Config = () => {
                 const user = response.data;
                 const formattedBirthDate = user.nascimento ? user.nascimento.split('T')[0] : '';
 
-                // Verifica se cnhTypes é uma string e a converte para array se necessário
                 const cnhTypes = Array.isArray(user.additionalInfo?.cnhTypes)
                     ? user.additionalInfo.cnhTypes
                     : (typeof user.additionalInfo?.cnhTypes === 'string' ? user.additionalInfo.cnhTypes.split(',') : []);
 
-                console.log('cnhTypes convertidos:', cnhTypes); // Verificar os tipos após conversão
-
-                setUserData({
+                const userData = {
                     firstName: user.nome,
                     lastName: user.sobrenome,
                     maritalStatus: user.additionalInfo?.maritalStatus || '',
@@ -68,14 +82,18 @@ const Config = () => {
                     city: user.address?.city || '',
                     profilePicture: user.profilePicture || '',
                     rg: user.additionalInfo?.rg || '',
-                    cnh: user.additionalInfo?.cnh || '', // CNH (Tenho ou Não tenho)
-                    cnhTypes: cnhTypes // Array de modalidades CNH corrigido
-                });
+                    cnh: !!user.additionalInfo?.cnh, // Certifique-se de que cnh seja booleano
+                    cnhTypes: cnhTypes
+                };
+
+                setUserData(userData);  // Define o estado atual
 
                 if (user.profilePicture) {
                     const profilePicUrl = `http://localhost:5000${user.profilePicture}`;
                     setPreview(profilePicUrl);
                 }
+
+                setInitialUserData(userData);  // Salva o estado inicial para comparação
             } catch (error) {
                 console.error('Erro ao buscar os dados do usuário', error);
             } finally {
@@ -86,10 +104,10 @@ const Config = () => {
         fetchUserData();
     }, []);
 
-
     useEffect(() => {
-        setIsFormChanged(true);
-    }, [userData]);
+        const hasFormChanged = JSON.stringify(userData) !== JSON.stringify(initialUserData); // Compara os dois estados
+        setIsFormChanged(hasFormChanged); // Atualiza isFormChanged com base na comparação
+    }, [userData, initialUserData]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -130,15 +148,29 @@ const Config = () => {
         }));
     };
 
+    const handleCnhChange = (e) => {
+        const value = e.target.value === 'true'; // Converte o valor para booleano
+        setUserData(prevState => ({
+            ...prevState,
+            cnh: value,
+            cnhTypes: value ? prevState.cnhTypes.filter(type => type !== '') : [] // Limpa os tipos de CNH se 'Não tenho' for selecionado
+        }));
+    };
+
     const handleCnhTypesChange = (e) => {
         const { value, checked } = e.target;
+
         setUserData(prevState => {
-            const newCnhTypes = checked
-                ? [...(prevState.cnhTypes || []), value]
-                : (prevState.cnhTypes || []).filter(type => type !== value);
+            const updatedCnhTypes = checked
+                ? [...prevState.cnhTypes, value] // Adiciona o tipo ao array se for marcado
+                : prevState.cnhTypes.filter(type => type !== value); // Remove o tipo se for desmarcado
+
+            // Filtra qualquer valor vazio que possa ter sido adicionado por acidente
+            const filteredCnhTypes = updatedCnhTypes.filter(type => type.trim() !== '');
+
             return {
                 ...prevState,
-                cnhTypes: newCnhTypes
+                cnhTypes: filteredCnhTypes // Atualiza o array sem valores vazios
             };
         });
     };
@@ -168,12 +200,15 @@ const Config = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Verifica se o usuário selecionou "Tenho" para CNH, mas não selecionou nenhuma modalidade
-        if (userData.cnh === 'Tenho' && userData.cnhTypes.length === 0) {
-            setMessage('Você deve selecionar pelo menos uma modalidade de CNH.');
+        // Filtrar valores vazios do array cnhTypes antes da validação
+        const validCnhTypes = userData.cnhTypes.filter(type => type.trim() !== '');
+
+        if (userData.cnh === true && validCnhTypes.length === 0) {
+            notify('Selecione pelo menos uma modalidade de CNH.', 'warning');
             return;
         }
 
+        setLoadingSubmit(true); // Ativa o spinner
         try {
             const token = localStorage.getItem('token');
             const formData = new FormData();
@@ -199,11 +234,13 @@ const Config = () => {
                 setPreview(`http://localhost:5000${response.data.profilePicture}`);
             }
 
-            setMessage('Dados atualizados com sucesso!');
-            setIsFormChanged(false);
+            notify('Dados atualizados com sucesso!', 'success');
+            setIsFormChanged(false); // Reseta o estado do formulário
         } catch (error) {
             console.error('Erro ao atualizar os dados do usuário:', error);
-            setMessage('Erro ao atualizar os dados. Tente novamente.');
+            notify('Erro ao atualizar os dados. Tente novamente.', 'error');
+        } finally {
+            setLoadingSubmit(false); // Desativa o spinner após a requisição
         }
     };
 
@@ -213,6 +250,7 @@ const Config = () => {
 
     return (
         <>
+            <ToastContainer />
             <HeaderCandidato />
             <main className='config-content-usuario'>
                 <div className='config-container-usuario'>
@@ -348,21 +386,14 @@ const Config = () => {
                                                 <select
                                                     id='cnh'
                                                     name='cnh'
-                                                    value={userData.cnh}
-                                                    onChange={(e) => {
-                                                        const { value } = e.target;
-                                                        setUserData(prevState => ({
-                                                            ...prevState,
-                                                            cnh: value,
-                                                            cnhTypes: value === 'Tenho' ? prevState.cnhTypes : []
-                                                        }));
-                                                    }}
+                                                    value={userData.cnh} // userData.cnh agora é booleano
+                                                    onChange={handleCnhChange}
                                                 >
-                                                    <option value='Tenho'>Tenho</option>
-                                                    <option value='Não tenho'>Não tenho</option>
+                                                    <option value={true}>Tenho</option>
+                                                    <option value={false}>Não tenho</option>
                                                 </select>
                                             </div>
-                                            {userData.cnh === 'Tenho' && (
+                                            {userData.cnh === true && (
                                                 <div className="form-group">
                                                     <div className="cnh-types-checkboxes">
                                                         {['A', 'B', 'C', 'D', 'E'].map(type => (
@@ -370,7 +401,7 @@ const Config = () => {
                                                                 <input
                                                                     type="checkbox"
                                                                     value={type}
-                                                                    checked={userData.cnhTypes.includes(type)} // Verifica se o tipo está presente no array
+                                                                    checked={userData.cnhTypes.includes(type)} // Verifica se o tipo está presente no array e marca o checkbox
                                                                     onChange={handleCnhTypesChange}
                                                                 />
                                                                 {type}
@@ -430,9 +461,16 @@ const Config = () => {
                                         </div>
                                     </div>
                                 )}
-                                <button type='submit' className='save-btn' disabled={!isFormChanged}>Salvar</button>
+                                <button type='submit' className='save-btn' disabled={!isFormChanged}>
+                                    {loadingSubmit ? (
+                                        <div className="d-flex justify-content-center">
+                                            <Spinner animation="border" variant="white" />
+                                        </div>
+                                    ) : (
+                                        <span>Salvar</span>
+                                    )}
+                                </button>
                             </form>
-                            {message && <p>{message}</p>}
                         </>
                     )}
                 </div>

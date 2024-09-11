@@ -52,8 +52,8 @@ const Curriculo = () => {
     }, [fetchUserInfo]);
 
     const handleViewCurriculo = () => {
-        fetchUserInfo(); // Garantir que os dados sejam atualizados antes de visualizar o currículo
-
+        fetchUserInfo();
+        
         // Abrir uma nova janela
         const newWindow = window.open('', '', 'width=800,height=600');
         newWindow.document.write('<html><head><title>Currículo</title></head><body><div id="curriculo-template-root"></div></body></html>');

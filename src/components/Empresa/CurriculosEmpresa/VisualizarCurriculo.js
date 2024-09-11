@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Spinner } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import CurriculoTemplate from '../../Candidato/Curriculo/CurriculoTemplate';
 
@@ -8,7 +9,7 @@ const VisualizarCurriculo = () => {
     const [informacoes, setInformacoes] = useState({});
     const [experiencias, setExperiencias] = useState([]);
     const [formacoes, setFormacoes] = useState([]);
-    const [isLoading, setIsLoading] = useState(true); // Estado para controlar o carregamento
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchCandidatoInfo = async () => {
@@ -40,28 +41,29 @@ const VisualizarCurriculo = () => {
             } catch (error) {
                 console.error('Erro ao obter informações do candidato:', error);
             } finally {
-                setIsLoading(false); // Finaliza o carregamento
+                setLoading(false); // Finaliza o carregamento
             }
         };
 
         fetchCandidatoInfo();
     }, [id]);
 
-    // Se ainda está carregando, exibe um spinner
-    if (isLoading) {
-        return <div className="spinner-border text-primary" role="status">
-            <span className="sr-only">Carregando...</span>
-        </div>;
-    }
-
     return (
-        <div className="curriculo-container">
-            <CurriculoTemplate
-                experiencias={experiencias}
-                formacoes={formacoes}
-                informacoes={informacoes}
-            />
-        </div>
+        <>
+            <div className="curriculo-container">
+                {loading ? (
+                    <div className="d-flex justify-content-center" >
+                        <Spinner animation="border" variant="primary" />
+                    </div >
+                ) : (
+                    <CurriculoTemplate
+                        experiencias={experiencias}
+                        formacoes={formacoes}
+                        informacoes={informacoes}
+                    />
+                )}
+            </div>
+        </>
     );
 };
 

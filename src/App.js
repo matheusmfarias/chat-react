@@ -99,9 +99,7 @@ const App = () => {
             </Layout>
           } />
           <Route path='/curriculo/:id' element={
-            <Layout>
-              <VisualizarCurriculo />
-            </Layout>
+            <VisualizarCurriculo />
           } />
           <Route path='/inscricoes-candidato/' element={
             <Layout>
