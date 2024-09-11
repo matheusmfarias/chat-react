@@ -73,7 +73,7 @@ const HeaderCandidato = () => {
                 <nav className="desktop-menu">
                     <ul>
                         <Link to="/dashboard" className={`header-link ${location.pathname === '/dashboard' ? 'active' : ''}`}><li>Início</li></Link>
-                        <Link to="/inscricoes" className={`header-link ${location.pathname === '/inscricoes' ? 'active' : ''}`}><li>Inscrições</li></Link>
+                        <Link to="/inscricoes-candidato" className={`header-link ${location.pathname === '/inscricoes-candidato' ? 'active' : ''}`}><li>Inscrições</li></Link>
                         <Link to="/curriculo" className={`header-link ${location.pathname === '/curriculo' ? 'active' : ''}`}><li>Currículo</li></Link>
                     </ul>
                 </nav>

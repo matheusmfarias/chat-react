@@ -6,6 +6,7 @@ import CurriculoTemplate from '../Curriculo/CurriculoTemplate';
 import HeaderCandidato from '../HeaderCandidato/HeaderCandidato';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBriefcase, faBuilding, faHome, faLaptopHouse, faLocationDot, faMoneyBillWave, faWheelchair } from '@fortawesome/free-solid-svg-icons';
+import Swal from 'sweetalert2';
 
 const DetalhesVaga = () => {
     const location = useLocation();
@@ -60,16 +61,43 @@ const DetalhesVaga = () => {
     };
 
     const handleSubmeterCurriculo = async () => {
+        setLoading(true);
         try {
             const token = localStorage.getItem('token');
             const response = await axios.post(`http://localhost:5000/api/jobs/${job._id}/submit-curriculum`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
-            alert('Currículo submetido com sucesso!');
+            Swal.fire({
+                icon: 'success',
+                title: 'Sucesso!',
+                text: 'Inscrição realizada!',
+                showCancelButton: true,
+                confirmButtonText: 'Minhas inscrições',
+                cancelButtonText: 'OK',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    navigate('/inscricoes-candidato'); // Redireciona para /inscrições
+                }
+            });
+
         } catch (error) {
             console.error('Erro ao submeter currículo:', error);
-            alert('Ocorreu um erro ao submeter o currículo. Tente novamente mais tarde.');
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Você já está inscrito nesta vaga!',
+                showCancelButton: true,
+                confirmButtonText: 'Outras vagas',
+                cancelButtonText: 'OK',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    navigate('/buscar-vagas'); // Redireciona para /buscar-vagas
+                }
+            });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -89,17 +117,11 @@ const DetalhesVaga = () => {
                 </Row>
                 <Row>
                     <Col md={7} style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000', overflowY: 'auto' }} className="curriculo-container shadow rounded" >
-                        {loading ? (
-                            <div className="d-flex justify-content-center">
-                                <Spinner animation="border" variant="primary" />
-                            </div>
-                        ) : (
-                            <CurriculoTemplate
-                                experiencias={experiencias}
-                                formacoes={formacoes}
-                                informacoes={informacoes}
-                            />
-                        )}  
+                        <CurriculoTemplate
+                            experiencias={experiencias}
+                            formacoes={formacoes}
+                            informacoes={informacoes}
+                        />
                     </Col>
 
                     <Col md={5} style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000', overflowY: 'hidden' }}>
@@ -153,7 +175,13 @@ const DetalhesVaga = () => {
                                 </Row>
                                 <Col md={5}>
                                     <Button onClick={handleSubmeterCurriculo}>
-                                        Submeter currículo
+                                        {loading ? (
+                                            <div className="d-flex justify-content-center">
+                                                <Spinner animation="border" variant="primary" />
+                                            </div>
+                                        ) : (
+                                            <span>Submeter currículo</span>
+                                        )}
                                     </Button>
                                 </Col>
                             </Card.Body>

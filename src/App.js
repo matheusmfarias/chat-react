@@ -23,6 +23,7 @@ import BuscarVagas from './components/Candidato/BuscarVagas/BuscarVagas';
 import DetalhesVaga from './components/Candidato/BuscarVagas/DetalhesVaga';
 import CurriculosEmpresa from './components/Empresa/CurriculosEmpresa/CurriculosEmpresa';
 import VisualizarCurriculo from './components/Empresa/CurriculosEmpresa/VisualizarCurriculo';
+import InscricoesCandidato from './components/Candidato/InscricoesCandidato/InscricoesCandidato';
 
 const App = () => {
   const { isLoading } = useContext(LoadingContext);
@@ -100,6 +101,11 @@ const App = () => {
           <Route path='/curriculo/:id' element={
             <Layout>
               <VisualizarCurriculo />
+            </Layout>
+          } />
+          <Route path='/inscricoes-candidato/' element={
+            <Layout>
+              <InscricoesCandidato />
             </Layout>
           } />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
