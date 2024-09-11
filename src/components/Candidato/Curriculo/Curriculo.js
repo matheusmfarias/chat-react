@@ -100,6 +100,7 @@ const Curriculo = () => {
                         <button className={activeTab === 'formacao' ? 'active' : ''} onClick={() => setActiveTab('formacao')}>Formação</button>
                         <button className={activeTab === 'adicionais' ? 'active' : ''} onClick={() => setActiveTab('adicionais')}>Informações</button>
                     </div>
+
                     <form className='curriculo-form'>
                         {activeTab === "experiencia" && <Experiencia experiencias={experiencias} setExperiencias={setExperiencias} />}
                         {activeTab === "formacao" && <Formacao formacoes={formacoes} setFormacoes={setFormacoes} />}

@@ -1,12 +1,14 @@
 // Import the necessary functions and hooks
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
 const Experiencia = ({ experiencias, setExperiencias }) => {
     const [showPopup, setShowPopup] = useState(false);
     const [isClosing, setIsClosing] = useState(false);
+    const [loading, setLoading] = useState('true');
     const [newExperiencia, setNewExperiencia] = useState({
         empresa: '',
         mesInicial: '',
@@ -36,6 +38,8 @@ const Experiencia = ({ experiencias, setExperiencias }) => {
             setExperiencias(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
             console.error('Erro ao carregar experiências:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -126,81 +130,86 @@ const Experiencia = ({ experiencias, setExperiencias }) => {
     return (
         <>
             <div className='form-columns-container'>
-                {experiencias.length === 0 ? (
-                    <p>Nenhuma experiência informada. Clique em "Adicionar" para cadastrar.</p>
+                {loading ? (
+                    <div className="d-flex justify-content-center">
+                        <Spinner animation="border" variant="primary" />
+                    </div>
                 ) : (
-                    experiencias.map((exp, index) => (
-                        <div key={index} className={`experience-card ${exp.expanded ? 'expanded' : ''}`}>
-                            <div className="card-header" onClick={() => toggleExpand(index)}>
-                                <div className="header-left">
-                                    <h4>{exp.empresa}</h4>
-                                    <p>{exp.funcao}</p>
+                    experiencias.length === 0 ? (
+                        <p>Nenhuma experiência informada. Clique em "Adicionar" para cadastrar.</p>
+                    ) : (
+                        experiencias.map((exp, index) => (
+                            <div key={index} className={`experience-card ${exp.expanded ? 'expanded' : ''}`}>
+                                <div className="card-header" onClick={() => toggleExpand(index)}>
+                                    <div className="header-left">
+                                        <h4>{exp.empresa}</h4>
+                                        <p>{exp.funcao}</p>
+                                    </div>
+                                    <span className="toggle-icon">{exp.expanded ? '▲' : '▼'}</span>
                                 </div>
-                                <span className="toggle-icon">{exp.expanded ? '▲' : '▼'}</span>
+                                {exp.expanded && (
+                                    <div className={`card-body ${exp.expanded ? 'expanded' : ''}`}>
+                                        <div className="form-group">
+                                            <label>Empresa</label>
+                                            <input type="text" name="empresa" value={exp.empresa || ''} onChange={(e) => handleEditChange(index, e)} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Início</label>
+                                            <div className="date-select">
+                                                <select name="mesInicial" value={exp.mesInicial || ''} onChange={(e) => handleEditChange(index, e)}>
+                                                    <option value="">Mês</option>
+                                                    {meses.map((mes, i) => (
+                                                        <option key={i} value={mes}>{mes}</option>
+                                                    ))}
+                                                </select>
+                                                <select name="anoInicial" value={exp.anoInicial || ''} onChange={(e) => handleEditChange(index, e)}>
+                                                    <option value="">Ano</option>
+                                                    {anos.map((ano, i) => (
+                                                        <option key={i} value={ano}>{ano}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Fim</label>
+                                            <div className="date-select">
+                                                <select name="mesFinal" value={exp.mesFinal || ''} onChange={(e) => handleEditChange(index, e)} disabled={exp.trabalhoAtualmente}>
+                                                    <option value="">Mês</option>
+                                                    {meses.map((mes, i) => (
+                                                        <option key={i} value={mes}>{mes}</option>
+                                                    ))}
+                                                </select>
+                                                <select name="anoFinal" value={exp.anoFinal || ''} onChange={(e) => handleEditChange(index, e)} disabled={exp.trabalhoAtualmente}>
+                                                    <option value="">Ano</option>
+                                                    {anos.map((ano, i) => (
+                                                        <option key={i} value={ano}>{ano}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <label>
+                                                <input type="checkbox" name="trabalhoAtualmente" checked={exp.trabalhoAtualmente} onChange={(e) => handleEditChange(index, e)} />
+                                                Trabalho Atualmente
+                                            </label>
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Função/Cargo</label>
+                                            <input type="text" name="funcao" value={exp.funcao || ''} onChange={(e) => handleEditChange(index, e)} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Principais atividades</label>
+                                            <textarea name="atividades" value={exp.atividades || ''} onChange={(e) => handleEditChange(index, e)}></textarea>
+                                        </div>
+                                        <div className="button-group">
+                                            <button type="button" className="save-btn" onClick={() => handleSaveEdit(index)} disabled={!exp.edited}>Salvar</button>
+                                            <button type="button" className="delete-btn" onClick={() => handleDeleteExperiencia(index)}>
+                                                <FontAwesomeIcon icon={faTrash} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                            {exp.expanded && (
-                                <div className={`card-body ${exp.expanded ? 'expanded' : ''}`}>
-                                    <div className="form-group">
-                                        <label>Empresa</label>
-                                        <input type="text" name="empresa" value={exp.empresa || ''} onChange={(e) => handleEditChange(index, e)} />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Início</label>
-                                        <div className="date-select">
-                                            <select name="mesInicial" value={exp.mesInicial || ''} onChange={(e) => handleEditChange(index, e)}>
-                                                <option value="">Mês</option>
-                                                {meses.map((mes, i) => (
-                                                    <option key={i} value={mes}>{mes}</option>
-                                                ))}
-                                            </select>
-                                            <select name="anoInicial" value={exp.anoInicial || ''} onChange={(e) => handleEditChange(index, e)}>
-                                                <option value="">Ano</option>
-                                                {anos.map((ano, i) => (
-                                                    <option key={i} value={ano}>{ano}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Fim</label>
-                                        <div className="date-select">
-                                            <select name="mesFinal" value={exp.mesFinal || ''} onChange={(e) => handleEditChange(index, e)} disabled={exp.trabalhoAtualmente}>
-                                                <option value="">Mês</option>
-                                                {meses.map((mes, i) => (
-                                                    <option key={i} value={mes}>{mes}</option>
-                                                ))}
-                                            </select>
-                                            <select name="anoFinal" value={exp.anoFinal || ''} onChange={(e) => handleEditChange(index, e)} disabled={exp.trabalhoAtualmente}>
-                                                <option value="">Ano</option>
-                                                {anos.map((ano, i) => (
-                                                    <option key={i} value={ano}>{ano}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <label>
-                                            <input type="checkbox" name="trabalhoAtualmente" checked={exp.trabalhoAtualmente} onChange={(e) => handleEditChange(index, e)} />
-                                            Trabalho Atualmente
-                                        </label>
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Função/Cargo</label>
-                                        <input type="text" name="funcao" value={exp.funcao || ''} onChange={(e) => handleEditChange(index, e)} />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Principais atividades</label>
-                                        <textarea name="atividades" value={exp.atividades || ''} onChange={(e) => handleEditChange(index, e)}></textarea>
-                                    </div>
-                                    <div className="button-group">
-                                        <button type="button" className="save-btn" onClick={() => handleSaveEdit(index)} disabled={!exp.edited}>Salvar</button>
-                                        <button type="button" className="delete-btn" onClick={() => handleDeleteExperiencia(index)}>
-                                            <FontAwesomeIcon icon={faTrash} />
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    ))
-                )}
+                        ))
+                    ))}
                 <button type="button" className="add-experience-btn" onClick={() => setShowPopup(true)}>Adicionar</button>
             </div>
             {showPopup && (

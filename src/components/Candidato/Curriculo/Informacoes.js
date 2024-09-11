@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
+import { Spinner } from 'react-bootstrap';
 import './Informacoes.css';
 
 const Informacoes = () => {
+    const [loading, setLoading] = useState('true');
     const [informacoes, setInformacoes] = useState({
         cursos: [],
         habilidadesProfissionais: [],
@@ -25,6 +27,8 @@ const Informacoes = () => {
                 setInformacoes(response.data);
             } catch (error) {
                 console.error('Erro ao carregar informações:', error);
+            } finally {
+                setLoading(false);
             }
         };
         fetchInformacoes();
@@ -78,46 +82,54 @@ const Informacoes = () => {
 
     return (
         <div className="informacoes-container">
-            <InformacaoCard
-                title="Cursos e qualificações"
-                inputName="curso"
-                inputValue={inputValues.curso}
-                handleInputChange={handleInputChange}
-                tags={informacoes.cursos}
-                placeholder="Adicionar curso/qualificação"
-                handleAddTag={() => handleAddTag('cursos', inputValues.curso)}
-                handleRemoveTag={(value) => handleRemoveTag('cursos', value)}
-            />
-            <InformacaoCard
-                title="Habilidades profissionais"
-                inputName="habilidadeProfissional"
-                inputValue={inputValues.habilidadeProfissional}
-                handleInputChange={handleInputChange}
-                tags={informacoes.habilidadesProfissionais}
-                placeholder="Adicionar habilidade profissional"
-                handleAddTag={() => handleAddTag('habilidadesProfissionais', inputValues.habilidadeProfissional)}
-                handleRemoveTag={(value) => handleRemoveTag('habilidadesProfissionais', value)}
-            />
-            <InformacaoCard
-                title="Habilidades comportamentais"
-                inputName="habilidadeComportamental"
-                inputValue={inputValues.habilidadeComportamental}
-                handleInputChange={handleInputChange}
-                tags={informacoes.habilidadesComportamentais}
-                placeholder="Adicionar habilidade comportamental"
-                handleAddTag={() => handleAddTag('habilidadesComportamentais', inputValues.habilidadeComportamental)}
-                handleRemoveTag={(value) => handleRemoveTag('habilidadesComportamentais', value)}
-            />
-            <InformacaoCard
-                title="Objetivos"
-                inputName="objetivo"
-                inputValue={inputValues.objetivo}
-                handleInputChange={handleInputChange}
-                tags={informacoes.objetivos}
-                placeholder="Adicionar objetivo"
-                handleAddTag={() => handleAddTag('objetivos', inputValues.objetivo)}
-                handleRemoveTag={(value) => handleRemoveTag('objetivos', value)}
-            />
+            {loading ? (
+                <div className="d-flex justify-content-center">
+                    <Spinner animation="border" variant="primary" />
+                </div>
+            ) : (
+                <>
+                    <InformacaoCard
+                        title="Cursos e qualificações"
+                        inputName="curso"
+                        inputValue={inputValues.curso}
+                        handleInputChange={handleInputChange}
+                        tags={informacoes.cursos}
+                        placeholder="Adicionar curso/qualificação"
+                        handleAddTag={() => handleAddTag('cursos', inputValues.curso)}
+                        handleRemoveTag={(value) => handleRemoveTag('cursos', value)}
+                    />
+                    <InformacaoCard
+                        title="Habilidades profissionais"
+                        inputName="habilidadeProfissional"
+                        inputValue={inputValues.habilidadeProfissional}
+                        handleInputChange={handleInputChange}
+                        tags={informacoes.habilidadesProfissionais}
+                        placeholder="Adicionar habilidade profissional"
+                        handleAddTag={() => handleAddTag('habilidadesProfissionais', inputValues.habilidadeProfissional)}
+                        handleRemoveTag={(value) => handleRemoveTag('habilidadesProfissionais', value)}
+                    />
+                    <InformacaoCard
+                        title="Habilidades comportamentais"
+                        inputName="habilidadeComportamental"
+                        inputValue={inputValues.habilidadeComportamental}
+                        handleInputChange={handleInputChange}
+                        tags={informacoes.habilidadesComportamentais}
+                        placeholder="Adicionar habilidade comportamental"
+                        handleAddTag={() => handleAddTag('habilidadesComportamentais', inputValues.habilidadeComportamental)}
+                        handleRemoveTag={(value) => handleRemoveTag('habilidadesComportamentais', value)}
+                    />
+                    <InformacaoCard
+                        title="Objetivos"
+                        inputName="objetivo"
+                        inputValue={inputValues.objetivo}
+                        handleInputChange={handleInputChange}
+                        tags={informacoes.objetivos}
+                        placeholder="Adicionar objetivo"
+                        handleAddTag={() => handleAddTag('objetivos', inputValues.objetivo)}
+                        handleRemoveTag={(value) => handleRemoveTag('objetivos', value)}
+                    />
+                </>
+            )}
         </div>
     );
 };

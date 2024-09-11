@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
 const Formacao = ({ formacoes, setFormacoes }) => {
     const [showPopup, setShowPopup] = useState(false);
     const [isClosing, setIsClosing] = useState(false);
+    const [loading, setLoading] = useState('true');
     const [newFormacao, setNewFormacao] = useState({
         escolaridade: '',
         instituicao: '',
@@ -34,6 +36,8 @@ const Formacao = ({ formacoes, setFormacoes }) => {
             setFormacoes(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
             console.error('Erro ao carregar formações:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -121,76 +125,81 @@ const Formacao = ({ formacoes, setFormacoes }) => {
     return (
         <>
             <div className='form-columns-container'>
-                {formacoes.length === 0 ? (
-                    <p>Nenhuma formação informada. Clique em "Adicionar" para cadastrar.</p>
+                {loading ? (
+                    <div className="d-flex justify-content-center">
+                        <Spinner animation="border" variant="primary" />
+                    </div>
                 ) : (
-                    formacoes.map((exp, index) => (
-                        <div key={index} className={`experience-card ${exp.expanded ? 'expanded' : ''}`}>
-                            <div className="card-header" onClick={() => toggleExpand(index)}>
-                                <div className="header-left">
-                                    <h4>{exp.escolaridade}</h4>
-                                    <p>{exp.instituicao}</p>
+                    formacoes.length === 0 ? (
+                        <p>Nenhuma formação informada. Clique em "Adicionar" para cadastrar.</p>
+                    ) : (
+                        formacoes.map((exp, index) => (
+                            <div key={index} className={`experience-card ${exp.expanded ? 'expanded' : ''}`}>
+                                <div className="card-header" onClick={() => toggleExpand(index)}>
+                                    <div className="header-left">
+                                        <h4>{exp.escolaridade}</h4>
+                                        <p>{exp.instituicao}</p>
+                                    </div>
+                                    <span className="toggle-icon">{exp.expanded ? '▲' : '▼'}</span>
                                 </div>
-                                <span className="toggle-icon">{exp.expanded ? '▲' : '▼'}</span>
-                            </div>
-                            {exp.expanded && (
-                                <div className={`card-body ${exp.expanded ? 'expanded' : ''}`}>
-                                    <div className="form-group">
-                                        <label>Instituição</label>
-                                        <input type="text" name="instituicao" value={exp.instituicao || ''} onChange={(e) => handleEditChange(index, e)} />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Escolaridade</label>
-                                        <div className="escolaridade-select">
-                                            <select name="escolaridade" value={exp.escolaridade || ''} onChange={(e) => handleEditChange(index, e)}>
-                                                <option value="">Selecione</option>
-                                                {escolaridades.map((escolaridade, i) => (
-                                                    <option key={i} value={escolaridade}>{escolaridade}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </div>
-                                    {(exp.escolaridade === 'Técnico' || exp.escolaridade === 'Superior') && (
+                                {exp.expanded && (
+                                    <div className={`card-body ${exp.expanded ? 'expanded' : ''}`}>
                                         <div className="form-group">
-                                            <label>Curso</label>
-                                            <input type="text" name="curso" value={exp.curso || ''} onChange={(e) => handleEditChange(index, e)} />
+                                            <label>Instituição</label>
+                                            <input type="text" name="instituicao" value={exp.instituicao || ''} onChange={(e) => handleEditChange(index, e)} />
                                         </div>
-                                    )}
-                                    {exp.escolaridade === 'Superior' && (
                                         <div className="form-group">
-                                            <label>Grau</label>
-                                            <div className="grau-select">
-                                                <select name="grau" value={exp.grau || ''} onChange={(e) => handleEditChange(index, e)}>
+                                            <label>Escolaridade</label>
+                                            <div className="escolaridade-select">
+                                                <select name="escolaridade" value={exp.escolaridade || ''} onChange={(e) => handleEditChange(index, e)}>
                                                     <option value="">Selecione</option>
-                                                    {graus.map((grau, i) => (
-                                                        <option key={i} value={grau}>{grau}</option>
+                                                    {escolaridades.map((escolaridade, i) => (
+                                                        <option key={i} value={escolaridade}>{escolaridade}</option>
                                                     ))}
                                                 </select>
                                             </div>
                                         </div>
-                                    )}
-                                    <div className="form-group">
-                                        <label>Situação</label>
-                                        <div className="situacao-select">
-                                            <select name="situacao" value={exp.situacao || ''} onChange={(e) => handleEditChange(index, e)}>
-                                                <option value="">Selecione</option>
-                                                {situacoes.map((situacao, i) => (
-                                                    <option key={i} value={situacao}>{situacao}</option>
-                                                ))}
-                                            </select>
+                                        {(exp.escolaridade === 'Técnico' || exp.escolaridade === 'Superior') && (
+                                            <div className="form-group">
+                                                <label>Curso</label>
+                                                <input type="text" name="curso" value={exp.curso || ''} onChange={(e) => handleEditChange(index, e)} />
+                                            </div>
+                                        )}
+                                        {exp.escolaridade === 'Superior' && (
+                                            <div className="form-group">
+                                                <label>Grau</label>
+                                                <div className="grau-select">
+                                                    <select name="grau" value={exp.grau || ''} onChange={(e) => handleEditChange(index, e)}>
+                                                        <option value="">Selecione</option>
+                                                        {graus.map((grau, i) => (
+                                                            <option key={i} value={grau}>{grau}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        )}
+                                        <div className="form-group">
+                                            <label>Situação</label>
+                                            <div className="situacao-select">
+                                                <select name="situacao" value={exp.situacao || ''} onChange={(e) => handleEditChange(index, e)}>
+                                                    <option value="">Selecione</option>
+                                                    {situacoes.map((situacao, i) => (
+                                                        <option key={i} value={situacao}>{situacao}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div className="button-group">
+                                            <button type="button" className="save-btn" onClick={() => handleSaveEdit(index)} disabled={!exp.edited}>Salvar</button>
+                                            <button type="button" className="delete-btn" onClick={() => handleDeleteFormacao(index)}>
+                                                <FontAwesomeIcon icon={faTrash} />
+                                            </button>
                                         </div>
                                     </div>
-                                    <div className="button-group">
-                                        <button type="button" className="save-btn" onClick={() => handleSaveEdit(index)} disabled={!exp.edited}>Salvar</button>
-                                        <button type="button" className="delete-btn" onClick={() => handleDeleteFormacao(index)}>
-                                            <FontAwesomeIcon icon={faTrash} />
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    ))
-                )}
+                                )}
+                            </div>
+                        ))
+                    ))}
                 <button type="button" className="add-experience-btn" onClick={() => setShowPopup(true)}>Adicionar</button>
             </div>
             {showPopup && (
