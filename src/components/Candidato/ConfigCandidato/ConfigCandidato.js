@@ -11,17 +11,17 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const Config = () => {
     const [userData, setUserData] = useState({
-        firstName: '',
-        lastName: '',
+        nome: '',
+        sobrenome: '',
         maritalStatus: '',
         cpf: '',
-        birthDate: '',
+        nascimento: '',
         email: '',
         contactPhone: '',
         backupPhone: '',
         street: '',
         number: '',
-        neighborhood: '',
+        district: '',
         city: '',
         profilePicture: '',
         rg: '',
@@ -68,17 +68,17 @@ const Config = () => {
                     : (typeof user.additionalInfo?.cnhTypes === 'string' ? user.additionalInfo.cnhTypes.split(',') : []);
 
                 const userData = {
-                    firstName: user.nome,
-                    lastName: user.sobrenome,
+                    nome: user.nome,
+                    sobrenome: user.sobrenome,
                     maritalStatus: user.additionalInfo?.maritalStatus || '',
                     cpf: user.cpf,
-                    birthDate: formattedBirthDate,
+                    nascimento: formattedBirthDate,
                     email: user.email,
                     contactPhone: user.additionalInfo?.contactPhone || '',
                     backupPhone: user.additionalInfo?.backupPhone || '',
                     street: user.address?.street || '',
                     number: user.address?.number || '',
-                    neighborhood: user.address?.district || '',
+                    district: user.address?.district || '',
                     city: user.address?.city || '',
                     profilePicture: user.profilePicture || '',
                     rg: user.additionalInfo?.rg || '',
@@ -278,22 +278,22 @@ const Config = () => {
                                     <div className="form-columns-container">
                                         <div className='form-column'>
                                             <div className='form-group'>
-                                                <label htmlFor='firstName'>Nome</label>
+                                                <label htmlFor='nome'>Nome</label>
                                                 <input
                                                     type='text'
-                                                    id='firstName'
-                                                    name='firstName'
-                                                    value={userData.firstName}
+                                                    id='nome'
+                                                    name='nome'
+                                                    value={userData.nome}
                                                     onChange={handleNameChange}
                                                 />
                                             </div>
                                             <div className='form-group'>
-                                                <label htmlFor='lastName'>Sobrenome</label>
+                                                <label htmlFor='sobrenome'>Sobrenome</label>
                                                 <input
                                                     type='text'
-                                                    id='lastName'
-                                                    name='lastName'
-                                                    value={userData.lastName}
+                                                    id='sobrenome'
+                                                    name='sobrenome'
+                                                    value={userData.sobrenome}
                                                     onChange={handleNameChange}
                                                 />
                                             </div>
@@ -336,12 +336,12 @@ const Config = () => {
                                         </div>
                                         <div className='form-column'>
                                             <div className='form-group'>
-                                                <label htmlFor='birthDate'>Data de nascimento</label>
+                                                <label htmlFor='nascimento'>Data de nascimento</label>
                                                 <input
                                                     type='date'
-                                                    id='birthDate'
-                                                    name='birthDate'
-                                                    value={userData.birthDate}
+                                                    id='nascimento'
+                                                    name='nascimento'
+                                                    value={userData.nascimento}
                                                     onChange={handleChange}
                                                 />
                                             </div>
@@ -439,12 +439,12 @@ const Config = () => {
                                         </div>
                                         <div className='form-column'>
                                             <div className='form-group'>
-                                                <label htmlFor='neighborhood'>Bairro</label>
+                                                <label htmlFor='district'>Bairro</label>
                                                 <input
                                                     type='text'
-                                                    id='neighborhood'
-                                                    name='neighborhood'
-                                                    value={userData.neighborhood}
+                                                    id='district'
+                                                    name='district'
+                                                    value={userData.district}
                                                     onChange={handleChange}
                                                 />
                                             </div>
