@@ -25,40 +25,6 @@
     background-color: #f1f1f1;
 }
 
-
-.mt-4 {
-    margin-top: 1.5rem;
-}
-
-.mb-4 {
-    margin-bottom: 1.5rem;
-}
-
-.mr-2 {
-    margin-right: 0.5rem;
-}
-
-.d-flex {
-    display: flex;
-}
-
-.justify-content-between {
-    justify-content: space-between;
-}
-
-.align-items-center {
-    align-items: center;
-}
-
-.form-control {
-    width: auto;
-    flex: 1;
-}
-
-button {
-    white-space: nowrap;
-}
-
 .react-quill {
     border-radius: 5px;
 }
@@ -87,21 +53,6 @@ button {
         margin-left: 0;
         margin-top: 0.5rem;
     }
-}
-
-.Modal {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    width: 90%;
-    max-width: 600px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    overflow: auto;
-    max-height: 90%;
 }
 
 .form-group-custom {

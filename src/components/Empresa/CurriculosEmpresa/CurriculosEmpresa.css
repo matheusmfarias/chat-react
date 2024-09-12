@@ -67,3 +67,65 @@
     margin-top: 10px;
   }
 }
+
+.application-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+}
+
+.applicant-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  word-wrap: break-word;
+  overflow: hidden;
+}
+
+.profile-img {
+  object-fit: cover;
+  display: block;
+  margin-right: 10px; /* Adiciona um espaço entre a imagem e o texto */
+}
+
+.d-flex.align-items-start {
+  display: flex;
+  align-items: flex-start; /* Garante que a imagem e o nome fiquem alinhados no topo */
+}
+
+h5, p {
+  white-space: normal; /* Permite que o texto ocupe várias linhas, se necessário */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Apenas adiciona as reticências se houver estouro de conteúdo */
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 15px;
+}
+
+.experience-table,
+.education-table {
+  table-layout: auto; /* Permite que as colunas se ajustem automaticamente ao conteúdo */
+  width: 100%; /* Mantém a tabela dentro da largura total do card */
+  word-wrap: break-word; /* Quebra o texto longo nas células */
+}
+
+.experience-table td,
+.education-table td {
+  overflow-wrap: break-word; /* Garante que o texto quebre dentro das células */
+  white-space: normal; /* Permite que o conteúdo use múltiplas linhas, se necessário */
+}
+
+.application-list {
+  overflow: hidden; /* Garante que o conteúdo não transborde */
+}
+
+h5, p {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

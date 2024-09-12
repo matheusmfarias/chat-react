@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, Row, Col, Button, InputGroup, Form, Alert, Spinner, Pagination } from 'react-bootstrap';
+import { Table, Row, Col, Button, InputGroup, Form, Alert, Spinner, Pagination, Container } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faToggleOn, faToggleOff, faEye, faPlus, faFilter, faSearch, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import HeaderEmpresa from '../HeaderEmpresa';
@@ -413,113 +413,26 @@ const VagasEmpresa = () => {
         <>
             <ToastContainer />
             <HeaderEmpresa />
-
             {viewingJob && selectedJob ? (
                 <DetalhesVagas job={selectedJob} onBack={closeViewJob} />
             ) : (
-                <div className="container mt-2">
-                    <h1>Minhas Vagas</h1>
-                    {error && <Alert variant="danger">{error}</Alert>}
-                    <Row className="mb-3 align-items-center">
-                        <Col xs={12} md={4} className="d-flex justify-content-start mb-2 mb-md-0">
-                            <Button variant="primary" className="shadow border-0 me-2 flex-grow-1" onClick={() => openModal()}>
-                                <FontAwesomeIcon icon={faPlus} /> Adicionar
-                            </Button>
-                            <Button variant="secondary" className="shadow border-0 me-2 flex-grow-1" onClick={() => setShowFilters(!showFilters)}>
-                                <FontAwesomeIcon icon={faFilter} /> Filtros
-                            </Button>
+
+                <Container fluid className='px-5'>
+                    <Row className='align-items-center mb-2'>
+                        <Col md={10}>
+                            <h1>Gestão de Vagas</h1>
                         </Col>
-                        <Col xs={12} md={8} className="d-flex justify-content-end">
-                            <InputGroup className="shadow" style={{ maxWidth: '500px', borderRadius: '10px' }}>
-                                <Form.Control
-                                    type="text"
-                                    placeholder="Pesquisar por cargo..."
-                                    aria-label="Pesquisar"
-                                    value={searchTerm}
-                                    onChange={e => setSearchTerm(e.target.value)}
-                                />
-                                <Button variant="outline-secondary" style={{ maxWidth: '100px' }} onClick={handleFilterSearch}>
-                                    <FontAwesomeIcon icon={faSearch} />
-                                </Button>
-                            </InputGroup>
+                        <Col md={2} className='mt-2'>
+                            <Button className="shadow border-0" onClick={() => openModal()}>
+                                <FontAwesomeIcon icon={faPlus} /> Adicionar vaga
+                            </Button>
                         </Col>
                     </Row>
-
-                    {showFilters && (
-                        <>
-                            <Row className="mb-3 align-items-center">
-                                <Col xs={12} md={4} className="d-flex align-items-center">
-                                    <Form.Control
-                                        as="select"
-                                        value={selectedStateFilter}
-                                        onChange={(e) => setSelectedStateFilter(e.target.value)}
-                                    >
-                                        <option value="">Selecione o estado</option>
-                                        {states.map((state) => (
-                                            <option key={state.id} value={state.sigla}>
-                                                {state.nome}
-                                            </option>
-                                        ))}
-                                    </Form.Control>
-                                    {selectedStateFilter && (
-                                        <FontAwesomeIcon icon={faTimesCircle} className="icon-reset" onClick={resetStateFilter} title="Resetar Estado" />
-                                    )}
-                                </Col>
-                                <Col xs={12} md={4} className="d-flex align-items-center">
-                                    <Form.Control
-                                        as="select"
-                                        value={selectedCityFilter}
-                                        onChange={(e) => setSelectedCityFilter(e.target.value)}
-                                    >
-                                        <option value="">Selecione a cidade</option>
-                                        {cities.map((city) => (
-                                            <option key={city.id} value={city.nome}>
-                                                {city.nome}
-                                            </option>
-                                        ))}
-                                    </Form.Control>
-                                    {selectedCityFilter && (
-                                        <FontAwesomeIcon icon={faTimesCircle} className="icon-reset" onClick={resetCityFilter} title="Resetar Cidade" />
-                                    )}
-                                </Col>
-                                <Col xs={12} md={4} className="d-flex align-items-center">
-                                    <Form.Control
-                                        as="select"
-                                        value={filters.modality}
-                                        onChange={(e) => setFilters({ ...filters, modality: e.target.value })}
-                                    >
-                                        <option value="">Modalidade</option>
-                                        <option value="Presencial">Presencial</option>
-                                        <option value="Híbrido">Híbrido</option>
-                                        <option value="Remoto">Remoto</option>
-                                    </Form.Control>
-                                    {filters.modality && (
-                                        <FontAwesomeIcon icon={faTimesCircle} className="icon-reset" onClick={resetModalityFilter} title="Resetar Modalidade" />
-                                    )}
-                                </Col>
-                            </Row>
-                            <Row className="mb-3 align-items-center">
-                                <Col xs={12} md={4} className="d-flex align-items-center">
-                                    <Form.Control
-                                        as="select"
-                                        value={filters.type}
-                                        onChange={(e) => setFilters({ ...filters, type: e.target.value })}
-                                    >
-                                        <option value="">Tipo</option>
-                                        <option value="Efetivo">Efetivo</option>
-                                        <option value="Aprendiz">Aprendiz</option>
-                                        <option value="Estágio">Estágio</option>
-                                        <option value="Pessoa Jurídica">Pessoa Jurídica</option>
-                                        <option value="Trainee">Trainee</option>
-                                        <option value="Temporário">Temporário</option>
-                                        <option value="Freelancer">Freelancer</option>
-                                        <option value="Terceiro">Terceiro</option>
-                                    </Form.Control>
-                                    {filters.type && (
-                                        <FontAwesomeIcon icon={faTimesCircle} className="icon-reset" onClick={resetTypeFilter} title="Resetar Tipo" />
-                                    )}
-                                </Col>
-                                <Col xs={12} md={4} className="d-flex align-items-center">
+                    <Row>
+                        <Col xs={3} >
+                            <Row className='mb-4'>
+                                <h5>Status da vaga</h5>
+                                <Col xs={12} md={4}>
                                     <Form.Control
                                         as="select"
                                         value={filters.status}
@@ -533,7 +446,120 @@ const VagasEmpresa = () => {
                                         <FontAwesomeIcon icon={faTimesCircle} className="icon-reset" onClick={resetStatusFilter} title="Resetar Status" />
                                     )}
                                 </Col>
-                                <Col xs={12} md={4} className="d-flex align-items-center">
+                            </Row>
+                            <Row className='mb-4'>
+                                <h5>Tipo da vaga</h5>
+                                <Col xs={12} md={6}>
+                                    <Form.Group>
+                                        {['Efetivo', 'Aprendiz', 'Estágio', 'Pessoa Jurídica'].map((type) => (
+                                            <Form.Check
+                                                type="checkbox"
+                                                label={type}
+                                                key={type}
+                                                value={type}
+                                                checked={filters.type.includes(type)}
+                                                onChange={(e) => {
+                                                    const newTypes = e.target.checked
+                                                        ? [...filters.type, type]
+                                                        : filters.type.filter((t) => t !== type);
+                                                    setFilters({ ...filters, type: newTypes });
+                                                }}
+                                            />
+                                        ))}
+                                    </Form.Group>
+                                </Col>
+                                <Col xs={12} md={6}>
+                                    <Form.Group>
+                                        {['Trainee', 'Temporário', 'Freelancer', 'Terceiro'].map((type) => (
+                                            <Form.Check
+                                                type="checkbox"
+                                                label={type}
+                                                key={type}
+                                                value={type}
+                                                checked={filters.type.includes(type)}
+                                                onChange={(e) => {
+                                                    const newTypes = e.target.checked
+                                                        ? [...filters.type, type]
+                                                        : filters.type.filter((t) => t !== type);
+                                                    setFilters({ ...filters, type: newTypes });
+                                                }}
+                                            />
+                                        ))}
+                                    </Form.Group>
+                                </Col>
+                                {filters.type.length > 0 && (
+                                    <FontAwesomeIcon icon={faTimesCircle} className="icon-reset" onClick={resetTypeFilter} title="Resetar Tipo" />
+                                )}
+                            </Row>
+                            <Row className='mb-4'>
+                                <h5>Modalidade da vaga</h5>
+                                <Col xs={12} md={4}>
+                                    <Form.Group>
+                                        {['Presencial', 'Híbrido', 'Remoto'].map((modality) => (
+                                            <Form.Check
+                                                type="checkbox"
+                                                label={modality}
+                                                key={modality}
+                                                value={modality}
+                                                checked={filters.type.includes(modality)}
+                                                onChange={(e) => {
+                                                    const newModalities = e.target.checked
+                                                        ? [...filters.modality, modality]
+                                                        : filters.modality.filter((t) => t !== modality);
+                                                    setFilters({ ...filters, modality: newModalities });
+                                                }}
+                                            />
+                                        ))}
+                                    </Form.Group>
+                                    {filters.modality && (
+                                        <FontAwesomeIcon icon={faTimesCircle} className="icon-reset" onClick={resetModalityFilter} title="Resetar Modalidade" />
+                                    )}
+                                </Col>
+                            </Row>
+                            <Row className='mb-2'>
+                                <h5>Localização da vaga</h5>
+                                <span className='text-muted'>Estado</span>
+                                <Col xs={12} md={4}>
+                                    <Form.Control
+                                        as="select"
+                                        value={selectedStateFilter}
+                                        onChange={(e) => setSelectedStateFilter(e.target.value)}
+                                    >
+                                        <option value="">Selecione</option>
+                                        {states.map((state) => (
+                                            <option key={state.id} value={state.sigla}>
+                                                {state.nome}
+                                            </option>
+                                        ))}
+                                    </Form.Control>
+                                    {selectedStateFilter && (
+                                        <FontAwesomeIcon icon={faTimesCircle} className="icon-reset" onClick={resetStateFilter} title="Resetar Estado" />
+                                    )}
+                                </Col>
+                            </Row>
+                            <Row className='mb-4'>
+                                <span className='text-muted'>Cidade</span>
+                                <Col xs={12} md={4}>
+                                    <Form.Control
+                                        as="select"
+                                        value={selectedCityFilter}
+                                        onChange={(e) => setSelectedCityFilter(e.target.value)}
+                                    >
+                                        <option value="">Selecione</option>
+                                        {cities.map((city) => (
+                                            <option key={city.id} value={city.nome}>
+                                                {city.nome}
+                                            </option>
+                                        ))}
+                                    </Form.Control>
+                                    {selectedCityFilter && (
+                                        <FontAwesomeIcon icon={faTimesCircle} className="icon-reset" onClick={resetCityFilter} title="Resetar Cidade" />
+                                    )}
+                                </Col>
+                            </Row>
+                            <Row className='mb-4'>
+                                <h5>PCD</h5>
+                                <Col xs={12} md={4}>
                                     <Form.Control
                                         as="select"
                                         value={filters.pcd}
@@ -548,75 +574,94 @@ const VagasEmpresa = () => {
                                     )}
                                 </Col>
                             </Row>
-                        </>
-                    )}
+                        </Col>
+                        <Col xs={9} md={8}>
+                            <Row>
+                                <InputGroup style={{ maxWidth: '500px', borderRadius: '10px' }}>
+                                    <Form.Control
+                                        type="text"
+                                        placeholder="Pesquisar por cargo..."
+                                        aria-label="Pesquisar"
+                                        value={searchTerm}
+                                        onChange={e => setSearchTerm(e.target.value)}
+                                    />
+                                    <Button variant="outline-primary" style={{ maxWidth: '100px' }} onClick={handleFilterSearch}>
+                                        <FontAwesomeIcon icon={faSearch} />
+                                    </Button>
+                                </InputGroup>
+                            </Row>
+                            <Row>
+                                {
+                                    loading ? (
+                                        <div className="d-flex justify-content-center" >
+                                            <Spinner animation='border' variant='primary' />
+                                        </div >
+                                    ) : jobs.length > 0 ? (
+                                        <>
+                                            <Table striped bordered hover className="shadow-sm mt-3">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Cargo</th>
+                                                        <th>Localidade</th>
+                                                        <th>Modelo</th>
+                                                        <th>Tipo</th>
+                                                        <th>Status</th>
+                                                        <th>PCD</th>
+                                                        <th>Salário</th>
+                                                        <th>Ações</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {currentJobs.map((job, index) => (
+                                                        <tr key={index}>
+                                                            <td>{job.title}</td>
+                                                            <td>{job.location}</td>
+                                                            <td>{job.modality}</td>
+                                                            <td>{job.type}</td>
+                                                            <td>
+                                                                <span className={`status-indicator ${job.status ? 'active' : 'inactive'}`} />
+                                                                {job.status ? 'Ativa' : 'Inativa'}
+                                                            </td>
+                                                            <td>{job.pcd ? 'Sim' : 'Não'}</td>
+                                                            <td>{job.salary ? job.salary : 'Não informado'}</td>
+                                                            <td>
+                                                                <div className='btn-group'>
+                                                                    <FontAwesomeIcon icon={faEye} className="icon-btn" onClick={() => openViewJob(job)} title="Visualizar detalhes" />
+                                                                    <FontAwesomeIcon icon={faEdit} className="icon-btn" onClick={() => openModal(job)} title="Editar" />
+                                                                    <FontAwesomeIcon
+                                                                        icon={job.status ? faToggleOn : faToggleOff}
+                                                                        className="icon-btn"
+                                                                        onClick={() => handleToggleStatus(job)}
+                                                                        title={job.status ? 'Desabilitar' : 'Habilitar'}
+                                                                    />
+                                                                    <FontAwesomeIcon icon={faTrash} className="icon-btn" onClick={() => handleConfirmDelete(job._id)} title="Excluir" />
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </Table>
+                                            {/* Paginação */}
+                                            {jobs.length > itemsPerPage && (
+                                                <Pagination>
+                                                    <Pagination.Prev onClick={prevPage} disabled={currentPage === 1} />
+                                                    {Array.from({ length: Math.ceil(jobs.length / itemsPerPage) }, (_, i) => (
+                                                        <Pagination.Item key={i + 1} active={i + 1 === currentPage} onClick={() => paginate(i + 1)}>
+                                                            {i + 1}
+                                                        </Pagination.Item>
+                                                    ))}
+                                                    <Pagination.Next onClick={nextPage} disabled={currentPage === Math.ceil(jobs.length / itemsPerPage)} />
+                                                </Pagination>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <p className="text-center">Nenhuma vaga encontrada...</p>
+                                    )}
+                            </Row>
+                        </Col>
+                    </Row >
+                </Container >
 
-                    {loading ? (
-                        <div className="d-flex justify-content-center">
-                            <Spinner animation='border' variant='primary' />
-                        </div>
-                    ) : jobs.length > 0 ? (
-                        <>
-                            <Table striped bordered hover className="shadow-sm mt-3">
-                                <thead>
-                                    <tr>
-                                        <th>Cargo</th>
-                                        <th>Localidade</th>
-                                        <th>Modelo</th>
-                                        <th>Tipo</th>
-                                        <th>Status</th>
-                                        <th>PCD</th>
-                                        <th>Salário</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {currentJobs.map((job, index) => (
-                                        <tr key={index}>
-                                            <td>{job.title}</td>
-                                            <td>{job.location}</td>
-                                            <td>{job.modality}</td>
-                                            <td>{job.type}</td>
-                                            <td>
-                                                <span className={`status-indicator ${job.status ? 'active' : 'inactive'}`} />
-                                                {job.status ? 'Ativa' : 'Inativa'}
-                                            </td>
-                                            <td>{job.pcd ? 'Sim' : 'Não'}</td>
-                                            <td>{job.salary ? job.salary : 'Não informado'}</td>
-                                            <td>
-                                                <div className='btn-group'>
-                                                    <FontAwesomeIcon icon={faEye} className="icon-btn" onClick={() => openViewJob(job)} title="Visualizar detalhes" />
-                                                    <FontAwesomeIcon icon={faEdit} className="icon-btn" onClick={() => openModal(job)} title="Editar" />
-                                                    <FontAwesomeIcon
-                                                        icon={job.status ? faToggleOn : faToggleOff}
-                                                        className="icon-btn"
-                                                        onClick={() => handleToggleStatus(job)}
-                                                        title={job.status ? 'Desabilitar' : 'Habilitar'}
-                                                    />
-                                                    <FontAwesomeIcon icon={faTrash} className="icon-btn" onClick={() => handleConfirmDelete(job._id)} title="Excluir" />
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </Table>
-                            {/* Paginação */}
-                            {jobs.length > itemsPerPage && (
-                                <Pagination>
-                                    <Pagination.Prev onClick={prevPage} disabled={currentPage === 1} />
-                                    {Array.from({ length: Math.ceil(jobs.length / itemsPerPage) }, (_, i) => (
-                                        <Pagination.Item key={i + 1} active={i + 1 === currentPage} onClick={() => paginate(i + 1)}>
-                                            {i + 1}
-                                        </Pagination.Item>
-                                    ))}
-                                    <Pagination.Next onClick={nextPage} disabled={currentPage === Math.ceil(jobs.length / itemsPerPage)} />
-                                </Pagination>
-                            )}
-                        </>
-                    ) : (
-                        <p className="text-center">Nenhuma vaga encontrada...</p>
-                    )}
-                </div>
             )}
 
             <ModalVagas
