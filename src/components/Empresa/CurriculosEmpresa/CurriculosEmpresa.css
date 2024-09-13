@@ -3,7 +3,8 @@
 .no-inner-borders th {
   border: none !important;
   vertical-align: middle;
-  padding: 15px; /* Adiciona um padding para espaçamento nas células */
+  padding: 15px;
+  /* Adiciona um padding para espaçamento nas células */
 }
 
 /* Estilos para a tabela */
@@ -13,7 +14,8 @@
   border: 1px solid #dee2e6;
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* Adiciona uma leve sombra para destacar a tabela */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  /* Adiciona uma leve sombra para destacar a tabela */
 }
 
 /* Remove a borda superior e inferior do cabeçalho e da última linha */
@@ -27,16 +29,20 @@
 
 /* Card de candidatos */
 .card {
-  border-radius: 8px; /* Arredonda os cantos dos cards */
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Leve sombra nos cards para destaque */
+  border-radius: 8px;
+  /* Arredonda os cantos dos cards */
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  /* Leve sombra nos cards para destaque */
 }
 
 /* Texto para quando não há candidatos */
 .no-candidates-text {
   padding: 20px;
-  color: #6c757d; /* Cor cinza suave */
+  color: #6c757d;
+  /* Cor cinza suave */
   text-align: center;
-  font-style: italic; /* Texto em itálico para mensagem de "nenhum candidato" */
+  font-style: italic;
+  /* Texto em itálico para mensagem de "nenhum candidato" */
 }
 
 /* Melhor espaçamento entre os itens de paginação */
@@ -52,18 +58,20 @@
 
 /* Para garantir que o conteúdo não quebre a responsividade */
 @media (max-width: 768px) {
+
   .no-inner-borders td,
   .no-inner-borders th {
     padding: 10px;
   }
-  
+
   .card-body {
     flex-direction: column;
     align-items: flex-start;
   }
 
   .card-body .btn-outline-primary {
-    width: 100%; /* Botão ocupará a largura total em telas pequenas */
+    width: 100%;
+    /* Botão ocupará a largura total em telas pequenas */
     margin-top: 10px;
   }
 }
@@ -86,18 +94,23 @@
 .profile-img {
   object-fit: cover;
   display: block;
-  margin-right: 10px; /* Adiciona um espaço entre a imagem e o texto */
+  margin-right: 10px;
+  /* Adiciona um espaço entre a imagem e o texto */
 }
 
 .d-flex.align-items-start {
   display: flex;
-  align-items: flex-start; /* Garante que a imagem e o nome fiquem alinhados no topo */
+  align-items: flex-start;
+  /* Garante que a imagem e o nome fiquem alinhados no topo */
 }
 
-h5, p {
-  white-space: normal; /* Permite que o texto ocupe várias linhas, se necessário */
+h5,
+p {
+  white-space: normal;
+  /* Permite que o texto ocupe várias linhas, se necessário */
   overflow: hidden;
-  text-overflow: ellipsis; /* Apenas adiciona as reticências se houver estouro de conteúdo */
+  text-overflow: ellipsis;
+  /* Apenas adiciona as reticências se houver estouro de conteúdo */
 }
 
 .card {
@@ -109,22 +122,29 @@ h5, p {
 
 .experience-table,
 .education-table {
-  table-layout: auto; /* Permite que as colunas se ajustem automaticamente ao conteúdo */
-  width: 100%; /* Mantém a tabela dentro da largura total do card */
-  word-wrap: break-word; /* Quebra o texto longo nas células */
+  table-layout: auto;
+  /* Permite que as colunas se ajustem automaticamente ao conteúdo */
+  width: 100%;
+  /* Mantém a tabela dentro da largura total do card */
+  word-wrap: break-word;
+  /* Quebra o texto longo nas células */
 }
 
 .experience-table td,
 .education-table td {
-  overflow-wrap: break-word; /* Garante que o texto quebre dentro das células */
-  white-space: normal; /* Permite que o conteúdo use múltiplas linhas, se necessário */
+  overflow-wrap: break-word;
+  /* Garante que o texto quebre dentro das células */
+  white-space: normal;
+  /* Permite que o conteúdo use múltiplas linhas, se necessário */
 }
 
 .application-list {
-  overflow: hidden; /* Garante que o conteúdo não transborde */
+  overflow: hidden;
+  /* Garante que o conteúdo não transborde */
 }
 
-h5, p {
+h5,
+p {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

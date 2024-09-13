@@ -73,20 +73,18 @@ const VagasEmpresa = () => {
         });
     };
 
-    const [showFilters, setShowFilters] = useState(false);
-
     const handleFilterSearch = useCallback(async () => {
         const params = new URLSearchParams();
 
-        if (searchTerm) params.append('keyword', searchTerm); // Termo de pesquisa por título
-        if (filters.modality) params.append('modality', filters.modality);
-        if (filters.type) params.append('type', filters.type);
+        if (searchTerm) params.append('keyword', searchTerm);
+        if (filters.modality.length > 0) filters.modality.forEach(m => params.append('modality', m));
+        if (filters.type.length > 0) filters.type.forEach(t => params.append('type', t));
         if (filters.status) params.append('status', filters.status);
         if (filters.pcd) params.append('pcd', filters.pcd);
         if (selectedStateFilter && selectedCityFilter) {
             params.append('location', `${selectedCityFilter}, ${selectedStateFilter}`);
         } else if (selectedStateFilter) {
-            params.append('location', selectedStateFilter);  // Adiciona apenas o estado se a cidade não for selecionada
+            params.append('location', selectedStateFilter);
         }
 
         setLoading(true);
@@ -297,7 +295,17 @@ const VagasEmpresa = () => {
                         Authorization: `Bearer ${token}`
                     }
                 });
-                setJobs(prevJobs => prevJobs.filter(job => job._id !== id));
+
+                // Atualiza a lista de vagas após a exclusão
+                const updatedJobs = jobs.filter(job => job._id !== id);
+                setJobs(updatedJobs);
+
+                // Verifica se a página atual ficou vazia após a exclusão
+                const totalPages = Math.ceil(updatedJobs.length / itemsPerPage);
+                if (currentPage > totalPages && currentPage > 1) {
+                    setCurrentPage(currentPage - 1);  // Retorna para a página anterior
+                }
+
                 notify('Vaga deletada com sucesso!', 'success');
             } catch (error) {
                 console.error('Error deleting job:', error);
@@ -367,7 +375,7 @@ const VagasEmpresa = () => {
     // Funções para resetar filtros individualmente
     const resetStateFilter = () => {
         setSelectedStateFilter('');
-        setCities([]);
+        resetCityFilter();
     };
 
     const resetCityFilter = () => {
@@ -417,41 +425,39 @@ const VagasEmpresa = () => {
                 <DetalhesVagas job={selectedJob} onBack={closeViewJob} />
             ) : (
 
-                <Container fluid className='px-5'>
-                    <Row className='align-items-center mb-2'>
+                <Container fluid className='px-5' style={{ backgroundColor: '#f9f9f9f9' }}>
+                    <Row className="mt-4" style={{ paddingLeft: '90px', paddingRight: '90px' }}>
                         <Col md={10}>
                             <h1>Gestão de Vagas</h1>
                         </Col>
-                        <Col md={2} className='mt-2'>
-                            <Button className="shadow border-0" onClick={() => openModal()}>
-                                <FontAwesomeIcon icon={faPlus} /> Adicionar vaga
-                            </Button>
-                        </Col>
                     </Row>
-                    <Row>
-                        <Col xs={3} >
-                            <Row className='mb-4'>
+                    <Row style={{ paddingLeft: '90px', paddingRight: '90px' }}>
+                        <Col xs={2} className='mt-4 mb-4'>
+                            <Row className='mb-4 align-items-center'>
                                 <h5>Status da vaga</h5>
-                                <Col xs={12} md={4}>
+                                <Col xs={12} md={10}>
                                     <Form.Control
                                         as="select"
                                         value={filters.status}
+                                        style={{ width: '200px' }}
                                         onChange={(e) => setFilters({ ...filters, status: e.target.value })}
                                     >
-                                        <option value="">Status</option>
+                                        <option value="">Selecione</option>
                                         <option value="true">Ativo</option>
                                         <option value="false">Inativa</option>
                                     </Form.Control>
+                                </Col>
+                                <Col md={2} className='p-0'>
                                     {filters.status && (
                                         <FontAwesomeIcon icon={faTimesCircle} className="icon-reset" onClick={resetStatusFilter} title="Resetar Status" />
                                     )}
                                 </Col>
                             </Row>
-                            <Row className='mb-4'>
+                            <Row className='mb-4 align-items-center'>
                                 <h5>Tipo da vaga</h5>
-                                <Col xs={12} md={6}>
+                                <Col xs={12} md={10} >
                                     <Form.Group>
-                                        {['Efetivo', 'Aprendiz', 'Estágio', 'Pessoa Jurídica'].map((type) => (
+                                        {['Efetivo', 'Aprendiz', 'Estágio', 'Pessoa Jurídica', 'Trainee', 'Temporário', 'Freelancer', 'Terceiro'].map((type) => (
                                             <Form.Check
                                                 type="checkbox"
                                                 label={type}
@@ -468,32 +474,15 @@ const VagasEmpresa = () => {
                                         ))}
                                     </Form.Group>
                                 </Col>
-                                <Col xs={12} md={6}>
-                                    <Form.Group>
-                                        {['Trainee', 'Temporário', 'Freelancer', 'Terceiro'].map((type) => (
-                                            <Form.Check
-                                                type="checkbox"
-                                                label={type}
-                                                key={type}
-                                                value={type}
-                                                checked={filters.type.includes(type)}
-                                                onChange={(e) => {
-                                                    const newTypes = e.target.checked
-                                                        ? [...filters.type, type]
-                                                        : filters.type.filter((t) => t !== type);
-                                                    setFilters({ ...filters, type: newTypes });
-                                                }}
-                                            />
-                                        ))}
-                                    </Form.Group>
+                                <Col md={2} className='p-0'>
+                                    {filters.type.length > 0 && (
+                                        <FontAwesomeIcon icon={faTimesCircle} className="icon-reset" onClick={resetTypeFilter} title="Resetar Tipo" />
+                                    )}
                                 </Col>
-                                {filters.type.length > 0 && (
-                                    <FontAwesomeIcon icon={faTimesCircle} className="icon-reset" onClick={resetTypeFilter} title="Resetar Tipo" />
-                                )}
                             </Row>
-                            <Row className='mb-4'>
+                            <Row className='mb-4 align-items-center'>
                                 <h5>Modalidade da vaga</h5>
-                                <Col xs={12} md={4}>
+                                <Col xs={12} md={10}>
                                     <Form.Group>
                                         {['Presencial', 'Híbrido', 'Remoto'].map((modality) => (
                                             <Form.Check
@@ -501,7 +490,7 @@ const VagasEmpresa = () => {
                                                 label={modality}
                                                 key={modality}
                                                 value={modality}
-                                                checked={filters.type.includes(modality)}
+                                                checked={filters.modality.includes(modality)}
                                                 onChange={(e) => {
                                                     const newModalities = e.target.checked
                                                         ? [...filters.modality, modality]
@@ -511,17 +500,20 @@ const VagasEmpresa = () => {
                                             />
                                         ))}
                                     </Form.Group>
-                                    {filters.modality && (
+                                </Col>
+                                <Col md={2} className='p-0'>
+                                    {filters.modality.length > 0 && (
                                         <FontAwesomeIcon icon={faTimesCircle} className="icon-reset" onClick={resetModalityFilter} title="Resetar Modalidade" />
                                     )}
                                 </Col>
                             </Row>
-                            <Row className='mb-2'>
+                            <Row className='mb-2 align-items-center'>
                                 <h5>Localização da vaga</h5>
                                 <span className='text-muted'>Estado</span>
-                                <Col xs={12} md={4}>
+                                <Col xs={12} md={10}>
                                     <Form.Control
                                         as="select"
+                                        style={{ width: '200px' }}
                                         value={selectedStateFilter}
                                         onChange={(e) => setSelectedStateFilter(e.target.value)}
                                     >
@@ -532,16 +524,19 @@ const VagasEmpresa = () => {
                                             </option>
                                         ))}
                                     </Form.Control>
+                                </Col>
+                                <Col md={2} className='p-0'>
                                     {selectedStateFilter && (
                                         <FontAwesomeIcon icon={faTimesCircle} className="icon-reset" onClick={resetStateFilter} title="Resetar Estado" />
                                     )}
                                 </Col>
                             </Row>
-                            <Row className='mb-4'>
+                            <Row className='mb-4 align-items-center'>
                                 <span className='text-muted'>Cidade</span>
-                                <Col xs={12} md={4}>
+                                <Col xs={12} md={10}>
                                     <Form.Control
                                         as="select"
+                                        style={{ width: '200px' }}
                                         value={selectedCityFilter}
                                         onChange={(e) => setSelectedCityFilter(e.target.value)}
                                     >
@@ -552,34 +547,45 @@ const VagasEmpresa = () => {
                                             </option>
                                         ))}
                                     </Form.Control>
+                                </Col>
+                                <Col md={2} className='p-0'>
                                     {selectedCityFilter && (
                                         <FontAwesomeIcon icon={faTimesCircle} className="icon-reset" onClick={resetCityFilter} title="Resetar Cidade" />
                                     )}
                                 </Col>
                             </Row>
-                            <Row className='mb-4'>
+                            <Row className='mb-4 align-items-center'>
                                 <h5>PCD</h5>
-                                <Col xs={12} md={4}>
+                                <Col xs={12} md={10}>
                                     <Form.Control
                                         as="select"
+                                        style={{ width: '200px' }}
                                         value={filters.pcd}
                                         onChange={(e) => setFilters({ ...filters, pcd: e.target.value })}
                                     >
-                                        <option value="">PCD</option>
+                                        <option value="">Selecione</option>
                                         <option value="true">Sim</option>
                                         <option value="false">Não</option>
                                     </Form.Control>
+                                </Col>
+                                <Col md={2} className='p-0'>
                                     {filters.pcd && (
                                         <FontAwesomeIcon icon={faTimesCircle} className="icon-reset" onClick={resetPcdFilter} title="Resetar PCD" />
                                     )}
                                 </Col>
                             </Row>
                         </Col>
-                        <Col xs={9} md={8}>
-                            <Row>
-                                <InputGroup style={{ maxWidth: '500px', borderRadius: '10px' }}>
+                        <Col md={10} className='mt-4'>
+                            <Row className='align-items-center'>
+                                <Col md={2} className='mt-2'>
+                                    <Button className="shadow border-0" onClick={() => openModal()}>
+                                        <FontAwesomeIcon icon={faPlus} /> Adicionar vaga
+                                    </Button>
+                                </Col>
+                                <InputGroup style={{ maxWidth: '700px' }}>
                                     <Form.Control
                                         type="text"
+                                        className='shadow border-0'
                                         placeholder="Pesquisar por cargo..."
                                         aria-label="Pesquisar"
                                         value={searchTerm}
@@ -590,7 +596,7 @@ const VagasEmpresa = () => {
                                     </Button>
                                 </InputGroup>
                             </Row>
-                            <Row>
+                            <Row className='mr-0'>
                                 {
                                     loading ? (
                                         <div className="d-flex justify-content-center" >
@@ -598,7 +604,7 @@ const VagasEmpresa = () => {
                                         </div >
                                     ) : jobs.length > 0 ? (
                                         <>
-                                            <Table striped bordered hover className="shadow-sm mt-3">
+                                            <Table striped hover responsive className="shadow-sm mt-3 rounded">
                                                 <thead>
                                                     <tr>
                                                         <th>Cargo</th>
@@ -643,7 +649,7 @@ const VagasEmpresa = () => {
                                             </Table>
                                             {/* Paginação */}
                                             {jobs.length > itemsPerPage && (
-                                                <Pagination>
+                                                <Pagination className='mt-4'>
                                                     <Pagination.Prev onClick={prevPage} disabled={currentPage === 1} />
                                                     {Array.from({ length: Math.ceil(jobs.length / itemsPerPage) }, (_, i) => (
                                                         <Pagination.Item key={i + 1} active={i + 1 === currentPage} onClick={() => paginate(i + 1)}>
@@ -655,12 +661,12 @@ const VagasEmpresa = () => {
                                             )}
                                         </>
                                     ) : (
-                                        <p className="text-center">Nenhuma vaga encontrada...</p>
+                                        <p className="text-center mt-4">Nenhuma vaga encontrada...</p>
                                     )}
                             </Row>
                         </Col>
                     </Row >
-                </Container >
+                </Container>
 
             )}
 

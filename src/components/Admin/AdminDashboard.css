@@ -67,7 +67,7 @@
 .table td {
     text-overflow: clip;
     /* Adicione elipses para o conteúdo que ultrapassar */
-    white-space: nowrap;
+    white-space: wrap;
     /* Impede a quebra de linha */
     overflow-x: auto;
 }
