@@ -68,7 +68,6 @@
     text-overflow: clip;
     /* Adicione elipses para o conteúdo que ultrapassar */
     white-space: wrap;
-    /* Impede a quebra de linha */
     overflow-x: auto;
 }
 

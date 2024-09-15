@@ -143,9 +143,3 @@ p {
   /* Garante que o conteúdo não transborde */
 }
 
-h5,
-p {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}

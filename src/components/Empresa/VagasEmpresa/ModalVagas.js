@@ -373,11 +373,10 @@ const ModalVagas = ({
                         <Col md={12} className="d-flex justify-content-between">
                             <Form.Group className="form-group-custom">
                                 <div className="d-flex justify-content-between">
-                                    <Form.Label className='m-2'>Status</Form.Label>
+                                    <Form.Label className="me-2">Status</Form.Label>
                                     <Form.Check
                                         type="switch"
                                         id="status-switch"
-                                        className='m-2'
                                         checked={newJob.status}
                                         onChange={() => handleToggleChange('status')}
                                     />
@@ -385,11 +384,10 @@ const ModalVagas = ({
                             </Form.Group>
                             <Form.Group className="form-group-custom">
                                 <div className="d-flex justify-content-between">
-                                    <Form.Label className='m-2'>PCD</Form.Label>
+                                    <Form.Label className="me-2">PCD</Form.Label>
                                     <Form.Check
                                         type="switch"
                                         id="pcd-switch"
-                                        className='m-2'
                                         checked={newJob.pcd}
                                         onChange={() => handleToggleChange('pcd')}
                                     />
@@ -398,11 +396,10 @@ const ModalVagas = ({
                             </Form.Group>
                             <Form.Group className="form-group-custom">
                                 <div className="d-flex justify-content-between">
-                                    <Form.Label className='m-2'>Identificação</Form.Label>
+                                    <Form.Label className="me-2">Identificação</Form.Label>
                                     <Form.Check
                                         type="switch"
                                         id="identificacao-switch"
-                                        className='m-2'
                                         checked={newJob.identifyCompany}
                                         onChange={() => handleToggleChange('identifyCompany')}
                                     />
