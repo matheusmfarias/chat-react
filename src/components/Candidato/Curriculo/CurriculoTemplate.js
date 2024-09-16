@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { Container, Row, Col, Image, Card } from 'react-bootstrap';
 import './CurriculoTemplate.css';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleUser } from "@fortawesome/free-solid-svg-icons";
 
 const CurriculoTemplate = ({ experiencias = [], formacoes = [], informacoes = {} }) => {
     const { nome, sobrenome, dataNascimento, email, telefoneContato, telefoneRecado, cnh, tipoCnh, fotoPerfil, habilidadesProfissionais = [], habilidadesComportamentais = [], cursos = [], objetivos = [] } = informacoes;
@@ -23,7 +25,16 @@ const CurriculoTemplate = ({ experiencias = [], formacoes = [], informacoes = {}
         <Container className="curriculo-template">
             <Row className="mb-3">
                 <Col xs={3}>
-                    <Image src={fotoPerfil} roundedCircle className="profile-avatar" />
+                    {fotoPerfil && fotoPerfil !== "undefined" && fotoPerfil !== "" && fotoPerfil !== "http://localhost:5000" ? (
+                        <Image src={fotoPerfil} roundedCircle className="profile-avatar" />
+                    ) : (
+                        <FontAwesomeIcon
+                            icon={faCircleUser}
+                            className="profile-avatar"
+                            alt="Sem foto"
+                            size="6x" // Ajuste o tamanho do ícone conforme necessário
+                        />
+                    )}
                 </Col>
                 <Col xs={9}>
                     <h2>{nome} {sobrenome}</h2>
@@ -165,7 +176,7 @@ const formatarCNH = (cnh, cnhTypes) => {
     if (cnh === 'Não tenho') {
         return 'Não tem';
     }
-    
+
     // Filtra o array para garantir que só tipos válidos sejam exibidos
     const tiposValidos = (cnhTypes || []).filter(type => type.trim() !== '');
 

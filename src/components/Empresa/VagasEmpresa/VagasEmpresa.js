@@ -404,6 +404,11 @@ const VagasEmpresa = () => {
         setFilters(prevFilters => ({ ...prevFilters, pcd: '' }));
     };
 
+    const handleClearSearch = () => {
+        setSearchTerm("");
+        setCurrentPage(1); // Reseta para a primeira página
+    };
+
     // Paginação
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -440,7 +445,7 @@ const VagasEmpresa = () => {
                     <Row style={{ paddingLeft: '90px', paddingRight: '90px' }}>
                         <Col xs={2} className='mt-4 mb-4'>
                             <Row className='mb-4 align-items-center'>
-                                <h5>Status da vaga</h5>
+                                <h5>Status</h5>
                                 <Col xs={12} md={10}>
                                     <Form.Control
                                         as="select"
@@ -460,7 +465,7 @@ const VagasEmpresa = () => {
                                 </Col>
                             </Row>
                             <Row className='mb-4 align-items-center'>
-                                <h5>Tipo da vaga</h5>
+                                <h5>Tipo</h5>
                                 <Col xs={12} md={10} >
                                     <Form.Group>
                                         {['Efetivo', 'Aprendiz', 'Estágio', 'Pessoa Jurídica', 'Trainee', 'Temporário', 'Freelancer', 'Terceiro'].map((type) => (
@@ -487,7 +492,7 @@ const VagasEmpresa = () => {
                                 </Col>
                             </Row>
                             <Row className='mb-4 align-items-center'>
-                                <h5>Modalidade da vaga</h5>
+                                <h5>Modalidade</h5>
                                 <Col xs={12} md={10}>
                                     <Form.Group>
                                         {['Presencial', 'Híbrido', 'Remoto'].map((modality) => (
@@ -514,7 +519,7 @@ const VagasEmpresa = () => {
                                 </Col>
                             </Row>
                             <Row className='mb-2 align-items-center'>
-                                <h5>Localização da vaga</h5>
+                                <h5>Localização</h5>
                                 <span className='text-muted'>Estado</span>
                                 <Col xs={12} md={10}>
                                     <Form.Control
@@ -612,6 +617,16 @@ const VagasEmpresa = () => {
                                         <FontAwesomeIcon icon={faSearch} />
                                     </Button>
                                 </InputGroup>
+                                <Col md={2}>
+                                    <Button
+                                        variant="outline-secondary"
+                                        onClick={() => handleClearSearch()}
+                                        title="Limpar filtros"
+                                        style={{ width: '200px' }}
+                                    >
+                                        Limpar busca
+                                    </Button>
+                                </Col>
                             </Row>
                             <Row className='mr-0'>
                                 {

@@ -205,6 +205,11 @@ const BuscarVagas = () => {
         setFilters(prevFilters => ({ ...prevFilters, pcd: '' }));
     };
 
+    const handleClearSearch = () => {
+        setSearchTerm("");
+        setCurrentPage(1); // Reseta para a primeira página
+    };
+
     return (
         <>
             <HeaderCandidato />
@@ -359,6 +364,16 @@ const BuscarVagas = () => {
                                     <FontAwesomeIcon icon={faSearch} />
                                 </Button>
                             </InputGroup>
+                            <Col md={2}>
+                                <Button
+                                    variant="outline-secondary"
+                                    onClick={() => handleClearSearch()}
+                                    title="Limpar filtros"
+                                    style={{ width: '200px' }}
+                                >
+                                    Limpar busca
+                                </Button>
+                            </Col>
                         </Row>
                         <Row className="mt-3">
                             {loading ? (
