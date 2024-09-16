@@ -12,7 +12,7 @@ const BuscarVagas = () => {
     const location = useLocation();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [loadingDetails, setLoadingDetails] = useState(false); // Carregamento dos detalhes da vaga (coluna direita)
+    const [loadingDetails, setLoadingDetails] = useState(false);
     const keyword = location.state?.keyword || '';
     const results = useMemo(() => location.state?.results || [], [location.state]);
     const [selectedJob, setSelectedJob] = useState(null);
@@ -30,9 +30,6 @@ const BuscarVagas = () => {
     });
     const [states, setStates] = useState([]);
     const [cities, setCities] = useState([]);
-
-    // Estado para controle dos filtros visíveis
-    const [showFilters, setShowFilters] = useState(false);
 
     useEffect(() => {
         // Realiza a busca no backend apenas se o keyword não for vazio
@@ -101,12 +98,14 @@ const BuscarVagas = () => {
             params.append('keyword', searchTerm);
         }
 
-        // Filtros aplicados
-        if (selectedStateFilter) params.append('state', selectedStateFilter);
-        if (selectedCityFilter) params.append('city', selectedCityFilter);
-        if (filters.modality) params.append('modality', filters.modality);
-        if (filters.type) params.append('type', filters.type);
+        if (filters.modality.length > 0) filters.modality.forEach(m => params.append('modality', m));
+        if (filters.type.length > 0) filters.type.forEach(t => params.append('type', t));
         if (filters.pcd) params.append('pcd', filters.pcd);
+        if (selectedStateFilter && selectedCityFilter) {
+            params.append('location', `${selectedCityFilter}, ${selectedStateFilter}`);
+        } else if (selectedStateFilter) {
+            params.append('location', selectedStateFilter);
+        }
 
         setLoading(true);
         try {
@@ -133,12 +132,10 @@ const BuscarVagas = () => {
 
     // Função para resetar a busca
     const handleResetSearch = () => {
-        setSearchTerm(''); // Limpa o termo de busca
         setSelectedStateFilter('');
         setSelectedCityFilter('');
         setFilters({ modality: '', type: '', pcd: '' });
-        setJobs([]); // Limpa as vagas
-        handleSearchByJob(); // Executa a busca com todos os filtros resetados
+        setJobs([]); // Limpa as vagass
     };
 
     const handleCandidatarClick = () => {
@@ -335,6 +332,17 @@ const BuscarVagas = () => {
                                 )}
                             </Col>
                         </Row>
+                        <Row>
+                            <Button
+                                variant="primary"
+                                className="m-2"
+                                onClick={handleResetSearch}
+                                title="Limpar filtros"
+                                style={{ width: '200px' }}
+                            >
+                                Limpar filtros
+                            </Button>
+                        </Row>
                     </Col>
                     <Col md={10} className='mt-4'>
                         <Row className='align-items-center' >
@@ -519,7 +527,7 @@ const BuscarVagas = () => {
                                                             </Button>
                                                         </Col>
                                                     </Card.Body>
-                                                    <Card.Body style={{ maxHeight: '60vh', height: 'auto', overflowY: 'auto'}} className="shadow-sm rounded">
+                                                    <Card.Body style={{ maxHeight: '60vh', height: 'auto', overflowY: 'auto' }} className="shadow-sm rounded">
                                                         {selectedJob.offers || selectedJob.description || selectedJob.responsibilities || selectedJob.qualifications || selectedJob.requiriments || selectedJob.additionalInfo ? (
                                                             <>
                                                                 {selectedJob.offers && (
@@ -573,7 +581,7 @@ const BuscarVagas = () => {
                             )}
                         </Row>
                     </Col>
-                </Row>
+                </Row >
             </Container >
         </>
     );

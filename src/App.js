@@ -93,7 +93,7 @@ const App = () => {
               <DetalhesVaga />
             </Layout>
           } />
-          <Route path='/curriculos-empresa' element={
+          <Route path='/curriculos-empresa/:jobId' element={
             <Layout>
               <CurriculosEmpresa />
             </Layout>

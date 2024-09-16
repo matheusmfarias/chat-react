@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, Row, Col, Button, InputGroup, Form, Alert, Spinner, Pagination, Container } from 'react-bootstrap';
+import { Table, Row, Col, Button, InputGroup, Form, Spinner, Pagination, Container } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faToggleOn, faToggleOff, faEye, faPlus, faFilter, faSearch, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faToggleOn, faToggleOff, faEye, faPlus, faSearch, faTimesCircle, faUserTie } from '@fortawesome/free-solid-svg-icons';
 import HeaderEmpresa from '../HeaderEmpresa';
 import ModalVagas from './ModalVagas';
 import Swal from 'sweetalert2';
@@ -10,8 +10,10 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './VagasEmpresa.css';
 import DetalhesVagas from './DetalhesVagas';
+import { useNavigate } from 'react-router-dom';
 
 const VagasEmpresa = () => {
+    const navigate = useNavigate();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -49,7 +51,6 @@ const VagasEmpresa = () => {
     const [isEditMode, setIsEditMode] = useState(false);
     const [editJobId, setEditJobId] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
     const [filters, setFilters] = useState({
@@ -138,7 +139,6 @@ const VagasEmpresa = () => {
                 setStates(statesResponse.data);
             } catch (error) {
                 console.error('Error fetching states:', error);
-                setError('Erro ao buscar estados. Tente novamente mais tarde.');
                 notify('Erro ao buscar estados.', 'error');
             }
         };
@@ -154,7 +154,6 @@ const VagasEmpresa = () => {
                     setCities(citiesResponse.data);
                 } catch (error) {
                     console.error('Error fetching cities:', error);
-                    setError('Erro ao buscar cidades. Tente novamente mais tarde.');
                     notify('Erro ao buscar cidades.', 'error');
                 }
             };
@@ -173,7 +172,6 @@ const VagasEmpresa = () => {
                     setCities(citiesResponse.data);
                 } catch (error) {
                     console.error('Error fetching cities:', error);
-                    setError('Erro ao buscar cidades. Tente novamente mais tarde.');
                     notify('Erro ao buscar cidades.', 'error');
                 }
             };
@@ -251,6 +249,10 @@ const VagasEmpresa = () => {
         setModalIsOpen(false);
     };
 
+    const viewCandidates = (jobId) => {
+        navigate(`/curriculos-empresa/${jobId}`);
+    }
+
     const handleJobSubmit = async (jobData) => {
         const token = localStorage.getItem('token');
         if (token) {
@@ -277,7 +279,6 @@ const VagasEmpresa = () => {
                 closeModal();
             } catch (error) {
                 console.error('Error saving job:', error);
-                setError('Erro ao salvar a vaga. Verifique os dados e tente novamente.');
                 notify('Erro ao salvar a vaga.', 'error');
             } finally {
                 setLoading(false);
@@ -309,7 +310,6 @@ const VagasEmpresa = () => {
                 notify('Vaga deletada com sucesso!', 'success');
             } catch (error) {
                 console.error('Error deleting job:', error);
-                setError('Erro ao deletar a vaga. Tente novamente mais tarde.');
                 notify('Erro ao deletar a vaga.', 'error');
             } finally {
                 setLoading(false);
@@ -346,7 +346,6 @@ const VagasEmpresa = () => {
                         notify(`Vaga ${updatedJob.status ? 'ativada' : 'inativada'} com sucesso!`, 'success');
                     } catch (error) {
                         console.error('Error toggling status:', error);
-                        setError('Erro ao alterar status da vaga. Tente novamente mais tarde.');
                         notify('Erro ao alterar o status.', 'error');
                     } finally {
                         setLoading(false);
@@ -370,6 +369,13 @@ const VagasEmpresa = () => {
                 handleDeleteJob(id);
             }
         });
+    };
+
+    const handleResetSearch = () => {
+        setSelectedStateFilter('');
+        setSelectedCityFilter('');
+        setFilters({ modality: '', type: '', pcd: '', status: '' });
+        setJobs([]); // Limpa as vagas
     };
 
     // Funções para resetar filtros individualmente
@@ -443,7 +449,7 @@ const VagasEmpresa = () => {
                                         onChange={(e) => setFilters({ ...filters, status: e.target.value })}
                                     >
                                         <option value="">Selecione</option>
-                                        <option value="true">Ativo</option>
+                                        <option value="true">Ativa</option>
                                         <option value="false">Inativa</option>
                                     </Form.Control>
                                 </Col>
@@ -574,6 +580,17 @@ const VagasEmpresa = () => {
                                     )}
                                 </Col>
                             </Row>
+                            <Row>
+                                <Button
+                                    variant="primary"
+                                    className="m-2"
+                                    onClick={handleResetSearch}
+                                    title="Limpar filtros"
+                                    style={{ width: '200px' }}
+                                >
+                                    Limpar filtros
+                                </Button>
+                            </Row>
                         </Col>
                         <Col md={10} className='mt-4'>
                             <Row className='align-items-center'>
@@ -632,6 +649,7 @@ const VagasEmpresa = () => {
                                                             <td>{job.salary ? job.salary : 'Não informado'}</td>
                                                             <td>
                                                                 <div className='btn-group'>
+                                                                    <FontAwesomeIcon icon={faUserTie} className="icon-btn" onClick={() => viewCandidates(job._id)} title="Candidatos" />
                                                                     <FontAwesomeIcon icon={faEye} className="icon-btn" onClick={() => openViewJob(job)} title="Visualizar detalhes" />
                                                                     <FontAwesomeIcon icon={faEdit} className="icon-btn" onClick={() => openModal(job)} title="Editar" />
                                                                     <FontAwesomeIcon

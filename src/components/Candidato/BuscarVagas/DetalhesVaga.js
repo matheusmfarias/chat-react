@@ -125,8 +125,8 @@ const DetalhesVaga = () => {
                     </Col>
 
                     <Col md={5} style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000', overflowY: 'hidden' }}>
-                        <Card className="vaga-detalhe border-0">
-                            <Card.Body className="shadow rounded">
+                        <Card className="vaga-detalhe border-0 p-0">
+                            <Card.Body className="shadow-sm rounded">
                                 <Card.Title>{job.title}</Card.Title>
                                 {job.identifyCompany && job.company ? (
                                     <Card.Text>{job.company.nome}</Card.Text>
@@ -186,7 +186,7 @@ const DetalhesVaga = () => {
                                 </Col>
                             </Card.Body>
 
-                            <Card.Body style={{ maxHeight: '60vh', overflowY: 'auto' }} className="shadow rounded">
+                            <Card.Body style={{ maxHeight: '60vh', overflowY: 'auto' }} className="shadow-sm rounded">
                                 {job.offers || job.description || job.responsibilities || job.qualifications || job.requiriments || job.additionalInfo ? (
                                     <>
                                         {job.offers && (

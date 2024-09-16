@@ -73,7 +73,6 @@ const HeaderEmpresa = () => {
                 <nav className={isMenuOpen ? 'active' : ''}>
                     <ul>
                         <Link to="/dashboard-empresa" className={`header-link ${location.pathname === '/dashboard-empresa' ? 'active' : ''}`}><li>Início</li></Link>
-                        <Link to="/curriculos-empresa" className={`header-link ${location.pathname === '/curriculos-empresa' ? 'active' : ''}`}><li>Recrutamento</li></Link>
                         <Link to="/vagas-empresa" className={`header-link ${location.pathname === '/vagas-empresa' ? 'active' : ''}`}><li>Vagas</li></Link>
                     </ul>
                 </nav>
