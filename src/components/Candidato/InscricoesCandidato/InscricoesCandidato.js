@@ -1,10 +1,206 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import HeaderCandidato from "../HeaderCandidato/HeaderCandidato";
+import { Container, Row, Col, Card, Spinner, InputGroup, Form, Button, Pagination } from "react-bootstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBriefcase, faBuilding, faHome, faLaptopHouse, faLocationDot, faMoneyBillWave, faSearch, faWheelchair } from "@fortawesome/free-solid-svg-icons";
 
 const InscricoesCandidato = () => {
+    const [loading, setLoading] = useState(false);
+    const [applications, setApplications] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [searchTerm, setSearchTerm] = useState("");
+    const itemsPerPage = 9;
+
+    useEffect(() => {
+        const fetchUserApplications = async () => {
+            setLoading(true);
+            try {
+                const token = localStorage.getItem("token");
+                const response = await axios.get('http://localhost:5000/api/user/applications', {
+                    headers: { Authorization: `Bearer ${token}` },
+                    params: {
+                        page: currentPage,
+                        limit: itemsPerPage, // Envia o número de itens por página
+                        searchTerm
+                    }
+                });
+                setApplications(response.data.applications);
+                setTotalPages(response.data.totalPages || 1);
+            } catch (error) {
+                console.error('Erro ao buscar as candidaturas:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUserApplications();
+    }, [currentPage, searchTerm]);
+
+    const handleClearSearch = () => {
+        setSearchTerm("");
+        setCurrentPage(1);
+    };
+
+    const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    const handlePreviousPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
 
     return (
-        <HeaderCandidato />
+        <>
+            <HeaderCandidato />
+            <Container fluid className='px-5' style={{ backgroundColor: '#f9f9f9f9', minHeight: "100vh" }}>
+                <Row className="mt-4" style={{ paddingLeft: '90px', paddingRight: '90px' }}>
+                    <Col>
+                        <h1>Minhas Inscrições</h1>
+                    </Col>
+                </Row>
+                <Row style={{ paddingLeft: '90px', paddingRight: '90px' }}>
+                    <Col md={12} className="mt-2 mb-2">
+                        <Row className="align-items-center">
+                            <InputGroup style={{ maxWidth: '700px' }}>
+                                <Form.Control
+                                    type="text"
+                                    className='shadow border-0'
+                                    placeholder="Buscar por cargo..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                                <Button variant="outline-primary" style={{ maxWidth: '100px' }} onClick={() => setCurrentPage(1)}>
+                                    <FontAwesomeIcon icon={faSearch} />
+                                </Button>
+                            </InputGroup>
+                            <Col md={2}>
+                                <Button
+                                    variant="outline-secondary"
+                                    className="m-2"
+                                    onClick={() => handleClearSearch()}
+                                    title="Limpar filtros"
+                                    style={{ width: '200px' }}
+                                >
+                                    Limpar busca
+                                </Button>
+                            </Col>
+                        </Row>
+                        <Row className="mt-4">
+                            {loading ? (
+                                <div className="d-flex justify-content-center">
+                                    <Spinner animation='border' variant='primary' />
+                                </div>
+                            ) : applications.length === 0 ? (
+                                <p className="text-center">Você ainda não tem candidaturas.</p>
+                            ) : (
+                                applications.map((application) => (
+                                    <Col md={6} lg={4} key={application._id} className="mb-4 d-flex">
+                                        <Card className={`w-100 border-0 shadow-sm rounded p-3 d-flex flex-column candidate-card ${application.job && !application.job.status ? 'bg-light text-muted' : ''}`}>
+                                            <Card.Body>
+                                                {application.job ? (
+                                                    <>
+                                                        <Card.Title>{application.job.title}</Card.Title>
+                                                        <Card.Text>
+                                                            {/* Verifica se identifyCompany está false para exibir "Empresa confidencial" */}
+                                                            {application.job.identifyCompany ? (
+                                                                application.job.company ? application.job.company.nome : 'Empresa não especificada'
+                                                            ) : (
+                                                                'Empresa confidencial'
+                                                            )}
+                                                        </Card.Text>
+                                                        <Card.Text className="bg-light rounded text-center text-primary p-2">
+                                                            <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
+                                                            {application.job.location}
+                                                        </Card.Text>
+                                                        <Row className="mb-2">
+                                                            <Col>
+                                                                <Card.Text className="bg-light rounded text-center text-primary p-2">
+                                                                    <FontAwesomeIcon
+                                                                        className="me-2"
+                                                                        icon={application.job.modality === 'Remoto' ? faHome : application.job.modality === 'Presencial' ? faBuilding : faLaptopHouse}
+                                                                        title="Modelo"
+                                                                    />
+                                                                    {application.job.modality}
+                                                                </Card.Text>
+                                                            </Col>
+                                                            <Col>
+                                                                <Card.Text className="bg-light rounded text-center text-primary p-2">
+                                                                    <FontAwesomeIcon className="me-2" icon={faBriefcase} title="Tipo" />
+                                                                    {application.job.type}
+                                                                </Card.Text>
+                                                            </Col>
+                                                        </Row>
+                                                        <Row>
+                                                            <Col>
+                                                                <Card.Text className="bg-light rounded text-center text-primary p-2">
+                                                                    <FontAwesomeIcon className="me-2" icon={faMoneyBillWave} title="Salário" />
+                                                                    {application.job.salary ? application.job.salary : 'A combinar'}
+                                                                </Card.Text>
+                                                            </Col>
+                                                            <Col>
+                                                                {application.job.pcd && (
+                                                                    <Card.Text className="bg-light rounded text-center text-primary p-2">
+                                                                        <FontAwesomeIcon className="me-2" icon={faWheelchair} title="PcD" />
+                                                                        PcD
+                                                                    </Card.Text>
+                                                                )}
+                                                            </Col>
+                                                        </Row>
+                                                    </>
+                                                ) : (
+                                                    <Card.Text>Informações da vaga não disponíveis</Card.Text>
+                                                )}
+
+                                                {/* Linha com data de inscrição e data de encerramento */}
+                                                <div className="d-flex justify-content-between mt-3">
+                                                    <small className="text-muted">
+                                                        Inscrito em: {new Date(application.submissionDate).toLocaleDateString()}
+                                                    </small>
+                                                    {application.job && !application.job.status && application.job.closingDate && (
+                                                        <small className="text-muted">
+                                                            Encerrada em: {new Date(application.job.closingDate).toLocaleDateString()}
+                                                        </small>
+                                                    )}
+                                                </div>
+                                            </Card.Body>
+                                        </Card>
+                                    </Col>
+                                ))
+                            )}
+                        </Row>
+
+                        {/* Paginação com botões de próximo e anterior */}
+                        {totalPages > 1 && (
+                            <div className="d-flex justify-content-center mt-4">
+                                <Pagination>
+                                    <Pagination.Prev onClick={handlePreviousPage} disabled={currentPage === 1}>
+                                    </Pagination.Prev>
+                                    {[...Array(totalPages).keys()].map((pageNumber) => (
+                                        <Pagination.Item
+                                            key={pageNumber + 1}
+                                            active={currentPage === pageNumber + 1}
+                                            onClick={() => handlePageChange(pageNumber + 1)}
+                                        >
+                                            {pageNumber + 1}
+                                        </Pagination.Item>
+                                    ))}
+                                    <Pagination.Next onClick={handleNextPage} disabled={currentPage === totalPages}>
+                                    </Pagination.Next>
+                                </Pagination>
+                            </div>
+                        )}
+                    </Col>
+                </Row>
+            </Container>
+        </>
     );
 };
 

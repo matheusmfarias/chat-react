@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
 import { Table, Row, Col, Button, InputGroup, Form, Spinner, Pagination, Container } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faToggleOn, faToggleOff, faEye, faPlus, faSearch, faTimesCircle, faUserTie } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faToggleOn, faToggleOff, faEye, faPlus, faSearch, faTimesCircle, faUserTie } from '@fortawesome/free-solid-svg-icons';
 import HeaderEmpresa from '../HeaderEmpresa';
 import ModalVagas from './ModalVagas';
 import Swal from 'sweetalert2';
@@ -286,6 +286,7 @@ const VagasEmpresa = () => {
         }
     };
 
+    /* por enquanto off, a empresa pode apenas desabilitar
     const handleDeleteJob = async (id) => {
         const token = localStorage.getItem('token');
         setLoading(true);
@@ -315,18 +316,18 @@ const VagasEmpresa = () => {
                 setLoading(false);
             }
         }
-    };
+    }; */
 
     const handleToggleStatus = async (job) => {
         const token = localStorage.getItem('token');
         if (token) {
             Swal.fire({
-                title: `Tem certeza que deseja ${job.status ? 'inativar' : 'ativar'} a vaga?`,
+                title: `Tem certeza que deseja ${job.status ? 'encerrar' : 'ativar'} a vaga?`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
-                confirmButtonText: `Sim, ${job.status ? 'inativar' : 'ativar'}!`,
+                confirmButtonText: `Sim, ${job.status ? 'encerrar' : 'ativar'}!`,
                 cancelButtonText: 'Cancelar'
             }).then(async (result) => {
                 if (result.isConfirmed) {
@@ -355,6 +356,7 @@ const VagasEmpresa = () => {
         }
     };
 
+    /* por enquanto off, a empresa pode apenas desabilitar
     const handleConfirmDelete = (id) => {
         Swal.fire({
             title: 'Tem certeza que deseja deletar a vaga?',
@@ -369,7 +371,8 @@ const VagasEmpresa = () => {
                 handleDeleteJob(id);
             }
         });
-    };
+        <FontAwesomeIcon icon={faTrash} className="icon-btn" onClick={() => handleConfirmDelete(job._id)} title="Excluir" />
+    }; */
 
     const handleResetSearch = () => {
         setSelectedStateFilter('');
@@ -673,7 +676,6 @@ const VagasEmpresa = () => {
                                                                         onClick={() => handleToggleStatus(job)}
                                                                         title={job.status ? 'Desabilitar' : 'Habilitar'}
                                                                     />
-                                                                    <FontAwesomeIcon icon={faTrash} className="icon-btn" onClick={() => handleConfirmDelete(job._id)} title="Excluir" />
                                                                 </div>
                                                             </td>
                                                         </tr>

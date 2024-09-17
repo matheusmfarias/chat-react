@@ -2,19 +2,20 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import HeaderEmpresa from "../HeaderEmpresa";
 import { Spinner, Pagination, Row, Col, Card, Button, Form, InputGroup, Container } from "react-bootstrap";
-import { useParams, useNavigate } from "react-router-dom"; // Substitua useHistory por useNavigate
+import { useParams, useNavigate } from "react-router-dom";
 import './CurriculosEmpresa.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleUser, faSearch } from "@fortawesome/free-solid-svg-icons";
 
 const CurriculosEmpresa = () => {
   const { jobId } = useParams();
-  const navigate = useNavigate(); // Substitua useHistory por useNavigate
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [applications, setApplications] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const itemsPerPage = 9; // Define o número de itens por página
 
   useEffect(() => {
     const fetchCandidates = async () => {
@@ -27,6 +28,7 @@ const CurriculosEmpresa = () => {
           headers: { Authorization: `Bearer ${token}` },
           params: {
             page: currentPage,
+            limit: itemsPerPage, // Envia o número de itens por página
             searchTerm
           }
         });
@@ -45,10 +47,22 @@ const CurriculosEmpresa = () => {
 
   const handleClearSearch = () => {
     setSearchTerm("");
-    setCurrentPage(1); // Reseta para a primeira página
+    setCurrentPage(1);
   };
 
   const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   const viewCurriculum = (userId) => {
     window.open(`/curriculo/${userId}`, "_blank");
@@ -60,7 +74,6 @@ const CurriculosEmpresa = () => {
       <Container fluid className='px-5' style={{ backgroundColor: '#f9f9f9f9', minHeight: "100vh" }}>
         <Row className="mt-4" style={{ paddingLeft: '90px', paddingRight: '90px' }}>
           <Col md={10}>
-            {/* Botão para voltar à tela de vagas */}
             <Button variant="outline-secondary" className="mb-3" onClick={() => navigate('/vagas-empresa')}>
               Voltar para Vagas
             </Button>
@@ -84,7 +97,7 @@ const CurriculosEmpresa = () => {
               </InputGroup>
               <Col md={2}>
                 <Button
-                  variant="primary"
+                  variant="outline-secondary"
                   className="m-2"
                   onClick={() => handleClearSearch()}
                   title="Limpar filtros"
@@ -96,9 +109,9 @@ const CurriculosEmpresa = () => {
             </Row>
             <Row className="mt-4">
               {loading ? (
-                <div className="d-flex justify-content-center" >
+                <div className="d-flex justify-content-center">
                   <Spinner animation='border' variant='primary' />
-                </div >
+                </div>
               ) : applications.length === 0 ? (
                 <p className="text-center">Nenhum candidato encontrado para esta vaga.</p>
               ) : (
@@ -185,23 +198,29 @@ const CurriculosEmpresa = () => {
               )}
             </Row>
 
-            {/* Paginação */}
+            {/* Paginação com botões de próximo e anterior */}
             {totalPages > 1 && (
-              <Pagination className="justify-content-center mt-4">
-                {[...Array(totalPages).keys()].map((pageNumber) => (
-                  <Pagination.Item
-                    key={pageNumber + 1}
-                    active={currentPage === pageNumber + 1}
-                    onClick={() => handlePageChange(pageNumber + 1)}
-                  >
-                    {pageNumber + 1}
-                  </Pagination.Item>
-                ))}
-              </Pagination>
+              <div className="d-flex justify-content-center mt-4">
+                <Pagination>
+                  <Pagination.Prev onClick={handlePreviousPage} disabled={currentPage === 1}>
+                  </Pagination.Prev>
+                  {[...Array(totalPages).keys()].map((pageNumber) => (
+                    <Pagination.Item
+                      key={pageNumber + 1}
+                      active={currentPage === pageNumber + 1}
+                      onClick={() => handlePageChange(pageNumber + 1)}
+                    >
+                      {pageNumber + 1}
+                    </Pagination.Item>
+                  ))}
+                  <Pagination.Next onClick={handleNextPage} disabled={currentPage === totalPages}>
+                  </Pagination.Next>
+                </Pagination>
+              </div>
             )}
           </Col>
         </Row>
-      </Container >
+      </Container>
     </>
   );
 };

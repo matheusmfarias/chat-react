@@ -3,7 +3,7 @@ import HeaderCandidato from "../HeaderCandidato/HeaderCandidato";
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Row, Col, Card, Container, Button, Form, InputGroup, Spinner } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBriefcase, faBuilding, faChevronLeft, faChevronRight, faHome, faLaptopHouse, faLocationDot, faMoneyBillWave, faUpRightFromSquare, faWheelchair, faSearch, faFilter, faTimesCircle, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faBriefcase, faBuilding, faChevronLeft, faChevronRight, faHome, faLaptopHouse, faLocationDot, faMoneyBillWave, faUpRightFromSquare, faWheelchair, faSearch, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import './BuscarVagas.css';
 import axios from "axios";
 
@@ -397,7 +397,13 @@ const BuscarVagas = () => {
                                             >
                                                 <Card.Body>
                                                     <Card.Title>{result.title}</Card.Title>
-                                                    <Card.Text>{result.company ? result.company.nome : 'Empresa confidencial'}</Card.Text>
+                                                    <Card.Text>
+                                                        {result.identifyCompany ? (
+                                                            result.company ? result.company.nome : 'Empresa não específicada'
+                                                        ) : (
+                                                            'Empresa confidencial'
+                                                        )}
+                                                    </Card.Text>
                                                     <Card.Text className="bg-light rounded text-center text-primary p-2">
                                                         <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
                                                         {result.location}
