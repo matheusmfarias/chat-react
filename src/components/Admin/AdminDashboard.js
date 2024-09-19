@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Button, Form, Table, Navbar, Nav, Container, Row, Col, InputGroup, Pagination } from 'react-bootstrap';
+import { Button, Form, Table, Navbar, Nav, Container, Row, Col, InputGroup, Pagination, Breadcrumb, Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faToggleOn, faToggleOff, faPlus, faSearch, faSortDown, faSortUp, faSignOutAlt, faEye, faFilter } from '@fortawesome/free-solid-svg-icons';
 import { ToastContainer, toast } from 'react-toastify';
@@ -37,6 +37,13 @@ const AdminDashboard = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [activeTab, setActiveTab] = useState('empresas');
     const navigate = useNavigate();
+
+    //Breadcrumb
+    const [currentView, setCurrentView] = useState('empresas');
+    const [breadcrumb, setBreadcrumb] = useState(['Empresas']);
+    const [jobs, setJobs] = useState([]);
+    const [candidatosVaga, setCandidatosVaga] = useState([]);
+
 
     const fetchEmpresas = useCallback(async (page = 1, search = '', filter = '') => {
         setLoading(true);
@@ -79,6 +86,38 @@ const AdminDashboard = () => {
             fetchCandidatos(currentPage, searchTerm);
         }
     }, [currentPage, searchTerm, sortColumn, sortDirection, activeTab, fetchEmpresas, fetchCandidatos]);
+
+    const fetchJobsByCompany = async (companyId) => {
+        setLoading(true)
+        try {
+            const response = await axios.get(`http://localhost:5000/api/jobs/${companyId}/jobs`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+            setJobs(response.data);
+            setCurrentView('vagas');
+            setBreadcrumb(['Empresas', 'Vagas']);
+        } catch (error) {
+            console.error('Erro ao buscar vagas:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchCandidatesByJob = async (jobId) => {
+        setLoading(true)
+        try {
+            const response = await axios.get(`http://localhost:5000/api/jobs/${jobId}/candidates`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+            setCandidatosVaga(response.data);
+            setCurrentView('candidatos');
+            setBreadcrumb(['Empresas', 'Vagas', 'Candidatos']);
+        } catch (error) {
+            console.error('Erro ao buscar candidatos:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -125,11 +164,6 @@ const AdminDashboard = () => {
     const handleCloseDisableModal = () => {
         setShowDisableModal(false);
         setEmpresaToDisable(null);
-    };
-
-    const handleShowDetailsModal = (empresa) => {
-        setCurrentEmpresa(empresa);
-        setShowDetailsModal(true);
     };
 
     const handleCloseDetailsModal = () => {
@@ -315,7 +349,6 @@ const AdminDashboard = () => {
     const renderEmpresasTable = () => (
         <>
             <Row className="mb-3 align-items-center">
-                <h2 className='display-6'>Empresas</h2>
                 <Col xs={12} md={4} className="d-flex justify-content-start mb-2 mb-md-0">
                     <Button variant="primary" className="me-2 flex-grow-1" onClick={() => handleShowModal()}>
                         <FontAwesomeIcon icon={faPlus} /> Adicionar
@@ -339,77 +372,213 @@ const AdminDashboard = () => {
                     </InputGroup>
                 </Col>
             </Row>
-            <div className="table-responsive position-relative">
-                {loading && (
-                    <div className="table-loader-overlay">
-                        <div className="loader"></div>
-                    </div>
-                )}
-                <Table striped bordered hover className="table">
-                    <thead>
-                        <tr>
-                            <th onClick={() => handleSort('nome')}>
-                                Nome
-                                {sortColumn === 'nome' && (
-                                    <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
-                                )}
-                            </th>
-                            <th onClick={() => handleSort('cnpj')}>
-                                CNPJ
-                                {sortColumn === 'cnpj' && (
-                                    <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
-                                )}
-                            </th>
-                            <th onClick={() => handleSort('setor')}>
-                                Setor
-                                {sortColumn === 'setor' && (
-                                    <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
-                                )}
-                            </th>
-                            <th onClick={() => handleSort('email')}>
-                                Email
-                                {sortColumn === 'email' && (
-                                    <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
-                                )}
-                            </th>
-                            <th onClick={() => handleSort('isDisabled')}>
-                                Status
-                                {sortColumn === 'isDisabled' && (
-                                    <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
-                                )}
-                            </th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {empresas.map((empresa) => (
-                            <tr key={empresa._id}>
-                                <td>{empresa.nome}</td>
-                                <td>{formatCNPJ(empresa.cnpj)}</td>
-                                <td>{empresa.setor}</td>
-                                <td>{empresa.email}</td>
-                                <td>{empresa.isDisabled ? 'Inativa' : 'Ativa'}</td>
-                                <td>
-                                    <div className="btn-group">
-                                        <FontAwesomeIcon icon={faEye} className="icon-btn" onClick={() => handleShowDetailsModal(empresa)} title="Visualizar detalhes" />
-                                        <FontAwesomeIcon icon={faEdit} className="icon-btn" onClick={() => handleShowModal(empresa)} title="Editar" />
-                                        <FontAwesomeIcon icon={empresa.isDisabled ? faToggleOff : faToggleOn} className="icon-btn" onClick={() => handleShowDisableModal(empresa)} title={empresa.isDisabled ? 'Habilitar' : 'Desabilitar'} />
-                                        <FontAwesomeIcon icon={faTrash} className="icon-btn" onClick={() => handleShowDeleteModal(empresa)} title="Excluir" />
-                                    </div>
-                                </td>
+            {loading ? (
+                <div className="d-flex justify-content-center" >
+                    <Spinner animation='border' variant='primary' />
+                </div>
+            ) : empresas.length > 0 ? (
+                <>
+                    <Table striped hover className="shadow-sm mt-3 rounded">
+                        <thead>
+                            <tr>
+                                <th onClick={() => handleSort('nome')}>
+                                    Nome
+                                    {sortColumn === 'nome' && (
+                                        <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
+                                    )}
+                                </th>
+                                <th onClick={() => handleSort('cnpj')}>
+                                    CNPJ
+                                    {sortColumn === 'cnpj' && (
+                                        <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
+                                    )}
+                                </th>
+                                <th onClick={() => handleSort('setor')}>
+                                    Setor
+                                    {sortColumn === 'setor' && (
+                                        <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
+                                    )}
+                                </th>
+                                <th onClick={() => handleSort('email')}>
+                                    Email
+                                    {sortColumn === 'email' && (
+                                        <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
+                                    )}
+                                </th>
+                                <th onClick={() => handleSort('isDisabled')}>
+                                    Status
+                                    {sortColumn === 'isDisabled' && (
+                                        <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
+                                    )}
+                                </th>
+                                <th>Ações</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </Table>
-            </div>
-            {renderPagination()}
+                        </thead>
+                        <tbody>
+                            {empresas.map((empresa) => (
+                                <tr key={empresa._id}>
+                                    <td>{empresa.nome}</td>
+                                    <td>{formatCNPJ(empresa.cnpj)}</td>
+                                    <td>{empresa.setor}</td>
+                                    <td>{empresa.email}</td>
+                                    <td>{empresa.isDisabled ? 'Inativa' : 'Ativa'}</td>
+                                    <td>
+                                        <div className="btn-group">
+                                            <FontAwesomeIcon icon={faEye} className="icon-btn" onClick={() => fetchJobsByCompany(empresa._id)} title="Visualizar vagas" />
+                                            <FontAwesomeIcon icon={faEdit} className="icon-btn" onClick={() => handleShowModal(empresa)} title="Editar" />
+                                            <FontAwesomeIcon icon={empresa.isDisabled ? faToggleOff : faToggleOn} className="icon-btn" onClick={() => handleShowDisableModal(empresa)} title={empresa.isDisabled ? 'Habilitar' : 'Desabilitar'} />
+                                            <FontAwesomeIcon icon={faTrash} className="icon-btn" onClick={() => handleShowDeleteModal(empresa)} title="Excluir" />
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </Table>
+                    {renderPagination()}
+                </>
+            ) : (
+                <p className='text-center mt-4'>Nenhuma empresa cadastrada...</p>
+            )}
+        </>
+    );
+
+    const renderCandidatosTable = () => (
+        <>
+            <Row className="mb-3 align-items-center">
+                <h1>Candidatos</h1>
+                <Col xs={12} md={12} className="d-flex justify-content-end">
+                    <InputGroup style={{ maxWidth: '500px' }}>
+                        <Form.Control
+                            type="text"
+                            placeholder="Pesquisar"
+                            aria-label="Pesquisar"
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                        />
+                        <Button variant="outline-secondary" style={{ maxWidth: '100px' }}>
+                            <FontAwesomeIcon icon={faSearch} />
+                        </Button>
+                    </InputGroup>
+                </Col>
+            </Row>
+            {loading ? (
+                <div className="d-flex justify-content-center" >
+                    <Spinner animation='border' variant='primary' />
+                </div>
+            ) : candidatos.length > 0 ? (
+                <>
+                    <Table striped hover className="shadow-sm mt-3 rounded">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Sobrenome</th>
+                                <th>Email</th>
+                                <th>Telefone</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {candidatos.map((candidato) => (
+                                <tr key={candidato._id}>
+                                    <td>{candidato.nome}</td>
+                                    <td>{candidato.sobrenome}</td>
+                                    <td>{candidato.email}</td>
+                                    <td>{candidato.additionalInfo?.contactPhone || ''}</td>
+                                    <td>
+                                        <Button variant="primary" onClick={() => handleViewCurriculo(candidato._id)}>
+                                            <FontAwesomeIcon icon={faEye} /> Visualizar Currículo
+                                        </Button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </Table>
+                    {renderPagination()}
+                </>
+            ) : (
+                <p className='text-center mt-4'>Nenhum candidato cadastrado...</p>
+            )}
+        </>
+    );
+
+    const renderJobsTable = () => (
+        <>
+            {loading ? (
+                <div className="d-flex justify-content-center" >
+                    <Spinner animation='border' variant='primary' />
+                </div>
+            ) : jobs.length > 0 ? (
+                <>
+                    <Table striped hover className="shadow-sm mt-3 rounded">
+                        <thead>
+                            <tr>
+                                <th>Título</th>
+                                <th>Localização</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {jobs.map((job) => (
+                                <tr key={job._id}>
+                                    <td>{job.title}</td>
+                                    <td>{job.location}</td>
+                                    <td>
+                                        <Button variant="primary" onClick={() => fetchCandidatesByJob(job._id)}>
+                                            <FontAwesomeIcon icon={faEye} /> Ver Candidatos
+                                        </Button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </Table>
+                </>
+            ) : (
+                <p className='text-center mt-4'>Nenhuma vaga cadastrada...</p>
+            )}
+        </>
+    );
+
+    const renderCandidatosVagasTable = () => (
+        <>
+            {loading ? (
+                <div className="d-flex justify-content-center" >
+                    <Spinner animation='border' variant='primary' />
+                </div>
+            ) : empresas.length > 0 ? (
+                <>
+                    <Table striped hover className="shadow-sm mt-3 rounded">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {candidatosVaga.map((candidatosVaga) => (
+                                <tr key={candidatosVaga._id}>
+                                    <td>{candidatosVaga.user.nome}</td>
+                                    <td>{candidatosVaga.user.email}</td>
+                                    <td>
+                                        <Button variant="primary" onClick={() => handleViewCurriculo(candidatosVaga.user._id)}>
+                                            <FontAwesomeIcon icon={faEye} /> Visualizar Currículo
+                                        </Button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </Table>
+                </>
+            ) : (
+                <p className='text-center mt-4'>Nenhum candidato cadastrado...</p>
+            )}
         </>
     );
 
     const handleViewCurriculo = (candidatoId) => {
         const newWindow = window.open('', '', 'width=800,height=600');
         newWindow.document.write('<html><head><title>Currículo</title></head><body><div id="curriculo-template-root"></div></body></html>');
-
+        console.log(candidatoId);
         // Injetar link CSS do Bootstrap na nova janela
         const bootstrapLink = newWindow.document.createElement('link');
         bootstrapLink.rel = 'stylesheet';
@@ -461,62 +630,6 @@ const AdminDashboard = () => {
         });
     };
 
-    const renderCandidatosTable = () => (
-        <>
-            <Row className="mb-3 align-items-center">
-                <h2 className='display-6'>Candidatos</h2>
-                <Col xs={12} md={12} className="d-flex justify-content-end">
-                    <InputGroup style={{ maxWidth: '500px' }}>
-                        <Form.Control
-                            type="text"
-                            placeholder="Pesquisar"
-                            aria-label="Pesquisar"
-                            value={searchTerm}
-                            onChange={e => setSearchTerm(e.target.value)}
-                        />
-                        <Button variant="outline-secondary" style={{ maxWidth: '100px' }}>
-                            <FontAwesomeIcon icon={faSearch} />
-                        </Button>
-                    </InputGroup>
-                </Col>
-            </Row>
-            <div className="table-responsive position-relative">
-                {loading && (
-                    <div className="table-loader-overlay">
-                        <div className="loader"></div>
-                    </div>
-                )}
-                <Table striped bordered hover className="table">
-                    <thead>
-                        <tr>
-                            <th>Nome</th>
-                            <th>Sobrenome</th>
-                            <th>Email</th>
-                            <th>Telefone</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {candidatos.map((candidato) => (
-                            <tr key={candidato._id}>
-                                <td>{candidato.nome}</td>
-                                <td>{candidato.sobrenome}</td>
-                                <td>{candidato.email}</td>
-                                <td>{candidato.additionalInfo?.contactPhone || ''}</td>
-                                <td>
-                                    <Button variant="primary" onClick={() => handleViewCurriculo(candidato._id)}>
-                                        <FontAwesomeIcon icon={faEye} /> Visualizar Currículo
-                                    </Button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </Table>
-            </div>
-            {renderPagination()}
-        </>
-    );
-
     return (
         <div>
             <Navbar bg="dark" variant="dark" expand="lg">
@@ -535,15 +648,70 @@ const AdminDashboard = () => {
             <Container className="mt-3">
                 <Row className="mb-3">
                     <Col>
-                        <Button variant={activeTab === 'empresas' ? 'primary' : 'secondary'} onClick={() => setActiveTab('empresas')} className="me-2">
+                        <Button
+                            variant={activeTab === 'empresas' ? 'primary' : 'secondary'}
+                            onClick={() => {
+                                setActiveTab('empresas');
+                                setCurrentView('empresas'); // Resetando para empresas quando clicado
+                                setBreadcrumb(['Empresas']); // Atualizando o breadcrumb para Empresas
+                            }}
+                            className="me-2"
+                        >
                             Empresas
                         </Button>
-                        <Button variant={activeTab === 'candidatos' ? 'primary' : 'secondary'} onClick={() => setActiveTab('candidatos')}>
+                        <Button
+                            variant={activeTab === 'candidatos' ? 'primary' : 'secondary'}
+                            onClick={() => {
+                                setActiveTab('candidatos');
+                                setCurrentView(''); // Não precisa de currentView para candidatos diretos
+                            }}
+                        >
                             Candidatos
                         </Button>
                     </Col>
                 </Row>
-                {activeTab === 'empresas' ? renderEmpresasTable() : renderCandidatosTable()}
+
+                {/* Renderização condicional do Breadcrumb apenas para Empresas */}
+                {activeTab === 'empresas' && (
+                    <Breadcrumb>
+                        <Breadcrumb.Item
+                            onClick={() => {
+                                setCurrentView('empresas');
+                                setBreadcrumb(['Empresas']);
+                            }}
+                            style={{ cursor: 'pointer' }}
+                        >
+                            <h1>Empresas</h1>
+                        </Breadcrumb.Item>
+
+                        {breadcrumb.includes('Vagas') && (
+                            <Breadcrumb.Item
+                                onClick={() => {
+                                    setCurrentView('vagas');
+                                    setBreadcrumb(['Empresas', 'Vagas']);
+                                }}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                <h1>Vagas</h1>
+                            </Breadcrumb.Item>
+                        )}
+
+                        {breadcrumb.includes('Candidatos') && (
+                            <Breadcrumb.Item
+                                active
+                                style={{ cursor: 'default' }}
+                            >
+                                <h1>Candidatos</h1>
+                            </Breadcrumb.Item>
+                        )}
+                    </Breadcrumb>
+                )}
+
+                {/* Renderização condicional baseada no activeTab */}
+                {activeTab === 'empresas' && currentView === 'empresas' && renderEmpresasTable()}
+                {activeTab === 'empresas' && currentView === 'vagas' && renderJobsTable()}
+                {activeTab === 'empresas' && currentView === 'candidatos' && renderCandidatosVagasTable()}
+                {activeTab === 'candidatos' && renderCandidatosTable()}
             </Container>
 
             <ModalComponent
