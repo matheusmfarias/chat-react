@@ -36,6 +36,10 @@ const AdminDashboard = () => {
     const [isFilterModified, setIsFilterModified] = useState(false);
     const [totalPages, setTotalPages] = useState(1);
     const [activeTab, setActiveTab] = useState('empresas');
+    const [currentPageEmpresas, setCurrentPageEmpresas] = useState(1); // Página das empresas
+    const [currentPageVagas, setCurrentPageVagas] = useState(1); // Página das vagas
+    const [currentPageCandidatosVaga, setCurrentPageCandidatosVaga] = useState(1); // Página dos candidatos de uma vaga
+    const [currentPageCandidatos, setCurrentPageCandidatos] = useState(1); // Página dos candidatos gerais (aba)
     const navigate = useNavigate();
 
     //Breadcrumb
@@ -43,6 +47,8 @@ const AdminDashboard = () => {
     const [breadcrumb, setBreadcrumb] = useState(['Empresas']);
     const [jobs, setJobs] = useState([]);
     const [candidatosVaga, setCandidatosVaga] = useState([]);
+    const [selectedCompanyId, setSelectedCompanyId] = useState(null); // Armazena o ID da empresa selecionada
+    const [selectedJobId, setSelectedJobId] = useState(null); // Armazena o ID da vaga selecionada
 
 
     const fetchEmpresas = useCallback(async (page = 1, search = '', filter = '') => {
@@ -52,7 +58,6 @@ const AdminDashboard = () => {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
                 params: { page, search, filterStatus: filter, limit: itemsPerPage, sortColumn, sortDirection }
             });
-            console.log("Dados recebidos:", response.data);
             setEmpresas(response.data.companies);
             setTotalPages(response.data.totalPages);
         } catch (error) {
@@ -69,7 +74,6 @@ const AdminDashboard = () => {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
                 params: { page, search, limit: itemsPerPage }
             });
-            console.log("Dados recebidos:", response.data);
             setCandidatos(response.data.candidates);
             setTotalPages(response.data.totalPages);
         } catch (error) {
@@ -87,13 +91,16 @@ const AdminDashboard = () => {
         }
     }, [currentPage, searchTerm, sortColumn, sortDirection, activeTab, fetchEmpresas, fetchCandidatos]);
 
-    const fetchJobsByCompany = async (companyId) => {
-        setLoading(true)
+    const fetchJobsByCompany = async (companyId, page = 1) => {
+        setLoading(true);
         try {
+            setSelectedCompanyId(companyId); // Armazena o ID da empresa selecionada no estado
             const response = await axios.get(`http://localhost:5000/api/jobs/${companyId}/jobs`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                params: { page, limit: itemsPerPage }
             });
-            setJobs(response.data);
+            setJobs(response.data.jobs);
+            setTotalPages(response.data.totalPages);
             setCurrentView('vagas');
             setBreadcrumb(['Empresas', 'Vagas']);
         } catch (error) {
@@ -103,13 +110,17 @@ const AdminDashboard = () => {
         }
     };
 
-    const fetchCandidatesByJob = async (jobId) => {
-        setLoading(true)
+
+    const fetchCandidatesByJob = async (jobId, page = 1) => {
+        setLoading(true);
         try {
+            setSelectedJobId(jobId); // Armazena o ID da vaga selecionada
             const response = await axios.get(`http://localhost:5000/api/jobs/${jobId}/candidates`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                params: { page, limit: itemsPerPage }
             });
-            setCandidatosVaga(response.data);
+            setCandidatosVaga(response.data.candidates);
+            setTotalPages(response.data.totalPages);
             setCurrentView('candidatos');
             setBreadcrumb(['Empresas', 'Vagas', 'Candidatos']);
         } catch (error) {
@@ -118,6 +129,7 @@ const AdminDashboard = () => {
             setLoading(false);
         }
     };
+
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -313,8 +325,6 @@ const AdminDashboard = () => {
         fetchEmpresas(currentPage, searchTerm, filterStatus);
     };
 
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
     const notify = (message, type) => {
         toast[type](message, {
             position: "top-right",
@@ -328,22 +338,25 @@ const AdminDashboard = () => {
         });
     };
 
-    const renderPagination = () => {
-        return (
-            <Pagination>
-                <Pagination.Prev onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} />
-                {[...Array(totalPages).keys()].map(number => (
-                    <Pagination.Item
-                        key={number + 1}
-                        onClick={() => paginate(number + 1)}
-                        active={number + 1 === currentPage}
-                    >
-                        {number + 1}
-                    </Pagination.Item>
-                ))}
-                <Pagination.Next onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} />
-            </Pagination>
-        );
+    const renderPagination = (paginateFunction) => (
+        <Pagination>
+            <Pagination.Prev onClick={() => paginateFunction(currentPage - 1)} disabled={currentPage === 1} />
+            {[...Array(totalPages).keys()].map(number => (
+                <Pagination.Item
+                    key={number + 1}
+                    onClick={() => paginateFunction(number + 1)}
+                    active={number + 1 === currentPage}
+                >
+                    {number + 1}
+                </Pagination.Item>
+            ))}
+            <Pagination.Next onClick={() => paginateFunction(currentPage + 1)} disabled={currentPage === totalPages} />
+        </Pagination>
+    );
+
+    const paginateEmpresas = (pageNumber) => {
+        setCurrentPageEmpresas(pageNumber); // Atualiza a página atual de empresas
+        fetchEmpresas(pageNumber, searchTerm); // Chama a função de busca de empresas
     };
 
     const renderEmpresasTable = () => (
@@ -434,13 +447,18 @@ const AdminDashboard = () => {
                             ))}
                         </tbody>
                     </Table>
-                    {renderPagination()}
+                    {renderPagination(paginateEmpresas)}
                 </>
             ) : (
                 <p className='text-center mt-4'>Nenhuma empresa cadastrada...</p>
             )}
         </>
     );
+
+    const paginateCandidatos = (pageNumber) => {
+        setCurrentPageCandidatos(pageNumber); // Atualiza a página atual dos candidatos
+        fetchCandidatos(pageNumber, searchTerm); // Chama a função de busca de candidatos gerais
+    };
 
     const renderCandidatosTable = () => (
         <>
@@ -493,7 +511,7 @@ const AdminDashboard = () => {
                             ))}
                         </tbody>
                     </Table>
-                    {renderPagination()}
+                    {renderPagination(paginateCandidatos)}
                 </>
             ) : (
                 <p className='text-center mt-4'>Nenhum candidato cadastrado...</p>
@@ -501,11 +519,18 @@ const AdminDashboard = () => {
         </>
     );
 
+    const paginateJobs = (pageNumber) => {
+        if (selectedCompanyId) {
+            fetchJobsByCompany(selectedCompanyId, pageNumber); // Garante que o companyId está sendo passado
+            setCurrentPage(pageNumber); // Atualiza o estado da página atual
+        }
+    };
+
     const renderJobsTable = () => (
         <>
             {loading ? (
-                <div className="d-flex justify-content-center" >
-                    <Spinner animation='border' variant='primary' />
+                <div className="d-flex justify-content-center">
+                    <Spinner animation="border" variant="primary" />
                 </div>
             ) : jobs.length > 0 ? (
                 <>
@@ -531,20 +556,29 @@ const AdminDashboard = () => {
                             ))}
                         </tbody>
                     </Table>
+                    {/* Renderizar paginação */}
+                    {renderPagination(paginateJobs)}
                 </>
             ) : (
-                <p className='text-center mt-4'>Nenhuma vaga cadastrada...</p>
+                <p className="text-center mt-4">Nenhuma vaga cadastrada...</p>
             )}
         </>
     );
 
+    const paginateCandidates = (pageNumber) => {
+        if (selectedJobId) {
+            fetchCandidatesByJob(selectedJobId, pageNumber); // Garante que o jobId está sendo passado corretamente
+            setCurrentPage(pageNumber); // Atualiza o estado da página atual
+        }
+    };
+
     const renderCandidatosVagasTable = () => (
         <>
             {loading ? (
-                <div className="d-flex justify-content-center" >
-                    <Spinner animation='border' variant='primary' />
+                <div className="d-flex justify-content-center">
+                    <Spinner animation="border" variant="primary" />
                 </div>
-            ) : empresas.length > 0 ? (
+            ) : candidatosVaga.length > 0 ? (
                 <>
                     <Table striped hover className="shadow-sm mt-3 rounded">
                         <thead>
@@ -555,12 +589,12 @@ const AdminDashboard = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {candidatosVaga.map((candidatosVaga) => (
-                                <tr key={candidatosVaga._id}>
-                                    <td>{candidatosVaga.user.nome}</td>
-                                    <td>{candidatosVaga.user.email}</td>
+                            {candidatosVaga.map((candidato) => (
+                                <tr key={candidato._id}>
+                                    <td>{candidato.user.nome}</td>
+                                    <td>{candidato.user.email}</td>
                                     <td>
-                                        <Button variant="primary" onClick={() => handleViewCurriculo(candidatosVaga.user._id)}>
+                                        <Button variant="primary" onClick={() => handleViewCurriculo(candidato.user._id)}>
                                             <FontAwesomeIcon icon={faEye} /> Visualizar Currículo
                                         </Button>
                                     </td>
@@ -568,12 +602,33 @@ const AdminDashboard = () => {
                             ))}
                         </tbody>
                     </Table>
+                    {/* Renderizar paginação */}
+                    {renderPagination(paginateCandidates)}
                 </>
             ) : (
-                <p className='text-center mt-4'>Nenhum candidato cadastrado...</p>
+                <p className="text-center mt-4">Nenhum candidato cadastrado...</p>
             )}
         </>
     );
+
+    const handleBreadcrumbClick = (level) => {
+        if (level === 'empresas') {
+            setCurrentPageEmpresas(currentPageEmpresas); // Restaura a página de empresas
+            fetchEmpresas(currentPageEmpresas, searchTerm); // Recarrega as empresas
+            setBreadcrumb(['Empresas']);
+            setCurrentView('empresas');
+        } else if (level === 'vagas') {
+            setCurrentPageVagas(currentPageVagas); // Restaura a página de vagas
+            fetchJobsByCompany(selectedCompanyId, currentPageVagas); // Recarrega as vagas
+            setBreadcrumb(['Empresas', 'Vagas']);
+            setCurrentView('vagas');
+        } else if (level === 'candidatos') {
+            setCurrentPageCandidatosVaga(currentPageCandidatosVaga); // Restaura a página de candidatos
+            fetchCandidatesByJob(selectedJobId, currentPageCandidatosVaga); // Recarrega os candidatos
+            setBreadcrumb(['Empresas', 'Vagas', 'Candidatos']);
+            setCurrentView('candidatos');
+        }
+    };
 
     const handleViewCurriculo = (candidatoId) => {
         const newWindow = window.open('', '', 'width=800,height=600');
@@ -675,10 +730,7 @@ const AdminDashboard = () => {
                 {activeTab === 'empresas' && (
                     <Breadcrumb>
                         <Breadcrumb.Item
-                            onClick={() => {
-                                setCurrentView('empresas');
-                                setBreadcrumb(['Empresas']);
-                            }}
+                            onClick={() => handleBreadcrumbClick('empresas')}  // Usa a função para restaurar o estado
                             style={{ cursor: 'pointer' }}
                         >
                             <h1>Empresas</h1>
@@ -686,10 +738,7 @@ const AdminDashboard = () => {
 
                         {breadcrumb.includes('Vagas') && (
                             <Breadcrumb.Item
-                                onClick={() => {
-                                    setCurrentView('vagas');
-                                    setBreadcrumb(['Empresas', 'Vagas']);
-                                }}
+                                onClick={() => handleBreadcrumbClick('vagas')}  // Usa a função para restaurar o estado
                                 style={{ cursor: 'pointer' }}
                             >
                                 <h1>Vagas</h1>
