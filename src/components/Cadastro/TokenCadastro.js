@@ -92,7 +92,7 @@ const TokenCadastro = ({ onVerify }) => {
                 <div className='logo-container-token'>
                     <a href='/' rel='noreferrer'><img src={logo} alt="Logo" loading="lazy" /></a>
                 </div>
-                <h2>Verifique seu e-mail</h2>
+                <h2 className='p-2'>Verifique seu e-mail</h2>
                 <form onSubmit={handleVerifyToken} className='verificacao-token'>
                     <div className="mb-3">
                         <label className="form-label">Um token de verificação foi enviado para <strong>{emailUser || email}</strong></label>

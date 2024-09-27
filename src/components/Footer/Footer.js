@@ -2,7 +2,7 @@ import React from 'react';
 import './Footer.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
-import { faLocationDot, faPhone, faPeopleGroup, faEye } from '@fortawesome/free-solid-svg-icons';
+import { faLocationDot, faPhone } from '@fortawesome/free-solid-svg-icons';
 import logo from '../../assets/images/logo-footer-aci.png';
 import '../../styles/global.css';
 
@@ -20,10 +20,6 @@ function Footer() {
                     <ul>
                         <li><FontAwesomeIcon icon={faPhone} className='footer-icon' />(55) 3375-9350</li>
                         <li><FontAwesomeIcon icon={faWhatsapp} className='footer-icon' />(55) 99212-8613</li>
-                    </ul>
-                    <ul>
-                        <li><FontAwesomeIcon icon={faPeopleGroup} className='footer-icon' />Nossos Associados</li>
-                        <li><FontAwesomeIcon icon={faEye} className='footer-icon' />Política de Privacidade</li>
                     </ul>
                 </div>
             </footer>

@@ -1,46 +1,7 @@
-/* Loader overlay */
-.loader-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.8);
-    z-index: 999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.loader {
-    border: 4px solid #f3f3f3;
-    border-radius: 50%;
-    border-top: 4px solid #3498db;
-    width: 40px;
-    height: 40px;
-    animation: spin 2s linear infinite;
-    margin: 0 auto;
-}
-
-@keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
 .container {
     max-width: 1200px;
     padding: 10px;
     margin: 0 auto;
-}
-
-.table-responsive {
-    width: 100%;
-    overflow-x: auto;
 }
 
 .table {
@@ -71,18 +32,6 @@
     overflow-x: auto;
 }
 
-.table th {
-    position: sticky;
-    top: 0;
-    background: #f8f9fa;
-    z-index: 1;
-}
-
-.table th .sort-icon {
-    position: absolute;
-    right: 10px;
-}
-
 .table th:first-child,
 .table td:first-child,
 .table th:nth-child(2) {
@@ -99,19 +48,6 @@
 .table th:nth-child(6),
 .table td:nth-child(6) {
     width: calc(100% / 7);
-}
-
-.table-loader-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.8);
-    z-index: 999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .btn-group {
@@ -138,60 +74,49 @@
     position: relative;
 }
 
-.modal-footer .btn {
-    flex: 1;
-    margin: 0 5px;
-}
-
-.btn:focus,
-.form-control:focus {
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, .25);
-    outline: none;
-}
-
-/* Estilo para botão de sair */
-.navbar .ml-auto .btn-outline-danger {
-    color: #dc3545;
-    border-color: #dc3545;
-    margin-left: auto;
-}
-
-.navbar .ms-auto .btn-outline-danger:hover {
-    color: #fff;
-    background-color: #dc3545;
-    border-color: #dc3545;
-}
-
 /* Paginação */
 .pagination {
     justify-content: center;
     margin-top: 20px;
 }
 
-.pagination .page-link {
-    color: #007bff;
-}
-
-.pagination .page-link:hover {
-    color: #0056b3;
-}
-
-.pagination .page-item.active .page-link {
-    background-color: #007bff;
-    border-color: #007bff;
-    color: white;
+/* Ajustar o layout de acordo com a largura da tela */
+@media (max-width: 1200px) {
+    .container {
+        max-width: 100%;
+        padding: 10px;
+    }
 }
 
 @media (max-width: 768px) {
 
+    /* Aumentar a responsividade das tabelas */
+    .table {
+        min-width: 100%;
+    }
+
     .table th,
     .table td {
         font-size: 14px;
-        /* Ajuste o tamanho da fonte conforme necessário */
+        word-break: break-word;
+        /* Evita quebra de layout com texto longo */
     }
 
-    .table {
-        min-width: 600px;
-        /* Ajuste conforme necessário para telas menores */
+    /* Garantir que os botões e grupos de botões se comportem bem em telas menores */
+    .btn-group {
+        flex-wrap: wrap;
+        justify-content: space-between;
     }
+
+    .btn-group .icon-btn {
+        font-size: 16px;
+        /* Ajustar o tamanho dos ícones em telas menores */
+        margin: 5px 0;
+    }
+
+}
+
+/* Melhorar responsividade do modal */
+.modal-body {
+    padding: 20px;
 }

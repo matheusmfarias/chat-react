@@ -29,7 +29,7 @@
 }
 
 .btn-main-login {
-   justify-content: center;
+    justify-content: center;
     background-color: var(--background-color);
     color: var(--primary-color);
     border: 1px solid var(--primary-color);
@@ -38,7 +38,7 @@
     margin-top: 20px;
     padding: 10px;
     cursor: pointer;
-    width: 100px;
+    width: 120px;
 }
 
 .central-container button:hover {
@@ -50,7 +50,7 @@
     .central-container h1 {
         font-size: 32px;
     }
-    
+
     .central-container h4 {
         margin-top: 3%;
         font-size: 16px;

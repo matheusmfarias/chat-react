@@ -43,6 +43,7 @@ const CarouselEmpresa = () => {
             <h1>Vagas cadastradas</h1>
             {jobs.length > 0 ? (
                 <Swiper
+                className='p-4 mb-4 w-100'
                     modules={[Navigation, Pagination, Scrollbar]}
                     navigation
                     pagination={{ clickable: true }}
@@ -52,43 +53,30 @@ const CarouselEmpresa = () => {
                         320: {
                             slidesPerView: 1,
                             spaceBetween: 20,
-                            navigation: {
-                                enabled: true
-                            },
-                            scrollbar: {
-                                enabled: true
-                            }
                         },
                         640: {
-                            slidesPerView: 2,
-                            spaceBetween: 30,
-                            navigation: {
-                                enabled: true
-                            },
-                            scrollbar: {
-                                enabled: true
-                            }
+                            slidesPerView: 1,
+                            spaceBetween: 20, // Menor espaçamento em dispositivos móveis
                         },
                         768: {
-                            slidesPerView: 2,
-                            scrollbar: {
-                                enabled: true
-                            }
+                            slidesPerView: 2, // Dois slides visíveis em tablets
+                            spaceBetween: 25,
                         },
                         1024: {
-                            slidesPerView: 3,
+                            slidesPerView: 2, // Três slides em desktops médios
+                            spaceBetween: 30,
                         },
-                        1500: {
-                            slidesPerView: 4,
-                            spaceBetween: 30
+                        1440: {
+                            slidesPerView: 4, // Quatro slides em grandes desktops
+                            spaceBetween: 30,
                         }
                     }}
                 >
                     {jobs.map((job, index) => (
-                        <SwiperSlide key={index}>
-                            <Card className='bg-light shadow p-4 rounded border-0'>
+                        <SwiperSlide key={index} className='d-flex justify-content-center'>
+                            <Card className='shadow p-4 rounded border-0'>
                                 <h2 className="card-title">{job.title}</h2>
-                                <Card.Body className='p-1'>
+                                <Card.Body className='p-1 d-flex flex-column justify-content-between'>
                                     <Row className="mb-2">
                                         <Col>
                                             <Card.Text className='text-primary'>
@@ -102,11 +90,7 @@ const CarouselEmpresa = () => {
                                             <Card.Text className='text-primary'>
                                                 <FontAwesomeIcon
                                                     className="me-2"
-                                                    icon={
-                                                        job.modality === 'Remoto' ? faHome :
-                                                            job.modality === 'Presencial' ? faBuilding :
-                                                                faLaptopHouse
-                                                    }
+                                                    icon={job.modality === 'Remoto' ? faHome : job.modality === 'Presencial' ? faBuilding : faLaptopHouse}
                                                     title="Modelo"
                                                 />
                                                 {job.modality}

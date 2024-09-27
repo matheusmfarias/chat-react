@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button, Form, Table, Navbar, Nav, Container, Row, Col, InputGroup, Pagination, Breadcrumb, Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faToggleOn, faToggleOff, faPlus, faSearch, faSortDown, faSortUp, faSignOutAlt, faEye, faFilter } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faToggleOn, faToggleOff, faPlus, faSearch, faSortDown, faSortUp, faSignOutAlt, faEye } from '@fortawesome/free-solid-svg-icons';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import useFormattedCNPJ, { formatCNPJ } from '../../hooks/useFormattedCNPJ';
@@ -21,7 +21,6 @@ const AdminDashboard = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showDisableModal, setShowDisableModal] = useState(false);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
-    const [showFilterModal, setShowFilterModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [currentEmpresa, setCurrentEmpresa] = useState({ nome: '', cnpj: '', setor: '', email: '', senha: '', isDisabled: false });
     const [empresaToDelete, setEmpresaToDelete] = useState(null);
@@ -29,17 +28,16 @@ const AdminDashboard = () => {
     const [formattedCnpj, setFormattedCnpj] = useFormattedCNPJ('');
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filterStatus, setFilterStatus] = useState('');
     const [sortColumn, setSortColumn] = useState('nome');
     const [sortDirection, setSortDirection] = useState('asc');
     const [isModified, setIsModified] = useState(false);
-    const [isFilterModified, setIsFilterModified] = useState(false);
     const [totalPages, setTotalPages] = useState(1);
     const [activeTab, setActiveTab] = useState('empresas');
     const [currentPageEmpresas, setCurrentPageEmpresas] = useState(1); // Página das empresas
     const [currentPageVagas, setCurrentPageVagas] = useState(1); // Página das vagas
     const [currentPageCandidatosVaga, setCurrentPageCandidatosVaga] = useState(1); // Página dos candidatos de uma vaga
     const [currentPageCandidatos, setCurrentPageCandidatos] = useState(1); // Página dos candidatos gerais (aba)
+
     const navigate = useNavigate();
 
     //Breadcrumb
@@ -66,6 +64,7 @@ const AdminDashboard = () => {
             setLoading(false);
         }
     }, [itemsPerPage, sortColumn, sortDirection]);
+
 
     const fetchCandidatos = useCallback(async (page = 1, search = '') => {
         setLoading(true);
@@ -184,20 +183,6 @@ const AdminDashboard = () => {
         setFormattedCnpj('');
     };
 
-    const handleShowFilterModal = () => {
-        setShowFilterModal(true);
-    };
-
-    const handleCloseFilterModal = () => {
-        setShowFilterModal(false);
-        setIsFilterModified(false);
-    };
-
-    const handleFilterChange = (e) => {
-        setFilterStatus(e.target.value);
-        setIsFilterModified(true);
-    };
-
     const handleSaveEmpresa = async () => {
         setLoading(true);
         try {
@@ -250,7 +235,7 @@ const AdminDashboard = () => {
             }
             console.log("Resposta do servidor:", response);
             notify(editMode ? 'Empresa atualizada com sucesso!' : 'Empresa adicionada com sucesso!', 'success');
-            fetchEmpresas(currentPage, searchTerm, filterStatus);
+            fetchEmpresas(currentPage, searchTerm);
             handleCloseModal();
         } catch (error) {
             console.error('Erro ao salvar empresa:', error);
@@ -277,7 +262,7 @@ const AdminDashboard = () => {
             if (updatedEmpresas.length === 0 && currentPage > 1) {
                 setCurrentPage(currentPage - 1);
             } else {
-                fetchEmpresas(currentPage, searchTerm, filterStatus);
+                fetchEmpresas(currentPage, searchTerm);
             }
 
             handleCloseDeleteModal();
@@ -297,7 +282,7 @@ const AdminDashboard = () => {
             await axios.put(`http://localhost:5000/api/company/${empresaToDisable._id}`, updatedEmpresa, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
-            fetchEmpresas(currentPage, searchTerm, filterStatus);
+            fetchEmpresas(currentPage, searchTerm);
             handleCloseDisableModal();
             notify(`Empresa ${updatedEmpresa.isDisabled ? 'desabilitada' : 'habilitada'} com sucesso!`, 'success');
         } catch (error) {
@@ -320,11 +305,6 @@ const AdminDashboard = () => {
         setSortDirection(newDirection);
     };
 
-    const applyFilter = () => {
-        handleCloseFilterModal();
-        fetchEmpresas(currentPage, searchTerm, filterStatus);
-    };
-
     const notify = (message, type) => {
         toast[type](message, {
             position: "top-right",
@@ -337,6 +317,51 @@ const AdminDashboard = () => {
             closeButton: false
         });
     };
+
+    const renderPaginationEmpresas = () => (
+        <Pagination>
+            <Pagination.Prev
+                onClick={() => paginateEmpresas(currentPageEmpresas - 1)}
+                disabled={currentPageEmpresas === 1}
+            />
+            {[...Array(totalPages).keys()].map(number => (
+                <Pagination.Item
+                    key={number + 1}
+                    onClick={() => paginateEmpresas(number + 1)}
+                    active={number + 1 === currentPageEmpresas}
+                >
+                    {number + 1}
+                </Pagination.Item>
+            ))}
+            <Pagination.Next
+                onClick={() => paginateEmpresas(currentPageEmpresas + 1)}
+                disabled={currentPageEmpresas === totalPages}
+            />
+        </Pagination>
+    );
+
+    const renderPaginationCandidatos = () => (
+        <Pagination>
+            <Pagination.Prev
+                onClick={() => paginateCandidatos(currentPageCandidatos - 1)}
+                disabled={currentPageCandidatos === 1}
+            />
+            {[...Array(totalPages).keys()].map(number => (
+                <Pagination.Item
+                    key={number + 1}
+                    onClick={() => paginateCandidatos(number + 1)}
+                    active={number + 1 === currentPageCandidatos}
+                >
+                    {number + 1}
+                </Pagination.Item>
+            ))}
+            <Pagination.Next
+                onClick={() => paginateCandidatos(currentPageCandidatos + 1)}
+                disabled={currentPageCandidatos === totalPages}
+            />
+        </Pagination>
+    );
+
 
     const renderPagination = (paginateFunction) => (
         <Pagination>
@@ -362,15 +387,12 @@ const AdminDashboard = () => {
     const renderEmpresasTable = () => (
         <>
             <Row className="mb-3 align-items-center">
-                <Col xs={12} md={4} className="d-flex justify-content-start mb-2 mb-md-0">
-                    <Button variant="primary" className="me-2 flex-grow-1" onClick={() => handleShowModal()}>
+                <Col xs={12} md={2} className="d-flex justify-content-start mb-2 mb-md-0">
+                    <Button variant="outline-primary" className="me-2 flex-grow-1 w-100" onClick={() => handleShowModal()}>
                         <FontAwesomeIcon icon={faPlus} /> Adicionar
                     </Button>
-                    <Button variant="secondary" className="me-2 flex-grow-1" onClick={handleShowFilterModal}>
-                        <FontAwesomeIcon icon={faFilter} /> Filtros
-                    </Button>
                 </Col>
-                <Col xs={12} md={8} className="d-flex justify-content-end">
+                <Col xs={12} md={10} className="d-flex justify-content-end">
                     <InputGroup style={{ maxWidth: '500px' }}>
                         <Form.Control
                             type="text"
@@ -447,7 +469,6 @@ const AdminDashboard = () => {
                             ))}
                         </tbody>
                     </Table>
-                    {renderPagination(paginateEmpresas)}
                 </>
             ) : (
                 <p className='text-center mt-4'>Nenhuma empresa cadastrada...</p>
@@ -504,14 +525,13 @@ const AdminDashboard = () => {
                                     <td>{candidato.additionalInfo?.contactPhone || ''}</td>
                                     <td>
                                         <Button variant="primary" onClick={() => handleViewCurriculo(candidato._id)}>
-                                            <FontAwesomeIcon icon={faEye} /> Visualizar Currículo
+                                            Currículo
                                         </Button>
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </Table>
-                    {renderPagination(paginateCandidatos)}
                 </>
             ) : (
                 <p className='text-center mt-4'>Nenhum candidato cadastrado...</p>
@@ -549,7 +569,7 @@ const AdminDashboard = () => {
                                     <td>{job.location}</td>
                                     <td>
                                         <Button variant="primary" onClick={() => fetchCandidatesByJob(job._id)}>
-                                            <FontAwesomeIcon icon={faEye} /> Ver Candidatos
+                                            Candidatos
                                         </Button>
                                     </td>
                                 </tr>
@@ -595,7 +615,7 @@ const AdminDashboard = () => {
                                     <td>{candidato.user.email}</td>
                                     <td>
                                         <Button variant="primary" onClick={() => handleViewCurriculo(candidato.user._id)}>
-                                            <FontAwesomeIcon icon={faEye} /> Visualizar Currículo
+                                            Currículo
                                         </Button>
                                     </td>
                                 </tr>
@@ -690,14 +710,11 @@ const AdminDashboard = () => {
             <Navbar bg="dark" variant="dark" expand="lg">
                 <Container>
                     <Navbar.Brand href="#">Painel administrativo</Navbar.Brand>
-                    <Navbar.Toggle aria-controls="basic-navbar-nav" />
-                    <Navbar.Collapse id="basic-navbar-nav">
-                        <Nav className="ms-auto">
-                            <Button variant="outline-danger" className="ml-auto" onClick={handleLogout} style={{ maxWidth: '100px' }}>
-                                <FontAwesomeIcon icon={faSignOutAlt} /> Sair
-                            </Button>
-                        </Nav>
-                    </Navbar.Collapse>
+                    <Nav className="ms-auto">
+                        <Button variant="outline-danger" className="ml-auto" onClick={handleLogout} style={{ maxWidth: '100px' }}>
+                            <FontAwesomeIcon icon={faSignOutAlt} /> Sair
+                        </Button>
+                    </Nav>
                 </Container>
             </Navbar>
             <Container className="mt-3">
@@ -729,38 +746,46 @@ const AdminDashboard = () => {
                 {/* Renderização condicional do Breadcrumb apenas para Empresas */}
                 {activeTab === 'empresas' && (
                     <Breadcrumb>
+                    <Breadcrumb.Item
+                        onClick={() => handleBreadcrumbClick('empresas')}
+                        style={{ cursor: 'pointer' }}
+                    >
+                        <span>Empresas</span>
+                    </Breadcrumb.Item>
+                
+                    {breadcrumb.includes('Vagas') && (
                         <Breadcrumb.Item
-                            onClick={() => handleBreadcrumbClick('empresas')}  // Usa a função para restaurar o estado
+                            onClick={() => handleBreadcrumbClick('vagas')}
                             style={{ cursor: 'pointer' }}
                         >
-                            <h1>Empresas</h1>
+                            <span>Vagas</span>
                         </Breadcrumb.Item>
-
-                        {breadcrumb.includes('Vagas') && (
-                            <Breadcrumb.Item
-                                onClick={() => handleBreadcrumbClick('vagas')}  // Usa a função para restaurar o estado
-                                style={{ cursor: 'pointer' }}
-                            >
-                                <h1>Vagas</h1>
-                            </Breadcrumb.Item>
-                        )}
-
-                        {breadcrumb.includes('Candidatos') && (
-                            <Breadcrumb.Item
-                                active
-                                style={{ cursor: 'default' }}
-                            >
-                                <h1>Candidatos</h1>
-                            </Breadcrumb.Item>
-                        )}
-                    </Breadcrumb>
+                    )}
+                
+                    {breadcrumb.includes('Candidatos') && (
+                        <Breadcrumb.Item active style={{ cursor: 'default' }}>
+                            <span>Candidatos</span>
+                        </Breadcrumb.Item>
+                    )}
+                </Breadcrumb>
+                
                 )}
 
                 {/* Renderização condicional baseada no activeTab */}
-                {activeTab === 'empresas' && currentView === 'empresas' && renderEmpresasTable()}
+                {activeTab === 'empresas' && currentView === 'empresas' && (
+                    <>
+                        {renderEmpresasTable()}
+                        {renderPaginationEmpresas()}
+                    </>
+                )}
                 {activeTab === 'empresas' && currentView === 'vagas' && renderJobsTable()}
                 {activeTab === 'empresas' && currentView === 'candidatos' && renderCandidatosVagasTable()}
-                {activeTab === 'candidatos' && renderCandidatosTable()}
+                {activeTab === 'candidatos' && (
+                    <>
+                        {renderCandidatosTable()}
+                        {renderPaginationCandidatos()}
+                    </>
+                )}
             </Container>
 
             <ModalComponent
@@ -833,11 +858,11 @@ const AdminDashboard = () => {
                 }
                 footer={
                     <>
-                        <Button variant="secondary" onClick={handleCloseModal}>
-                            Cancelar
-                        </Button>
                         <Button variant="primary" onClick={handleSaveEmpresa} disabled={!isModified}>
                             {editMode ? 'Salvar' : 'Adicionar'}
+                        </Button>
+                        <Button variant="secondary" onClick={handleCloseModal}>
+                            Cancelar
                         </Button>
                     </>
                 }
@@ -850,11 +875,11 @@ const AdminDashboard = () => {
                 body={`Tem certeza que deseja deletar a empresa ${empresaToDelete?.nome}?`}
                 footer={
                     <>
+                        <Button variant="danger" className="w-100" onClick={handleDeleteEmpresa}>
+                            Deletar
+                        </Button>
                         <Button variant="secondary" onClick={handleCloseDeleteModal}>
                             Cancelar
-                        </Button>
-                        <Button variant="danger" onClick={handleDeleteEmpresa}>
-                            Deletar
                         </Button>
                     </>
                 }
@@ -867,11 +892,11 @@ const AdminDashboard = () => {
                 body={`Tem certeza que deseja ${empresaToDisable?.isDisabled ? 'habilitar' : 'desabilitar'} a empresa ${empresaToDisable?.nome}?`}
                 footer={
                     <>
+                        <Button variant="outline-dark" className="w-100" onClick={handleToggleDisableEmpresa}>
+                            {empresaToDisable?.isDisabled ? 'Habilitar' : 'Desabilitar'}
+                        </Button>
                         <Button variant="secondary" onClick={handleCloseDisableModal}>
                             Cancelar
-                        </Button>
-                        <Button variant="outline-dark" onClick={handleToggleDisableEmpresa}>
-                            {empresaToDisable?.isDisabled ? 'Habilitar' : 'Desabilitar'}
                         </Button>
                     </>
                 }
@@ -896,35 +921,6 @@ const AdminDashboard = () => {
                     </Button>
                 }
             />
-
-            <ModalComponent
-                show={showFilterModal}
-                handleClose={handleCloseFilterModal}
-                title="Filtros"
-                body={
-                    <Form>
-                        <Form.Group>
-                            <Form.Label>Status</Form.Label>
-                            <Form.Control as="select" value={filterStatus} onChange={handleFilterChange}>
-                                <option value="">Todos</option>
-                                <option value="active">Ativo</option>
-                                <option value="inactive">Inativo</option>
-                            </Form.Control>
-                        </Form.Group>
-                    </Form>
-                }
-                footer={
-                    <>
-                        <Button variant="secondary" onClick={handleCloseFilterModal}>
-                            Cancelar
-                        </Button>
-                        <Button variant="primary" onClick={applyFilter} disabled={!isFilterModified}>
-                            Aplicar
-                        </Button>
-                    </>
-                }
-            />
-
             <ToastContainer />
         </div>
     );
