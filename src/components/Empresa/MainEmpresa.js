@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './MainEmpresa.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleUser } from '@fortawesome/free-solid-svg-icons';
-import axios from 'axios';
+import api from '../../services/axiosConfig';
 
 const MainEmpresa = () => {
   const [companyName, setCompanyName] = useState('');
@@ -12,7 +12,7 @@ const MainEmpresa = () => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const companyResponse = await axios.get('http://localhost:5000/api/company/me', {
+          const companyResponse = await api.get(`${process.env.REACT_APP_API_URL}/api/company/me`, {
             headers: {
               Authorization: `Bearer ${token}`
             }

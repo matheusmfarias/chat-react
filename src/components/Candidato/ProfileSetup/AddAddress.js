@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './AddAddress.css';
 import InputVerificado from '../../Inputs/InputVerificado';
-import axios from 'axios';
+import api from '../../../services/axiosConfig';
 
 const AddAddress = ({ onNext, onBack }) => {
     const [addressData, setAddressData] = useState(() => {
@@ -31,7 +31,7 @@ const AddAddress = ({ onNext, onBack }) => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-            await axios.post('http://localhost:5000/api/user/address', addressData, {
+            await api.post(`${process.env.REACT_APP_API_URL}/api/user/address`, addressData, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             onNext();

@@ -2,9 +2,8 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleDown, faAngleUp, faBars } from '@fortawesome/free-solid-svg-icons';
 import logo from '../../assets/images/logo-aci-transparente.png';
-import '../../styles/global.css';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import api from './../../services/axiosConfig';
 
 const Button = React.forwardRef(({ children, onClick, className, isActive }, ref) => (
     <button ref={ref} className={`${className} ${isActive ? 'active' : ''}`} onClick={onClick}>
@@ -21,29 +20,32 @@ const HeaderEmpresa = () => {
     const buttonRef = useRef(null);
 
     useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            navigate('/', { replace: true });
+            return;
+        }
+
         if (!userName) {
             const fetchData = async () => {
                 try {
-                    const token = localStorage.getItem('token');
-                    if (token) {
-                        const response = await axios.get('http://localhost:5000/api/company/me', {
-                            headers: {
-                                Authorization: `Bearer ${token}`
-                            }
-                        });
-                        const fetchedUserName = response.data.nome;
-                        setUserName(fetchedUserName);
-                        sessionStorage.setItem('userName', fetchedUserName); // Armazena o nome na sessão
-                    } else {
-                        console.error('No token found');
-                    }
+                    const response = await api.get(`${process.env.REACT_APP_API_URL}/api/company/me`, {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    });
+                    const fetchedUserName = response.data.nome;
+                    setUserName(fetchedUserName);
+                    sessionStorage.setItem('userName', fetchedUserName); // Armazena o nome na sessão
                 } catch (error) {
                     console.error('Error fetching user data:', error);
+                    // Redireciona para a página inicial se houver erro ao buscar os dados (token inválido, etc.)
+                    navigate('/', { replace: true });
                 }
             };
             fetchData();
         }
-    }, [userName]);
+    }, [userName, navigate]);
 
     const toggleLoginOptions = useCallback(() => {
         setIsLoginActive(prevState => !prevState);
@@ -52,7 +54,7 @@ const HeaderEmpresa = () => {
     const handleLogout = () => {
         localStorage.removeItem('token');
         sessionStorage.removeItem('userName'); // Remove o nome da sessão ao fazer logout
-        navigate('/', { replace: true });
+        navigate('/', { replace: true }); // Redireciona para a página inicial após o logout
     };
 
     const toggleMenu = () => {
@@ -92,9 +94,6 @@ const HeaderEmpresa = () => {
 
                     {isLoginActive && (
                         <div className="opcoes-usuario">
-                            <Link to="/config-empresa" className="link">
-                                <Button className="opcao-usuario">Perfil</Button>
-                            </Link>
                             <Button className="opcao-usuario" onClick={handleLogout}>Sair</Button>
                         </div>
                     )}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import api from '../../../services/axiosConfig';
 import HeaderCandidato from "../HeaderCandidato/HeaderCandidato";
 import { Container, Row, Col, Card, Spinner, InputGroup, Form, Button, Pagination } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -18,7 +18,7 @@ const InscricoesCandidato = () => {
             setLoading(true);
             try {
                 const token = localStorage.getItem("token");
-                const response = await axios.get('http://localhost:5000/api/user/applications', {
+                const response = await api.get(`${process.env.REACT_APP_API_URL}/api/user/applications`, {
                     headers: { Authorization: `Bearer ${token}` },
                     params: {
                         page: currentPage,

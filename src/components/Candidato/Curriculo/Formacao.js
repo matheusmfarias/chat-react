@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useCallback } from 'react';
+import api from '../../../services/axiosConfig';
 import { Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
@@ -28,9 +28,9 @@ const Formacao = ({ formacoes, setFormacoes }) => {
         'Tecnólogo', 'Graduação', 'Pós-graduação', 'Mestrado', 'Doutorado'
     ];
 
-    const fetchFormacao = async () => {
+    const fetchFormacao = useCallback(async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/user/formacao', {
+            const response = await api.get(`${process.env.REACT_APP_API_URL}/api/user/formacao`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             setFormacoes(Array.isArray(response.data) ? response.data : []);
@@ -39,15 +39,15 @@ const Formacao = ({ formacoes, setFormacoes }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [setFormacoes]);
 
     useEffect(() => {
         fetchFormacao();
-    }, []);
+    }, [fetchFormacao]);
 
     const handleAddFormacao = async () => {
         try {
-            await axios.post('http://localhost:5000/api/user/formacao', newFormacao, {
+            await api.post(`${process.env.REACT_APP_API_URL}/api/user/formacao`, newFormacao, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             fetchFormacao();
@@ -83,7 +83,7 @@ const Formacao = ({ formacoes, setFormacoes }) => {
     const handleSaveEdit = async (index) => {
         const currentFormacao = formacoes[index];
         try {
-            await axios.put(`http://localhost:5000/api/user/formacao/${currentFormacao._id}`, currentFormacao, {
+            await api.put(`${process.env.REACT_APP_API_URL}/api/user/formacao/${currentFormacao._id}`, currentFormacao, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             fetchFormacao();
@@ -113,7 +113,7 @@ const Formacao = ({ formacoes, setFormacoes }) => {
     const handleDeleteFormacao = async (index) => {
         const currentFormacao = formacoes[index];
         try {
-            await axios.delete(`http://localhost:5000/api/user/formacao/${currentFormacao._id}`, {
+            await api.delete(`${process.env.REACT_APP_API_URL}/api/user/formacao/${currentFormacao._id}`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             fetchFormacao();

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from 'axios';
+import api from '../../services/axiosConfig';
 import logo from '../../assets/images/logo-aci-transparente.png';
 import SenhaInput from "../SenhaInput/SenhaInput";
 import './Login.css';
@@ -15,14 +15,9 @@ const LoginEmpresa = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/login-empresa', { email, senha });
+            const response = await api.post(`${process.env.REACT_APP_API_URL}/api/auth/login-empresa`, { email, senha });
 
-            const { token, role, isDisabled } = response.data;
-
-            if (isDisabled) {
-                setErroLogin('Conta desabilitada. Entre em contato com o suporte.');
-                return;
-            }
+            const { token, role } = response.data;
 
             // Armazena o token no localStorage
             localStorage.setItem('token', token);

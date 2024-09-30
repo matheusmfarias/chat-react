@@ -28,8 +28,8 @@
     transition: 0.3s;
 }
 
-.senha-input input:focus + label,
-.senha-input input.has-value + label {
+.senha-input input:focus+label,
+.senha-input input.has-value+label {
     background-color: #fff;
     color: #1f5291;
     translate: 2px -36px;
@@ -67,4 +67,14 @@
 
 .listaRequisitos li span {
     margin-left: 10px;
+}
+
+@media (max-width: 605px) {
+    .senha-input label {
+        font-size: 12px;
+    }
+
+    .senha-input {
+        margin-top: 4px;
+    }
 }

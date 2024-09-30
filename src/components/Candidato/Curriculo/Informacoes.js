@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import axios from 'axios';
+import api from '../../../services/axiosConfig';
 import { Spinner } from 'react-bootstrap';
 import './Informacoes.css';
 
@@ -21,7 +21,7 @@ const Informacoes = () => {
     useEffect(() => {
         const fetchInformacoes = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/user/informacoes', {
+                const response = await api.get(`${process.env.REACT_APP_API_URL}/api/user/informacoes`, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
                 setInformacoes(response.data);
@@ -49,7 +49,7 @@ const Informacoes = () => {
     const handleAddTag = useCallback(async (type, value) => {
         try {
             const item = { [fieldMap[type]]: value };
-            await axios.post(`http://localhost:5000/api/user/${type}`, item, {
+            await api.post(`${process.env.REACT_APP_API_URL}/api/user/${type}`, item, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
 
@@ -66,7 +66,7 @@ const Informacoes = () => {
     const handleRemoveTag = useCallback(async (type, value) => {
         try {
             const item = { [fieldMap[type]]: value };
-            await axios.delete(`http://localhost:5000/api/user/${type}`, {
+            await api.delete(`${process.env.REACT_APP_API_URL}/api/user/${type}`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
                 data: item
             });

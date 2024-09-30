@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import "./Cadastro.css";
-import axios from 'axios';
+import api from '../../services/axiosConfig';
 import SenhaInput from "../SenhaInput/SenhaInput";
 import useFormattedCPF, { validarCPF } from '../../hooks/useFormattedCPF';
 import useFormattedNome from '../../hooks/useFormattedNome';
@@ -82,7 +82,11 @@ const Cadastro = ({ onRegister }) => {
         }
 
         try {
-            await axios.post('http://localhost:5000/api/auth/register', { nome, sobrenome, ...userData, cpf });
+            await api.post(`${process.env.REACT_APP_API_URL}/api/auth/register`, { nome, sobrenome, ...userData, cpf });
+
+            // Armazene o e-mail no LocalStorage
+            localStorage.setItem('email', userData.email);
+
             onRegister();
             navigate('/verificacao-token', { state: { email: userData.email } });
         } catch (error) {

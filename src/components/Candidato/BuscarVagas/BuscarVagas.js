@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import HeaderCandidato from "../HeaderCandidato/HeaderCandidato";
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Row, Col, Card, Container, Button, Form, InputGroup, Spinner } from "react-bootstrap";
@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBriefcase, faBuilding, faChevronLeft, faChevronRight, faHome, faLaptopHouse, faLocationDot, faMoneyBillWave, faUpRightFromSquare, faWheelchair, faSearch, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import './BuscarVagas.css';
 import axios from "axios";
+import api from "../../../services/axiosConfig";
 
 const BuscarVagas = () => {
     const navigate = useNavigate();
@@ -14,7 +15,6 @@ const BuscarVagas = () => {
     const [loading, setLoading] = useState(true);
     const [loadingDetails, setLoadingDetails] = useState(false);
     const keyword = location.state?.keyword || '';
-    const results = useMemo(() => location.state?.results || [], [location.state]);
     const [selectedJob, setSelectedJob] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
@@ -32,25 +32,23 @@ const BuscarVagas = () => {
     const [cities, setCities] = useState([]);
 
     useEffect(() => {
-        // Realiza a busca no backend apenas se o keyword não for vazio
         if (keyword) {
             const fetchJobs = async () => {
                 try {
                     const token = localStorage.getItem('token');
-                    const response = await axios.get(`http://localhost:5000/api/jobsSearch?keyword=${keyword}`, {
+                    const response = await api.get(`${process.env.REACT_APP_API_URL}/api/jobsSearch?keyword=${keyword}`, {
                         headers: { Authorization: `Bearer ${token}` }
                     });
-                    setJobs(response.data);
+                    setJobs(response.data);  // Armazena todos os resultados em 'jobs'
                 } catch (error) {
                     console.error('Erro ao buscar vagas:', error);
                 } finally {
                     setLoading(false);
                 }
             };
-
-            fetchJobs();  // Executa a busca no backend
+            fetchJobs();
         }
-    }, [keyword]);  // O useEffect é disparado apenas quando o keyword muda
+    }, [keyword]);
 
     // Função para buscar estados via API do IBGE
     const fetchStates = useCallback(async () => {
@@ -92,12 +90,11 @@ const BuscarVagas = () => {
     // Função para buscar vagas com base nos filtros de cargo e filtros aplicados
     const handleSearchByJob = useCallback(async () => {
         const params = new URLSearchParams();
-
-        // Busca por cargo (termo digitado)
+    
+        // Aplicar filtros aos parâmetros da busca
         if (searchTerm.trim()) {
             params.append('keyword', searchTerm);
         }
-
         if (filters.modality.length > 0) filters.modality.forEach(m => params.append('modality', m));
         if (filters.type.length > 0) filters.type.forEach(t => params.append('type', t));
         if (filters.pcd) params.append('pcd', filters.pcd);
@@ -106,20 +103,20 @@ const BuscarVagas = () => {
         } else if (selectedStateFilter) {
             params.append('location', selectedStateFilter);
         }
-
+    
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get(`http://localhost:5000/api/jobsSearch?${params.toString()}`, {
+            const response = await api.get(`${process.env.REACT_APP_API_URL}/api/jobsSearch?${params.toString()}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            navigate('/buscar-vagas', { state: { results: response.data } });
+            setJobs(response.data);  // Atualiza 'jobs' com os resultados filtrados
         } catch (error) {
             console.error('Erro ao buscar vagas:', error);
         } finally {
             setLoading(false);
         }
-    }, [searchTerm, selectedStateFilter, selectedCityFilter, filters, navigate]);
+    }, [searchTerm, selectedStateFilter, selectedCityFilter, filters]);
 
     // Atualização na busca enquanto o usuário digita
     useEffect(() => {
@@ -143,16 +140,16 @@ const BuscarVagas = () => {
     };
 
     useEffect(() => {
-        if (results.length > 0) {
-            setSelectedJob(results[0]);
+        if (jobs.length > 0) {
+            setSelectedJob(jobs[0]);
         }
-    }, [results]);
+    }, [jobs]);
 
     const handleCardClick = async (job) => {
         setLoadingDetails(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get(`http://localhost:5000/api/jobsSearch/${job._id}`, {
+            const response = await api.get(`${process.env.REACT_APP_API_URL}/api/jobsSearch/${job._id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setSelectedJob(response.data);
@@ -164,7 +161,7 @@ const BuscarVagas = () => {
     };
 
 
-    const totalPages = Math.ceil(results.length / itemsPerPage);
+    const totalPages = Math.ceil(jobs.length / itemsPerPage);
 
     const handlePageChange = (direction) => {
         if (direction === 'next' && currentPage < totalPages) {
@@ -176,12 +173,12 @@ const BuscarVagas = () => {
 
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const currentItems = results.slice(startIndex, endIndex);
+    const currentItems = jobs.slice(startIndex, endIndex);
 
     useEffect(() => {
-        const firstJobOnPage = results.slice(startIndex, startIndex + itemsPerPage)[0];
+        const firstJobOnPage = jobs.slice(startIndex, startIndex + itemsPerPage)[0];
         setSelectedJob(firstJobOnPage);
-    }, [currentPage, results, itemsPerPage]);
+    }, [currentPage, jobs, itemsPerPage, startIndex]);    
 
     // Funções para resetar filtros individualmente
     const resetStateFilter = () => {

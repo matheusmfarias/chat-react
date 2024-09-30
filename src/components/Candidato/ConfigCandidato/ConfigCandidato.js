@@ -4,7 +4,7 @@ import HeaderCandidato from '../HeaderCandidato/HeaderCandidato';
 import { Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleUser, faPencil } from '@fortawesome/free-solid-svg-icons';
-import axios from 'axios';
+import api from '../../../services/axiosConfig';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -55,7 +55,7 @@ const Config = () => {
         const fetchUserData = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await axios.get('http://localhost:5000/api/user/candidato', {
+                const response = await api.get(`${process.env.REACT_APP_API_URL}/api/user/candidato`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -89,8 +89,8 @@ const Config = () => {
                 setUserData(userData);  // Define o estado atual
 
                 if (user.profilePicture) {
-                    const profilePicUrl = `http://localhost:5000${user.profilePicture}`;
-                    setPreview(profilePicUrl);
+                    const profilePicUrl = `${process.env.REACT_APP_API_URL}${user.profilePicture}`;
+                    setPreview(profilePicUrl);  // Salva a URL completa para preview
                 }
 
                 setInitialUserData(userData);  // Salva o estado inicial para comparação
@@ -223,7 +223,7 @@ const Config = () => {
                 formData.append('profilePicture', userData.profilePicture);
             }
 
-            const response = await axios.put('http://localhost:5000/api/user/candidato', formData, {
+            const response = await api.put(`${process.env.REACT_APP_API_URL}/api/user/candidato`, formData, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'
@@ -231,7 +231,9 @@ const Config = () => {
             });
 
             if (response.data.profilePicture) {
-                setPreview(`http://localhost:5000${response.data.profilePicture}`);
+                // Atualiza o preview com o caminho da nova imagem
+                const updatedProfilePicUrl = `${process.env.REACT_APP_API_URL}${response.data.profilePicture}`;
+                setPreview(updatedProfilePicUrl);
             }
 
             notify('Dados atualizados com sucesso!', 'success');

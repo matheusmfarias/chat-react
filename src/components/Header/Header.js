@@ -3,7 +3,7 @@ import './Header.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleDown, faAngleUp } from '@fortawesome/free-solid-svg-icons';
 import logo from '../../assets/images/logo-aci-transparente.png';
-import '../../styles/global.css';
+
 import { Link } from 'react-router-dom';
 
 const Button = ({ children, onClick, className, isActive }) => (

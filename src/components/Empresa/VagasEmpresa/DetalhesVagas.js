@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Row, Col, Button, Card } from 'react-bootstrap';
+import { Container, Col, Button, Card } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBriefcase, faCalendarDays, faEye, faSackDollar, faWheelchair } from '@fortawesome/free-solid-svg-icons';
 import useFormattedDate from '../../../hooks/useFormattedDate';

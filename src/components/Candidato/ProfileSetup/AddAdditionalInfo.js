@@ -3,7 +3,7 @@ import './AddAdditionalInfo.css';
 import PhoneInput from '../../Inputs/PhoneInput';
 import SelectVerificado from '../../Inputs/SelectVerificado';
 import InputVerificado from '../../Inputs/InputVerificado';
-import axios from 'axios';
+import api from '../../../services/axiosConfig';
 
 const AddAdditionalInfo = ({ onComplete, onBack }) => {
     const [userData, setUserData] = useState(() => {
@@ -93,13 +93,11 @@ const AddAdditionalInfo = ({ onComplete, onBack }) => {
             cnh: userData.cnh === 'Tenho', // Converte para booleano: true para "Tenho" e false para "Não tenho"
         };
     
-        console.log("Dados enviados:", dataToSend); // Verificar os dados corrigidos
-    
         try {
-            await axios.post('http://localhost:5000/api/user/additional-info', dataToSend, {
+            await api.post(`${process.env.REACT_APP_API_URL}/api/user/additional-info`, dataToSend, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
-            await axios.post('http://localhost:5000/api/user/complete-setup', {}, {
+            await api.post(`${process.env.REACT_APP_API_URL}/api/user/complete-setup`, {}, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             const token = localStorage.getItem('token');

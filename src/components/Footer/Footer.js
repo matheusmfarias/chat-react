@@ -4,7 +4,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { faLocationDot, faPhone } from '@fortawesome/free-solid-svg-icons';
 import logo from '../../assets/images/logo-footer-aci.png';
-import '../../styles/global.css';
 
 function Footer() {
     return (

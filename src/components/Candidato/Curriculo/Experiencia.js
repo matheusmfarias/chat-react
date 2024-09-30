@@ -1,6 +1,6 @@
 // Import the necessary functions and hooks
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useCallback } from 'react';
+import api from '../../../services/axiosConfig';
 import { Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
@@ -30,9 +30,9 @@ const Experiencia = ({ experiencias, setExperiencias }) => {
         anos.push(i);
     }
 
-    const fetchExperiences = async () => {
+    const fetchExperiences = useCallback(async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/user/experiences', {
+            const response = await api.get(`${process.env.REACT_APP_API_URL}/api/user/experiences`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             setExperiencias(Array.isArray(response.data) ? response.data : []);
@@ -41,15 +41,15 @@ const Experiencia = ({ experiencias, setExperiencias }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [setExperiencias]);
 
     useEffect(() => {
         fetchExperiences();
-    }, []);
+    }, [fetchExperiences]);
 
     const handleAddExperiencia = async () => {
         try {
-            await axios.post('http://localhost:5000/api/user/experiences', newExperiencia, {
+            await api.post(`${process.env.REACT_APP_API_URL}/api/user/experiences`, newExperiencia, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             fetchExperiences();
@@ -88,7 +88,7 @@ const Experiencia = ({ experiencias, setExperiencias }) => {
     const handleSaveEdit = async (index) => {
         const experiencia = experiencias[index];
         try {
-            await axios.put(`http://localhost:5000/api/user/experiences/${experiencia._id}`, experiencia, {
+            await api.put(`${process.env.REACT_APP_API_URL}/api/user/experiences/${experiencia._id}`, experiencia, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             fetchExperiences();
@@ -118,7 +118,7 @@ const Experiencia = ({ experiencias, setExperiencias }) => {
     const handleDeleteExperiencia = async (index) => {
         const experiencia = experiencias[index];
         try {
-            await axios.delete(`http://localhost:5000/api/user/experiences/${experiencia._id}`, {
+            await api.delete(`${process.env.REACT_APP_API_URL}/api/user/experiences/${experiencia._id}`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             fetchExperiences();

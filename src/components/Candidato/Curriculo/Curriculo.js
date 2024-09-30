@@ -6,7 +6,7 @@ import Experiencia from './Experiencia';
 import Formacao from './Formacao';
 import Informacoes from './Informacoes';
 import CurriculoTemplate from './CurriculoTemplate';
-import axios from 'axios';
+import api from '../../../services/axiosConfig';
 import ReactDOM from 'react-dom';
 
 const Curriculo = () => {
@@ -18,7 +18,7 @@ const Curriculo = () => {
     const fetchUserInfo = useCallback(async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:5000/api/user/candidato', {
+            const response = await api.get(`${process.env.REACT_APP_API_URL}/api/user/candidato`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const user = response.data;
@@ -32,7 +32,7 @@ const Curriculo = () => {
                 telefoneRecado: user.additionalInfo?.backupPhone || '',
                 cnh: user.additionalInfo?.cnh || 'Não tenho',
                 tipoCnh: user.additionalInfo?.cnhTypes || [],
-                fotoPerfil: `http://localhost:5000${user.profilePicture}` || '',
+                fotoPerfil: `${process.env.REACT_APP_API_URL}${user.profilePicture}` || '',
                 habilidadesProfissionais: user.habilidadesProfissionais || [],
                 habilidadesComportamentais: user.habilidadesComportamentais || [],
                 cursos: user.cursos || [],

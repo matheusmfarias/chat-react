@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import api from '../../../services/axiosConfig';
 import axios from 'axios';
 import { Table, Row, Col, Button, InputGroup, Form, Spinner, Pagination, Container } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -91,7 +92,7 @@ const VagasEmpresa = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get(`http://localhost:5000/api/jobs?${params.toString()}`, {
+            const response = await api.get(`${process.env.REACT_APP_API_URL}/api/jobs?${params.toString()}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -114,7 +115,7 @@ const VagasEmpresa = () => {
             const token = localStorage.getItem('token');
             if (token) {
                 try {
-                    const response = await axios.get('http://localhost:5000/api/jobs', {
+                    const response = await api.get(`${process.env.REACT_APP_API_URL}/api/jobs`, {
                         headers: {
                             Authorization: `Bearer ${token}`
                         }
@@ -260,7 +261,7 @@ const VagasEmpresa = () => {
             try {
                 jobData.location = `${selectedCityModal}, ${selectedStateModal}`;
                 if (isEditMode) {
-                    await axios.put(`http://localhost:5000/api/jobs/${editJobId}`, jobData, {
+                    await api.put(`${process.env.REACT_APP_API_URL}/api/jobs/${editJobId}`, jobData, {
                         headers: {
                             Authorization: `Bearer ${token}`
                         }
@@ -268,7 +269,7 @@ const VagasEmpresa = () => {
                     setJobs(prevJobs => prevJobs.map(job => job._id === editJobId ? jobData : job));
                     notify('Vaga atualizada com sucesso!', 'success');
                 } else {
-                    const response = await axios.post('http://localhost:5000/api/jobs', jobData, {
+                    const response = await api.post(`${process.env.REACT_APP_API_URL}/api/jobs`, jobData, {
                         headers: {
                             Authorization: `Bearer ${token}`
                         }
@@ -292,7 +293,7 @@ const VagasEmpresa = () => {
         setLoading(true);
         if (token) {
             try {
-                await axios.delete(`http://localhost:5000/api/jobs/${id}`, {
+                await api.delete(`${process.env.REACT_APP_API_URL}/api/jobs/${id}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -335,7 +336,7 @@ const VagasEmpresa = () => {
                     try {
                         const updatedJob = { ...job, status: !job.status };
 
-                        await axios.put(`http://localhost:5000/api/jobs/${job._id}`, updatedJob, {
+                        await api.put(`${process.env.REACT_APP_API_URL}/api/jobs/${job._id}`, updatedJob, {
                             headers: {
                                 Authorization: `Bearer ${token}`
                             }

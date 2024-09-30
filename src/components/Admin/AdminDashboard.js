@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../services/axiosConfig';
 import { Button, Form, Table, Navbar, Nav, Container, Row, Col, InputGroup, Pagination, Breadcrumb, Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faToggleOn, faToggleOff, faPlus, faSearch, faSortDown, faSortUp, faSignOutAlt, faEye } from '@fortawesome/free-solid-svg-icons';
@@ -22,7 +22,7 @@ const AdminDashboard = () => {
     const [showDisableModal, setShowDisableModal] = useState(false);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
-    const [currentEmpresa, setCurrentEmpresa] = useState({ nome: '', cnpj: '', setor: '', email: '', senha: '', isDisabled: false });
+    const [currentEmpresa, setCurrentEmpresa] = useState({ nome: '', cnpj: '', setor: '', email: '', senha: '', status: true });
     const [empresaToDelete, setEmpresaToDelete] = useState(null);
     const [empresaToDisable, setEmpresaToDisable] = useState(null);
     const [formattedCnpj, setFormattedCnpj] = useFormattedCNPJ('');
@@ -52,7 +52,7 @@ const AdminDashboard = () => {
     const fetchEmpresas = useCallback(async (page = 1, search = '', filter = '') => {
         setLoading(true);
         try {
-            const response = await axios.get('http://localhost:5000/api/company', {
+            const response = await api.get(`${process.env.REACT_APP_API_URL}/api/company`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
                 params: { page, search, filterStatus: filter, limit: itemsPerPage, sortColumn, sortDirection }
             });
@@ -69,7 +69,7 @@ const AdminDashboard = () => {
     const fetchCandidatos = useCallback(async (page = 1, search = '') => {
         setLoading(true);
         try {
-            const response = await axios.get('http://localhost:5000/api/user/candidatos', {
+            const response = await api.get(`${process.env.REACT_APP_API_URL}/api/user/candidatos`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
                 params: { page, search, limit: itemsPerPage }
             });
@@ -94,7 +94,7 @@ const AdminDashboard = () => {
         setLoading(true);
         try {
             setSelectedCompanyId(companyId); // Armazena o ID da empresa selecionada no estado
-            const response = await axios.get(`http://localhost:5000/api/jobs/${companyId}/jobs`, {
+            const response = await api.get(`${process.env.REACT_APP_API_URL}/api/jobs/${companyId}/jobs`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
                 params: { page, limit: itemsPerPage }
             });
@@ -114,7 +114,7 @@ const AdminDashboard = () => {
         setLoading(true);
         try {
             setSelectedJobId(jobId); // Armazena o ID da vaga selecionada
-            const response = await axios.get(`http://localhost:5000/api/jobs/${jobId}/candidates`, {
+            const response = await api.get(`${process.env.REACT_APP_API_URL}/api/jobs/${jobId}/candidates`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
                 params: { page, limit: itemsPerPage }
             });
@@ -141,7 +141,7 @@ const AdminDashboard = () => {
         setIsModified(true);
     };
 
-    const handleShowModal = (empresa = { nome: '', cnpj: '', setor: '', email: '', isDisabled: false }) => {
+    const handleShowModal = (empresa = { nome: '', cnpj: '', setor: '', email: '', status: true }) => {
         // Remova a senha do objeto empresa antes de setar o estado
         const { senha, ...empresaSemSenha } = empresa;
         setCurrentEmpresa({ ...empresaSemSenha, senha: '' });  // Sete a senha como vazia
@@ -153,7 +153,7 @@ const AdminDashboard = () => {
 
     const handleCloseModal = () => {
         setShowModal(false);
-        setCurrentEmpresa({ nome: '', cnpj: '', setor: '', email: '', senha: '', isDisabled: false });
+        setCurrentEmpresa({ nome: '', cnpj: '', setor: '', email: '', senha: '', status: true });
         setFormattedCnpj('');
     };
 
@@ -179,7 +179,7 @@ const AdminDashboard = () => {
 
     const handleCloseDetailsModal = () => {
         setShowDetailsModal(false);
-        setCurrentEmpresa({ nome: '', cnpj: '', setor: '', email: '', senha: '', isDisabled: false });
+        setCurrentEmpresa({ nome: '', cnpj: '', setor: '', email: '', senha: '', status: true });
         setFormattedCnpj('');
     };
 
@@ -191,7 +191,7 @@ const AdminDashboard = () => {
                 cnpj: formattedCnpj.replace(/[^\d]+/g, ''), // Remove pontuações antes de enviar
                 setor: currentEmpresa.setor,
                 email: currentEmpresa.email,
-                isDisabled: currentEmpresa.isDisabled
+                status: currentEmpresa.status
             };
 
             if (currentEmpresa.senha) {
@@ -221,19 +221,15 @@ const AdminDashboard = () => {
                 setLoading(false);
                 return;
             }
-
-            console.log("Enviando dados da empresa:", empresaData);
-            let response;
             if (editMode) {
-                response = await axios.put(`http://localhost:5000/api/company/${currentEmpresa._id}`, empresaData, {
+                await api.put(`${process.env.REACT_APP_API_URL}/api/company/${currentEmpresa._id}`, empresaData, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
             } else {
-                response = await axios.post('http://localhost:5000/api/company/add', empresaData, {
+                await api.post(`${process.env.REACT_APP_API_URL}/api/company/add`, empresaData, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
             }
-            console.log("Resposta do servidor:", response);
             notify(editMode ? 'Empresa atualizada com sucesso!' : 'Empresa adicionada com sucesso!', 'success');
             fetchEmpresas(currentPage, searchTerm);
             handleCloseModal();
@@ -253,7 +249,7 @@ const AdminDashboard = () => {
     const handleDeleteEmpresa = async () => {
         setLoading(true);
         try {
-            await axios.delete(`http://localhost:5000/api/company/${empresaToDelete._id}`, {
+            await api.delete(`${process.env.REACT_APP_API_URL}/api/company/${empresaToDelete._id}`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
 
@@ -278,13 +274,13 @@ const AdminDashboard = () => {
     const handleToggleDisableEmpresa = async () => {
         setLoading(true);
         try {
-            const updatedEmpresa = { ...empresaToDisable, isDisabled: !empresaToDisable.isDisabled };
-            await axios.put(`http://localhost:5000/api/company/${empresaToDisable._id}`, updatedEmpresa, {
+            const updatedEmpresa = { ...empresaToDisable, status: !empresaToDisable.status };
+            await api.put(`${process.env.REACT_APP_API_URL}/api/company/${empresaToDisable._id}`, updatedEmpresa, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             fetchEmpresas(currentPage, searchTerm);
             handleCloseDisableModal();
-            notify(`Empresa ${updatedEmpresa.isDisabled ? 'desabilitada' : 'habilitada'} com sucesso!`, 'success');
+            notify(`Empresa ${updatedEmpresa.status ? 'habilitada' : 'desabilitada'} com sucesso!`, 'success');
         } catch (error) {
             console.error('Erro ao desabilitar/habilitar empresa:', error);
             notify('Erro ao desabilitar/habilitar empresa!', 'error');
@@ -440,9 +436,9 @@ const AdminDashboard = () => {
                                         <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
                                     )}
                                 </th>
-                                <th onClick={() => handleSort('isDisabled')}>
+                                <th onClick={() => handleSort('status')}>
                                     Status
-                                    {sortColumn === 'isDisabled' && (
+                                    {sortColumn === 'status' && (
                                         <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
                                     )}
                                 </th>
@@ -456,12 +452,12 @@ const AdminDashboard = () => {
                                     <td>{formatCNPJ(empresa.cnpj)}</td>
                                     <td>{empresa.setor}</td>
                                     <td>{empresa.email}</td>
-                                    <td>{empresa.isDisabled ? 'Inativa' : 'Ativa'}</td>
+                                    <td>{empresa.status ? 'Ativa' : 'Inativa'}</td>
                                     <td>
                                         <div className="btn-group">
                                             <FontAwesomeIcon icon={faEye} className="icon-btn" onClick={() => fetchJobsByCompany(empresa._id)} title="Visualizar vagas" />
                                             <FontAwesomeIcon icon={faEdit} className="icon-btn" onClick={() => handleShowModal(empresa)} title="Editar" />
-                                            <FontAwesomeIcon icon={empresa.isDisabled ? faToggleOff : faToggleOn} className="icon-btn" onClick={() => handleShowDisableModal(empresa)} title={empresa.isDisabled ? 'Habilitar' : 'Desabilitar'} />
+                                            <FontAwesomeIcon icon={empresa.status ? faToggleOn : faToggleOff} className="icon-btn" onClick={() => handleShowDisableModal(empresa)} title={empresa.status ? 'Desabilitar' : 'Habilitar'} />
                                             <FontAwesomeIcon icon={faTrash} className="icon-btn" onClick={() => handleShowDeleteModal(empresa)} title="Excluir" />
                                         </div>
                                     </td>
@@ -653,7 +649,6 @@ const AdminDashboard = () => {
     const handleViewCurriculo = (candidatoId) => {
         const newWindow = window.open('', '', 'width=800,height=600');
         newWindow.document.write('<html><head><title>Currículo</title></head><body><div id="curriculo-template-root"></div></body></html>');
-        console.log(candidatoId);
         // Injetar link CSS do Bootstrap na nova janela
         const bootstrapLink = newWindow.document.createElement('link');
         bootstrapLink.rel = 'stylesheet';
@@ -669,7 +664,7 @@ const AdminDashboard = () => {
 
         newWindow.document.close();
 
-        axios.get(`http://localhost:5000/api/user/candidato/${candidatoId}`, {
+        api.get(`${process.env.REACT_APP_API_URL}/api/user/candidato/${candidatoId}`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         }).then(response => {
             const user = response.data;
@@ -682,7 +677,7 @@ const AdminDashboard = () => {
                 telefoneRecado: user.additionalInfo?.backupPhone || '',
                 cnh: user.additionalInfo?.cnh || 'Não tenho',
                 tipoCnh: user.additionalInfo?.cnhTypes || [],
-                fotoPerfil: `http://localhost:5000${user.profilePicture}` || '',
+                fotoPerfil: `${process.env.REACT_APP_API_URL}${user.profilePicture}` || '',
                 habilidadesProfissionais: user.habilidadesProfissionais || [],
                 habilidadesComportamentais: user.habilidadesComportamentais || [],
                 cursos: user.cursos || [],
@@ -746,29 +741,29 @@ const AdminDashboard = () => {
                 {/* Renderização condicional do Breadcrumb apenas para Empresas */}
                 {activeTab === 'empresas' && (
                     <Breadcrumb>
-                    <Breadcrumb.Item
-                        onClick={() => handleBreadcrumbClick('empresas')}
-                        style={{ cursor: 'pointer' }}
-                    >
-                        <span>Empresas</span>
-                    </Breadcrumb.Item>
-                
-                    {breadcrumb.includes('Vagas') && (
                         <Breadcrumb.Item
-                            onClick={() => handleBreadcrumbClick('vagas')}
+                            onClick={() => handleBreadcrumbClick('empresas')}
                             style={{ cursor: 'pointer' }}
                         >
-                            <span>Vagas</span>
+                            <span>Empresas</span>
                         </Breadcrumb.Item>
-                    )}
-                
-                    {breadcrumb.includes('Candidatos') && (
-                        <Breadcrumb.Item active style={{ cursor: 'default' }}>
-                            <span>Candidatos</span>
-                        </Breadcrumb.Item>
-                    )}
-                </Breadcrumb>
-                
+
+                        {breadcrumb.includes('Vagas') && (
+                            <Breadcrumb.Item
+                                onClick={() => handleBreadcrumbClick('vagas')}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                <span>Vagas</span>
+                            </Breadcrumb.Item>
+                        )}
+
+                        {breadcrumb.includes('Candidatos') && (
+                            <Breadcrumb.Item active style={{ cursor: 'default' }}>
+                                <span>Candidatos</span>
+                            </Breadcrumb.Item>
+                        )}
+                    </Breadcrumb>
+
                 )}
 
                 {/* Renderização condicional baseada no activeTab */}
@@ -842,15 +837,14 @@ const AdminDashboard = () => {
                                 name="senha"
                                 value={currentEmpresa.senha}
                                 onChange={handleInputChange}
-                                placeholder="Digite uma nova senha para alterar"
                             />
                         </Form.Group>
                         <Form.Group className='campos-empresa'>
                             <Form.Check
                                 type="checkbox"
-                                label="Inativa"
-                                name="isDisabled"
-                                checked={currentEmpresa.isDisabled}
+                                label="Status"
+                                name="status"
+                                checked={currentEmpresa.status}
                                 onChange={handleInputChange}
                             />
                         </Form.Group>
@@ -888,12 +882,12 @@ const AdminDashboard = () => {
             <ModalComponent
                 show={showDisableModal}
                 handleClose={handleCloseDisableModal}
-                title={empresaToDisable?.isDisabled ? 'Habilitar Empresa' : 'Desabilitar Empresa'}
-                body={`Tem certeza que deseja ${empresaToDisable?.isDisabled ? 'habilitar' : 'desabilitar'} a empresa ${empresaToDisable?.nome}?`}
+                title={empresaToDisable?.status ? 'Desabilitar Empresa' : 'Habilitar Empresa'}
+                body={`Tem certeza que deseja ${empresaToDisable?.status ? 'desabilitar' : 'habilitar'} a empresa ${empresaToDisable?.nome}?`}
                 footer={
                     <>
                         <Button variant="outline-dark" className="w-100" onClick={handleToggleDisableEmpresa}>
-                            {empresaToDisable?.isDisabled ? 'Habilitar' : 'Desabilitar'}
+                            {empresaToDisable?.status ? 'Desabilitar' : 'Habilitar'}
                         </Button>
                         <Button variant="secondary" onClick={handleCloseDisableModal}>
                             Cancelar
@@ -912,7 +906,7 @@ const AdminDashboard = () => {
                         <p><strong>CNPJ:</strong> {formatCNPJ(currentEmpresa.cnpj)}</p>
                         <p><strong>Setor:</strong> {currentEmpresa.setor}</p>
                         <p><strong>Email:</strong> {currentEmpresa.email}</p>
-                        <p><strong>Status:</strong> {currentEmpresa.isDisabled ? 'Inativa' : 'Ativa'}</p>
+                        <p><strong>Status:</strong> {currentEmpresa.status ? 'Ativa' : 'Inativa'}</p>
                     </>
                 }
                 footer={

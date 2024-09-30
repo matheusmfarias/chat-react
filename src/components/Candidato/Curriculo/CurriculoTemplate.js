@@ -25,7 +25,7 @@ const CurriculoTemplate = ({ experiencias = [], formacoes = [], informacoes = {}
         <Container className="curriculo-template">
             <Row className="mb-3">
                 <Col xs={3}>
-                    {fotoPerfil && fotoPerfil !== "undefined" && fotoPerfil !== "" && fotoPerfil !== "http://localhost:5000" ? (
+                    {fotoPerfil && fotoPerfil !== "undefined" && fotoPerfil !== "" && fotoPerfil !== `${process.env.REACT_APP_API_URL}` ? (
                         <Image src={fotoPerfil} roundedCircle className="profile-avatar" />
                     ) : (
                         <FontAwesomeIcon

@@ -3,7 +3,6 @@ import AddProfilePicture from './AddProfilePicture';
 import AddAddress from './AddAddress';
 import AddAdditionalInfo from './AddAdditionalInfo';
 import { useNavigate } from 'react-router-dom';
-import HeaderCandidato from '../HeaderCandidato/HeaderCandidato';
 
 const ProfileSetup = () => {
     const [step, setStep] = useState(() => {
@@ -44,7 +43,6 @@ const ProfileSetup = () => {
 
     return (
         <>
-            <HeaderCandidato />
             <div>
                 {renderStep()}
             </div>

@@ -5,7 +5,7 @@ import { Navigation, Pagination, Scrollbar } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/scrollbar';
-import axios from 'axios';
+import api from '../../../services/axiosConfig';
 import { Link } from 'react-router-dom';
 import useFormattedDate from '../../../hooks/useFormattedDate';
 import { Card, Col, Row } from 'react-bootstrap';
@@ -21,7 +21,7 @@ const CarouselEmpresa = () => {
             const token = localStorage.getItem('token'); // Certifique-se de que o token está definido
             if (token) {
                 try {
-                    const jobsResponse = await axios.get('http://localhost:5000/api/jobs', {
+                    const jobsResponse = await api.get(`${process.env.REACT_APP_API_URL}/api/jobs`, {
                         headers: {
                             Authorization: `Bearer ${token}`
                         }

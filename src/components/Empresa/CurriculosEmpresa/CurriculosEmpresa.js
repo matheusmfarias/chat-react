@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../../services/axiosConfig";
 import HeaderEmpresa from "../HeaderEmpresa";
 import { Spinner, Pagination, Row, Col, Card, Button, Form, InputGroup, Container } from "react-bootstrap";
 import { useParams, useNavigate } from "react-router-dom";
@@ -24,7 +24,7 @@ const CurriculosEmpresa = () => {
         const token = localStorage.getItem("token");
 
         // Chama a API passando o jobId e o termo de busca como parte da rota
-        const response = await axios.get(`http://localhost:5000/api/jobs/applications/${jobId}`, {
+        const response = await api.get(`${process.env.REACT_APP_API_URL}/api/jobs/applications/${jobId}`, {
           headers: { Authorization: `Bearer ${token}` },
           params: {
             page: currentPage,
@@ -126,7 +126,7 @@ const CurriculosEmpresa = () => {
                         <div className="d-flex align-items-center mb-3">
                           {user.profilePicture ? (
                             <img
-                              src={`http://localhost:5000${user.profilePicture}`}
+                              src={`${process.env.REACT_APP_API_URL}${user.profilePicture}`}
                               width={80}
                               height={80}
                               className="rounded-circle"

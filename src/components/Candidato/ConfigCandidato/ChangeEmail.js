@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './ChangeEmail.css';
-import axios from 'axios';
+import api from '../../../services/axiosConfig';
 import { useNavigate } from 'react-router-dom';
 import HeaderCandidato from '../HeaderCandidato/HeaderCandidato';
 import InputVerificado from '../../Inputs/InputVerificado';
@@ -19,7 +19,7 @@ const ChangeEmail = () => {
         const fetchCurrentEmail = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await axios.get('http://localhost:5000/api/user/candidato', {
+                const response = await api.get(`${process.env.REACT_APP_API_URL}/api/user/candidato`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -43,7 +43,7 @@ const ChangeEmail = () => {
             setNewEmail(value);
 
             try {
-                const response = await axios.post('http://localhost:5000/api/user/check-availability', {
+                const response = await api.post(`${process.env.REACT_APP_API_URL}/api/user/check-availability`, {
                     email: value
                 });
 
@@ -63,7 +63,7 @@ const ChangeEmail = () => {
         e.preventDefault();
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5000/api/user/change-email', { email: newEmail }, {
+            await api.post(`${process.env.REACT_APP_API_URL}/api/user/change-email`, { email: newEmail }, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }

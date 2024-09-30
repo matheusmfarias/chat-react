@@ -3,9 +3,8 @@ import './HeaderCandidato.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleDown, faAngleUp, faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
 import logo from '../../../assets/images/logo-aci-transparente.png';
-import '../../../styles/global.css';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../../services/axiosConfig';
 
 const Button = React.forwardRef(({ children, onClick, className, isActive }, ref) => (
     <button ref={ref} className={`${className} ${isActive ? 'active' : ''}`} onClick={onClick}>
@@ -20,27 +19,30 @@ const HeaderCandidato = () => {
     const buttonRef = useRef(null);
 
     useEffect(() => {
-        if (!userName) {
-            const token = localStorage.getItem('token');
-            if (token) {
-                axios.get('http://localhost:5000/api/user/candidato', {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                })
-                    .then(response => {
-                        const fetchedUserName = response.data.nome;
-                        setUserName(fetchedUserName);
-                        sessionStorage.setItem('userName', fetchedUserName); // Armazena o nome na sessão
-                    })
-                    .catch(error => {
-                        console.error('Error fetching user data:', error);
-                    });
-            } else {
-                console.error('No token found');
-            }
+        const token = localStorage.getItem('token');
+        if (!token) {
+            navigate('/', { replace: true });
+            return; // Impede que a execução continue
         }
-    }, [userName]);
+
+        if (!userName) {
+            api.get(`${process.env.REACT_APP_API_URL}/api/user/candidato`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+                .then(response => {
+                    const fetchedUserName = response.data.nome;
+                    setUserName(fetchedUserName);
+                    sessionStorage.setItem('userName', fetchedUserName); // Armazena o nome na sessão
+                })
+                .catch(error => {
+                    console.error('Error fetching user data:', error);
+                    // Se o token for inválido ou a chamada falhar, redireciona para a página inicial
+                    navigate('/', { replace: true });
+                });
+        }
+    }, [userName, navigate]);
 
     const [isLoginActive, setIsLoginActive] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -52,7 +54,7 @@ const HeaderCandidato = () => {
     const handleLogout = () => {
         localStorage.removeItem('token');
         sessionStorage.removeItem('userName'); // Remove o nome da sessão ao fazer logout
-        navigate('/', { replace: true });
+        navigate('/', { replace: true }); // Redireciona para a página inicial após o logout
     };
 
     const toggleMenu = () => {
@@ -106,7 +108,7 @@ const HeaderCandidato = () => {
                     <div className="mobile-menu-lateral">
                         <ul>
                             <Link to="/dashboard" onClick={toggleMenu}><li>Início</li></Link>
-                            <Link to="/inscricoes" onClick={toggleMenu}><li>Inscrições</li></Link>
+                            <Link to="/inscricoes-candidato" onClick={toggleMenu}><li>Inscrições</li></Link>
                             <Link to="/curriculo" onClick={toggleMenu}><li>Currículo</li></Link>
                             <Link to="/config-candidato" onClick={toggleMenu}><li>Perfil</li></Link>
                             <li onClick={handleLogout}>Sair</li>
@@ -116,6 +118,6 @@ const HeaderCandidato = () => {
             </header>
         </>
     );
-}
+};
 
 export default HeaderCandidato;

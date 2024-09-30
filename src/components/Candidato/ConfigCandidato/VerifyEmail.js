@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../../services/axiosConfig';
 import { useLocation, useNavigate } from 'react-router-dom';
 import "../../Cadastro/TokenCadastro.css";
 import TokenInput from '../../Cadastro/TokenInput';
@@ -40,7 +40,7 @@ const VerifyEmail = () => {
         event.preventDefault();
         try {
             const authToken = localStorage.getItem('token'); // Token de autenticação
-            await axios.post('http://localhost:5000/api/user/verify-email', { email, verificationToken: token }, {
+            await api.post(`${process.env.REACT_APP_API_URL}/api/user/verify-email`, { email, verificationToken: token }, {
                 headers: {
                     Authorization: `Bearer ${authToken}`
                 }
@@ -60,7 +60,7 @@ const VerifyEmail = () => {
         if (canResend) {
             try {
                 const authToken = localStorage.getItem('token');
-                await axios.post('http://localhost:5000/api/user/resend-email-token', { email }, {
+                await api.post(`${process.env.REACT_APP_API_URL}/api/user/resend-email-token`, { email }, {
                     headers: {
                         Authorization: `Bearer ${authToken}`
                     }

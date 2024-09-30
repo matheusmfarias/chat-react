@@ -1,9 +1,7 @@
 import React, { useCallback, useState } from "react";
 import './MainCandidato.css';
-import '../../../styles/global.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
-import axios from "axios";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
@@ -11,7 +9,6 @@ import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
 const Main = () => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [filterParam, setFilterParam] = useState(''); // Novo estado para o filtro
     const navigate = useNavigate();
 
     const handleSearch = useCallback(async () => {
@@ -26,7 +23,6 @@ const Main = () => {
         if (searchTerm.trim()) {
             params.append('keyword', searchTerm); // Busca pelo cargo
         }
-        console.log('Valor do keyword enviado:', searchTerm);
         // Redireciona para a tela de buscar vagas com os parâmetros da barra de pesquisa
         try {
             navigate('/buscar-vagas', { state: { keyword: searchTerm } });

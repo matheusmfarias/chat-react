@@ -116,3 +116,11 @@
     text-align: center;
     padding: 10px;
 }
+
+
+@media (max-width: 605px) {
+    .credencial-cadastro .text-danger {
+        margin-bottom: 10px;
+        background-color: #1f5291;
+    }
+}

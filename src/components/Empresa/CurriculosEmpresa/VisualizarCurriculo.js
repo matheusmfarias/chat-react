@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../../../services/axiosConfig';
 import { Spinner } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import CurriculoTemplate from '../../Candidato/Curriculo/CurriculoTemplate';
@@ -15,7 +15,7 @@ const VisualizarCurriculo = () => {
         const fetchCandidatoInfo = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await axios.get(`http://localhost:5000/api/user/candidato/${id}`, {
+                const response = await api.get(`${process.env.REACT_APP_API_URL}/api/user/candidato/${id}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 const user = response.data;
@@ -29,7 +29,7 @@ const VisualizarCurriculo = () => {
                     telefoneRecado: user.additionalInfo?.backupPhone || '',
                     cnh: user.additionalInfo?.cnh || 'Não tenho',
                     tipoCnh: user.additionalInfo?.cnhTypes || [],
-                    fotoPerfil: `http://localhost:5000${user.profilePicture}` || '',
+                    fotoPerfil: `${process.env.REACT_APP_API_URL}${user.profilePicture}` || '',
                     habilidadesProfissionais: user.habilidadesProfissionais || [],
                     habilidadesComportamentais: user.habilidadesComportamentais || [],
                     cursos: user.cursos || [],

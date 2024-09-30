@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './AddProfilePicture.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserCircle } from '@fortawesome/free-solid-svg-icons';
-import axios from 'axios';
+import api from '../../../services/axiosConfig';
 
 const AddProfilePicture = ({ onNext }) => {
     const [file, setFile] = useState(null);
@@ -44,7 +44,7 @@ const AddProfilePicture = ({ onNext }) => {
             formData.append('profilePicture', file);
 
             try {
-                await axios.post('http://localhost:5000/api/user/profile-picture', formData, {
+                await api.post(`${process.env.REACT_APP_API_URL}/api/user/profile-picture`, formData, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
             } catch (error) {

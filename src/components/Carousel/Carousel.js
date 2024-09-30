@@ -32,12 +32,11 @@ const Carousel = () => {
         allowTouchMove={false}
         breakpoints={{
           320: {
-            slidesPerView: 3,
-            spaceBetween: 50,
+            slidesPerView: 2,
+            
           },
           640: {
             slidesPerView: 4,
-            spaceBetween: 30,
           },
           768: {
             slidesPerView: 5,

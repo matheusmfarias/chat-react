@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom'; // Adicione o useNavigate
 import { Container, Row, Col, Card, Button, Spinner } from 'react-bootstrap';
-import axios from 'axios';
+import api from '../../../services/axiosConfig';
 import CurriculoTemplate from '../Curriculo/CurriculoTemplate';
 import HeaderCandidato from '../HeaderCandidato/HeaderCandidato';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -20,7 +20,7 @@ const DetalhesVaga = () => {
     const fetchUserInfo = useCallback(async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:5000/api/user/candidato', {
+            const response = await api.get(`${process.env.REACT_APP_API_URL}/api/user/candidato`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const user = response.data;
@@ -34,7 +34,7 @@ const DetalhesVaga = () => {
                 telefoneRecado: user.additionalInfo?.backupPhone || '',
                 cnh: user.additionalInfo?.cnh || 'Não tenho',
                 tipoCnh: user.additionalInfo?.cnhTypes || [],
-                fotoPerfil: `http://localhost:5000${user.profilePicture}` || '',
+                fotoPerfil: `${process.env.REACT_APP_API_URL}${user.profilePicture}` || '',
                 habilidadesProfissionais: user.habilidadesProfissionais || [],
                 habilidadesComportamentais: user.habilidadesComportamentais || [],
                 cursos: user.cursos || [],
@@ -64,7 +64,7 @@ const DetalhesVaga = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.post(`http://localhost:5000/api/jobs/${job._id}/submit-curriculum`, {}, {
+            await api.post(`${process.env.REACT_APP_API_URL}/api/jobs/${job._id}/submit-curriculum`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 

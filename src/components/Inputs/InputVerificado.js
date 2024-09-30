@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './InputVerificado.css';
-import axios from 'axios';
+import api from '../../services/axiosConfig';
 
 const InputVerificado = ({ type, label, name, onChange, maxLength, value, title, showButton, shouldValidate, min, max, disabled, required }) => {
     const [inputValue, setInputValue] = useState(value || '');
@@ -23,7 +23,7 @@ const InputVerificado = ({ type, label, name, onChange, maxLength, value, title,
         setIsTyping(false);
         if (shouldValidate) {
             try {
-                const response = await axios.post('http://localhost:5000/api/user/check-availability', {
+                const response = await api.post(`${process.env.REACT_APP_API_URL}/api/user/check-availability`, {
                     [name]: value
                 });
 

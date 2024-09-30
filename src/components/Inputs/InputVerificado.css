@@ -124,7 +124,6 @@
 .error-message {
     color: #ff5360;
     font-size: 12px;
-    margin-top: 4px;
     position: absolute;
     top: 100%;
     right: 4px;
@@ -148,4 +147,14 @@ button {
 
 button:disabled {
     opacity: 0.33;
+}
+
+@media (max-width: 605px) {
+    .textbox label {
+        font-size: 12px;
+    }
+
+    .textbox {
+     margin-top: 4px;   
+    }
 }
