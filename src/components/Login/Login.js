@@ -73,6 +73,7 @@ const Login = () => {
                         Entrar
                     </button>
                     <p>Não possui cadastro? <a href='/cadastro'>Cadastrar</a></p>
+                    <a href='/email-senha'>Esqueceu a senha?</a>
                 </form>
             </div>
         </div>

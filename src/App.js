@@ -24,6 +24,9 @@ import DetalhesVaga from './components/Candidato/BuscarVagas/DetalhesVaga';
 import CurriculosEmpresa from './components/Empresa/CurriculosEmpresa/CurriculosEmpresa';
 import VisualizarCurriculo from './components/Empresa/CurriculosEmpresa/VisualizarCurriculo';
 import InscricoesCandidato from './components/Candidato/InscricoesCandidato/InscricoesCandidato';
+import EmailSenha from './components/Login/EmailSenha';
+import ConfirmaEmail from './components/Login/ConfirmaEmail';
+import RecuperaSenha from './components/Login/RecuperaSenha';
 
 const App = () => {
   const { isLoading } = useContext(LoadingContext);
@@ -56,6 +59,9 @@ const App = () => {
           } />
           <Route path='/login' element={<Login />} />
           <Route path="/login-empresa" element={<LoginEmpresa />} />
+          <Route path="/email-senha" element={<EmailSenha />} />
+          <Route path="/confirma-email" element={<ConfirmaEmail />} />
+          <Route path="/recupera-senha" element={<RecuperaSenha />} />
           <Route path='/cadastro' element={<Cadastro onRegister={() => setIsVerificationAllowed(true)} />} />
           <Route path="/verificacao-token" element={<TokenCadastro onVerify={() => setIsVerificationAllowed(false)} />} />
 

@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import './HeaderCandidato.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAngleDown, faAngleUp, faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faAngleDown, faAngleUp } from '@fortawesome/free-solid-svg-icons';
 import logo from '../../../assets/images/logo-aci-transparente.png';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import api from '../../../services/axiosConfig';
@@ -17,6 +17,13 @@ const HeaderCandidato = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const buttonRef = useRef(null);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768); // Detecta se é mobile
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -45,7 +52,6 @@ const HeaderCandidato = () => {
     }, [userName, navigate]);
 
     const [isLoginActive, setIsLoginActive] = useState(false);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const toggleLoginOptions = useCallback(() => {
         setIsLoginActive(prevState => !prevState);
@@ -57,10 +63,6 @@ const HeaderCandidato = () => {
         navigate('/', { replace: true }); // Redireciona para a página inicial após o logout
     };
 
-    const toggleMenu = () => {
-        setIsMenuOpen(!isMenuOpen);
-    };
-
     return (
         <>
             <header className="header-candidato">
@@ -69,17 +71,16 @@ const HeaderCandidato = () => {
                         <img src={logo} alt="Logo" loading="lazy" />
                     </a>
                 </div>
-                <div className="hamburger-menu" onClick={toggleMenu}>
-                    <FontAwesomeIcon icon={isMenuOpen ? faTimes : faBars} />
-                </div>
-                <nav className="desktop-menu">
-                    <ul>
-                        <Link to="/buscar-vagas" className={`header-link ${location.pathname === '/buscar-vagas' ? 'active' : ''}`}><li>Oportunidades</li></Link>
-                        <Link to="/inscricoes-candidato" className={`header-link ${location.pathname === '/inscricoes-candidato' ? 'active' : ''}`}><li>Inscrições</li></Link>
-                        <Link to="/curriculo" className={`header-link ${location.pathname === '/curriculo' ? 'active' : ''}`}><li>Currículo</li></Link>
-                    </ul>
-                </nav>
-                <div className="opcoes-area desktop-menu">
+                {!isMobile && ( // Exibe o menu apenas no modo desktop
+                    <nav className="desktop-menu">
+                        <ul>
+                            <Link to="/buscar-vagas" className={`header-link ${location.pathname === '/buscar-vagas' ? 'active' : ''}`}><li>Oportunidades</li></Link>
+                            <Link to="/inscricoes-candidato" className={`header-link ${location.pathname === '/inscricoes-candidato' ? 'active' : ''}`}><li>Inscrições</li></Link>
+                            <Link to="/curriculo" className={`header-link ${location.pathname === '/curriculo' ? 'active' : ''}`}><li>Currículo</li></Link>
+                        </ul>
+                    </nav>
+                )}
+                <div className="opcoes-area">
                     <Button
                         ref={buttonRef}
                         className="usuario-btn"
@@ -98,23 +99,23 @@ const HeaderCandidato = () => {
                             <Link to="/config-candidato" className="link">
                                 <Button className="opcao-usuario">Perfil</Button>
                             </Link>
+                            {isMobile && ( // Exibe os links no dropdown apenas no modo mobile
+                                <>
+                                    <Link to="/buscar-vagas" className={`link ${location.pathname === '/buscar-vagas' ? 'active' : ''}`}>
+                                        <Button className="opcao-usuario">Oportunidades</Button>
+                                    </Link>
+                                    <Link to="/inscricoes-candidato" className={`link ${location.pathname === '/inscricoes-candidato' ? 'active' : ''}`}>
+                                        <Button className="opcao-usuario">Inscrições</Button>
+                                    </Link>
+                                    <Link to="/curriculo" className={`link ${location.pathname === '/curriculo' ? 'active' : ''}`}>
+                                        <Button className="opcao-usuario">Currículo</Button>
+                                    </Link>
+                                </>
+                            )}
                             <Button className="opcao-usuario" onClick={handleLogout}>Sair</Button>
                         </div>
                     )}
                 </div>
-
-                {/* Mobile Menu Lateral */}
-                {isMenuOpen && (
-                    <div className="mobile-menu-lateral">
-                        <ul>
-                            <Link to="/dashboard" onClick={toggleMenu}><li>Início</li></Link>
-                            <Link to="/inscricoes-candidato" onClick={toggleMenu}><li>Inscrições</li></Link>
-                            <Link to="/curriculo" onClick={toggleMenu}><li>Currículo</li></Link>
-                            <Link to="/config-candidato" onClick={toggleMenu}><li>Perfil</li></Link>
-                            <li onClick={handleLogout}>Sair</li>
-                        </ul>
-                    </div>
-                )}
             </header>
         </>
     );

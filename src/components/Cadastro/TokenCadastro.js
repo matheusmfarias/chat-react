@@ -91,7 +91,7 @@ const TokenCadastro = ({ onVerify }) => {
                 setTimer(60); // Reiniciar o timer
                 setErroToken('');
             } catch (error) {
-                alert('Erro ao reenviar o token.');
+                alert('Erro ao reenviar o código.');
             }
         }
     };

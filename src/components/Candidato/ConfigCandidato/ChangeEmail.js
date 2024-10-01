@@ -68,7 +68,7 @@ const ChangeEmail = () => {
                     Authorization: `Bearer ${token}`
                 }
             });
-            setMessage('Um token de confirmação foi enviado para seu novo e-mail.');
+            setMessage('Um código de confirmação foi enviado para seu novo e-mail.');
             localStorage.setItem('verificationEmail', newEmail); // Armazena o email novo para verificação
             navigate('/verify-email', { state: { email: newEmail } });
         } catch (error) {

@@ -53,6 +53,12 @@
     padding: 10px;
 }
 
+.credencial-login a {
+    text-align: center;
+    margin-top: -10px;
+    text-decoration: none;
+}
+
 .logo-container-login {
     display: flex;
     justify-content: center;

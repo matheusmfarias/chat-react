@@ -104,136 +104,138 @@ const DetalhesVaga = () => {
     return (
         <>
             <HeaderCandidato />
-            <Container>
-                <Row>
-                    <Col md={1} className="mt-2">
-                        <Button variant="secondary" className="me-2" onClick={handleVoltar}>
-                            Voltar
-                        </Button>
-                    </Col>
-                    <Col md={11} className="mt-2">
-                        <h1>Revisão do currículo</h1>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col md={7} style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000', overflowY: 'auto' }} className="curriculo-container shadow rounded" >
-                        <CurriculoTemplate
-                            experiencias={experiencias}
-                            formacoes={formacoes}
-                            informacoes={informacoes}
-                        />
-                    </Col>
+            <div style={{ backgroundColor: '#f9f9f9f9' }}>
+                <Container>
+                    <Row>
+                        <Col md={1} className="mt-2">
+                            <Button variant="secondary" className="me-2" onClick={handleVoltar}>
+                                Voltar
+                            </Button>
+                        </Col>
+                        <Col md={11} className="mt-2">
+                            <h1>Revisão do currículo</h1>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col md={7} style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000', overflowY: 'auto' }} className="curriculo-container shadow rounded bg-white" >
+                            <CurriculoTemplate
+                                experiencias={experiencias}
+                                formacoes={formacoes}
+                                informacoes={informacoes}
+                            />
+                        </Col>
 
-                    <Col md={5} style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000', overflowY: 'hidden' }}>
-                        <Card className="vaga-detalhe border-0 p-0">
-                            <Card.Body className="shadow-sm rounded">
-                                <Card.Title>{job.title}</Card.Title>
-                                {job.identifyCompany && job.company ? (
-                                    <Card.Text>{job.company.nome}</Card.Text>
-                                ) : (
-                                    <Card.Text>Empresa confidencial</Card.Text>
-                                )}
-                                <Row className="mb-3">
-                                    <Col>
-                                        <Card.Text>
-                                            <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
-                                            {job.location}
-                                        </Card.Text>
-                                    </Col>
-                                </Row>
-                                <Row className="mb-3">
-                                    <Col>
-                                        <Card.Text>
-                                            <FontAwesomeIcon className="me-2" icon={
-                                                job.modality === 'Remoto' ? faHome :
-                                                    job.modality === 'Presencial' ? faBuilding :
-                                                        faLaptopHouse
-                                            } title="Modelo" />
-                                            {job.modality}
-                                        </Card.Text>
-                                    </Col>
-                                    <Col>
-                                        <Card.Text>
-                                            <FontAwesomeIcon className="me-2" icon={faBriefcase} title="Tipo" />
-                                            {job.type}
-                                        </Card.Text>
-                                    </Col>
-                                    <Col>
-                                        <Card.Text>
-                                            <FontAwesomeIcon className="me-2" icon={faMoneyBillWave} title="Salário" />
-                                            {job.salary ? `${job.salary}` : "A combinar"}
-                                        </Card.Text>
-                                    </Col>
-                                    {job.pcd && (
+                        <Col md={5} style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000', overflowY: 'hidden' }}>
+                            <Card className="vaga-detalhe border-0 p-0">
+                                <Card.Body className="shadow-sm rounded">
+                                    <Card.Title>{job.title}</Card.Title>
+                                    {job.identifyCompany && job.company ? (
+                                        <Card.Text>{job.company.nome}</Card.Text>
+                                    ) : (
+                                        <Card.Text>Empresa confidencial</Card.Text>
+                                    )}
+                                    <Row className="mb-3">
                                         <Col>
                                             <Card.Text>
-                                                <FontAwesomeIcon className="me-2" icon={faWheelchair} title="PcD" />
-                                                PcD
+                                                <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
+                                                {job.location}
                                             </Card.Text>
                                         </Col>
-                                    )}
-                                </Row>
-                                <Col md={5}>
-                                    <Button onClick={handleSubmeterCurriculo}>
-                                        {loading ? (
-                                            <div className="d-flex justify-content-center">
-                                                <Spinner animation="border" variant="primary" />
-                                            </div>
-                                        ) : (
-                                            <span>Submeter currículo</span>
+                                    </Row>
+                                    <Row className="mb-3">
+                                        <Col>
+                                            <Card.Text>
+                                                <FontAwesomeIcon className="me-2" icon={
+                                                    job.modality === 'Remoto' ? faHome :
+                                                        job.modality === 'Presencial' ? faBuilding :
+                                                            faLaptopHouse
+                                                } title="Modelo" />
+                                                {job.modality}
+                                            </Card.Text>
+                                        </Col>
+                                        <Col>
+                                            <Card.Text>
+                                                <FontAwesomeIcon className="me-2" icon={faBriefcase} title="Tipo" />
+                                                {job.type}
+                                            </Card.Text>
+                                        </Col>
+                                        <Col>
+                                            <Card.Text>
+                                                <FontAwesomeIcon className="me-2" icon={faMoneyBillWave} title="Salário" />
+                                                {job.salary ? `${job.salary}` : "A combinar"}
+                                            </Card.Text>
+                                        </Col>
+                                        {job.pcd && (
+                                            <Col>
+                                                <Card.Text>
+                                                    <FontAwesomeIcon className="me-2" icon={faWheelchair} title="PcD" />
+                                                    PcD
+                                                </Card.Text>
+                                            </Col>
                                         )}
-                                    </Button>
-                                </Col>
-                            </Card.Body>
+                                    </Row>
+                                    <Col md={5}>
+                                        <Button onClick={handleSubmeterCurriculo}>
+                                            {loading ? (
+                                                <div className="d-flex justify-content-center">
+                                                    <Spinner animation="border" variant="primary" />
+                                                </div>
+                                            ) : (
+                                                <span>Submeter currículo</span>
+                                            )}
+                                        </Button>
+                                    </Col>
+                                </Card.Body>
 
-                            <Card.Body style={{ maxHeight: '60vh', overflowY: 'auto' }} className="shadow-sm rounded">
-                                {job.offers || job.description || job.responsibilities || job.qualifications || job.requiriments || job.additionalInfo ? (
-                                    <>
-                                        {job.offers && (
-                                            <>
-                                                <Card.Title>Benefícios</Card.Title>
-                                                <Card.Text dangerouslySetInnerHTML={{ __html: job.offers }} />
-                                            </>
-                                        )}
-                                        {job.description && (
-                                            <>
-                                                <Card.Title>Descrição</Card.Title>
-                                                <Card.Text dangerouslySetInnerHTML={{ __html: job.description }} />
-                                            </>
-                                        )}
-                                        {job.responsibilities && (
-                                            <>
-                                                <Card.Title>Responsabilidades e atribuições</Card.Title>
-                                                <Card.Text dangerouslySetInnerHTML={{ __html: job.responsibilities }} />
-                                            </>
-                                        )}
-                                        {job.qualifications && (
-                                            <>
-                                                <Card.Title>Requisitos e qualificações</Card.Title>
-                                                <Card.Text dangerouslySetInnerHTML={{ __html: job.qualifications }} />
-                                            </>
-                                        )}
-                                        {job.requiriments && (
-                                            <>
-                                                <Card.Title>Será um diferencial</Card.Title>
-                                                <Card.Text dangerouslySetInnerHTML={{ __html: job.requiriments }} />
-                                            </>
-                                        )}
-                                        {job.additionalInfo && (
-                                            <>
-                                                <Card.Title>Informações adicionais</Card.Title>
-                                                <Card.Text dangerouslySetInnerHTML={{ __html: job.additionalInfo }} />
-                                            </>
-                                        )}
-                                    </>
-                                ) : (
-                                    <Card.Text>Nenhuma informação adicional informada.</Card.Text>
-                                )}
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                </Row>
-            </Container >
+                                <Card.Body style={{ maxHeight: '60vh', overflowY: 'auto' }} className="shadow-sm rounded">
+                                    {job.offers || job.description || job.responsibilities || job.qualifications || job.requiriments || job.additionalInfo ? (
+                                        <>
+                                            {job.offers && (
+                                                <>
+                                                    <Card.Title>Benefícios</Card.Title>
+                                                    <Card.Text dangerouslySetInnerHTML={{ __html: job.offers }} />
+                                                </>
+                                            )}
+                                            {job.description && (
+                                                <>
+                                                    <Card.Title>Descrição</Card.Title>
+                                                    <Card.Text dangerouslySetInnerHTML={{ __html: job.description }} />
+                                                </>
+                                            )}
+                                            {job.responsibilities && (
+                                                <>
+                                                    <Card.Title>Responsabilidades e atribuições</Card.Title>
+                                                    <Card.Text dangerouslySetInnerHTML={{ __html: job.responsibilities }} />
+                                                </>
+                                            )}
+                                            {job.qualifications && (
+                                                <>
+                                                    <Card.Title>Requisitos e qualificações</Card.Title>
+                                                    <Card.Text dangerouslySetInnerHTML={{ __html: job.qualifications }} />
+                                                </>
+                                            )}
+                                            {job.requiriments && (
+                                                <>
+                                                    <Card.Title>Será um diferencial</Card.Title>
+                                                    <Card.Text dangerouslySetInnerHTML={{ __html: job.requiriments }} />
+                                                </>
+                                            )}
+                                            {job.additionalInfo && (
+                                                <>
+                                                    <Card.Title>Informações adicionais</Card.Title>
+                                                    <Card.Text dangerouslySetInnerHTML={{ __html: job.additionalInfo }} />
+                                                </>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <Card.Text>Nenhuma informação adicional informada.</Card.Text>
+                                    )}
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                    </Row>
+                </Container >
+            </div>
         </>
     );
 };

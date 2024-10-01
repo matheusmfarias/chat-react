@@ -94,16 +94,23 @@ const AddAdditionalInfo = ({ onComplete, onBack }) => {
         };
     
         try {
+            // Envia as informações adicionais do usuário
             await api.post(`${process.env.REACT_APP_API_URL}/api/user/additional-info`, dataToSend, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
+            
+            // Marca o setup do perfil como completo
             await api.post(`${process.env.REACT_APP_API_URL}/api/user/complete-setup`, {}, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
-            const token = localStorage.getItem('token');
-            localStorage.clear();
-            localStorage.setItem('token', token);
-            onComplete();
+    
+            // Mantém o token e remove apenas os dados temporários do localStorage
+            localStorage.removeItem('profilePicturePreview');
+            localStorage.removeItem('addressData');
+            localStorage.removeItem('additionalInfoData');
+            
+            // Se precisar manter outros dados, eles podem ser mantidos também. O token é preservado.
+            onComplete(); // Chama a função para indicar que o processo foi concluído
         } catch (error) {
             console.error('Error updating additional info', error);
         }
