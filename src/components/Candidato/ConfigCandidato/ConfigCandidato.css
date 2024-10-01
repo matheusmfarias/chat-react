@@ -70,6 +70,7 @@
     display: flex;
     justify-content: space-between;
     width: 100%;
+
 }
 
 .form-column {
@@ -89,13 +90,17 @@
     color: #1F5291;
 }
 
-.profile-form .form-group input,
-.profile-form .form-group select {
+.profile-form .form-group input {
     width: 100%;
     padding: 15px;
-    border: 2px solid #D3D3D3;
+    border: 2px solid #d3d3d3;
     border-radius: 8px;
     font-size: 16px;
+    transition: all 0.1s ease-in-out;
+}
+
+.profile-form .form-group input:hover {
+    border-color: #1F5291;
 }
 
 .profile-form .email-input-container {
@@ -130,7 +135,7 @@
     color: white;
     font-size: 16px;
     cursor: pointer;
-    margin: 20px auto 0 auto; /* Centraliza o botão horizontalmente */
+    margin: 20px auto 0 auto;
     transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 
@@ -142,4 +147,20 @@
 .config-container-usuario p {
     text-align: center;
     margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+    
+    .tabs button {
+        width: 60%;
+    }
+
+    .form-columns-container {
+        display: block;
+    }
+
+    .form-column {
+        width: 100%;
+    }
+
 }

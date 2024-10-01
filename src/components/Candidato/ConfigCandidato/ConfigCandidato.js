@@ -8,6 +8,7 @@ import api from '../../../services/axiosConfig';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ReactSelect from 'react-select';
 
 const Config = () => {
     const [userData, setUserData] = useState({
@@ -116,6 +117,14 @@ const Config = () => {
             [name]: value
         }));
     };
+
+    const handleMaritalChange = (name, value) => {
+        setUserData(prevState => ({
+            ...prevState,
+            [name]: value  // Atualiza o campo específico do estado
+        }));
+    };
+
 
     const handleNameChange = (e) => {
         const { name, value } = e.target;
@@ -250,6 +259,72 @@ const Config = () => {
         navigate('/alterar-email');
     };
 
+    const cnhOptions = [
+        { value: 'true', label: 'Tenho' },
+        { value: 'false', label: 'Não tenho' }
+    ];
+
+    const maritalOptions = [
+        { value: 'solteiro', label: 'Solteiro(a)' },
+        { value: 'casado', label: 'Casado(a)' },
+        { value: 'divorciado', label: 'Divorciado(a)' },
+        { value: 'viuvo', label: 'Viúvo(a)' }
+    ];
+
+    const customStyles = {
+        control: (provided, state) => ({
+            ...provided,
+            width: '100%',
+            padding: '0 15px',               // Adiciona padding horizontal
+            border: '2px solid #D3D3D3',
+            borderRadius: '8px',
+            fontSize: '16px',
+            height: '58px',               // Define a altura mínima para 58px
+            display: 'flex',
+            alignItems: 'center',
+            boxShadow: state.isFocused ? '0 0 0 2px rgba(31, 82, 145, 0.25)' : 'none',
+            '&:hover': {
+                borderColor: '#1F5291',
+            }
+        }),
+        valueContainer: (provided) => ({
+            ...provided,
+            height: '54px',
+            padding: '0',
+        }),
+        option: (provided, state) => ({
+            ...provided,
+            backgroundColor: state.isSelected ? '#1F5291' : 'white',
+            color: state.isSelected ? 'white' : '#575e67',
+            padding: '15px',
+            fontSize: '16px',
+            '&:hover': {
+                backgroundColor: '#286abb',
+                color: 'white',
+            }
+        }),
+        menu: (provided) => ({
+            ...provided,
+            borderRadius: '8px',
+            marginTop: '5px',
+            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+        }),
+        menuList: (provided) => ({
+            ...provided,
+            padding: '0',
+        }),
+        dropdownIndicator: (provided) => ({
+            ...provided,
+            color: '#1F5291',
+            '&:hover': {
+                color: '#286abb',
+            }
+        }),
+        indicatorSeparator: () => ({
+            display: 'none',
+        })
+    };
+
     return (
         <>
             <ToastContainer />
@@ -301,17 +376,15 @@ const Config = () => {
                                             </div>
                                             <div className='form-group'>
                                                 <label htmlFor='maritalStatus'>Estado civil</label>
-                                                <select
+                                                <ReactSelect
                                                     id='maritalStatus'
                                                     name='maritalStatus'
-                                                    value={userData.maritalStatus}
-                                                    onChange={handleChange}
-                                                >
-                                                    <option value='solteiro'>Solteiro(a)</option>
-                                                    <option value='casado'>Casado(a)</option>
-                                                    <option value='divorciado'>Divorciado(a)</option>
-                                                    <option value='viuvo'>Viúvo(a)</option>
-                                                </select>
+                                                    value={maritalOptions.find(option => option.value === userData.maritalStatus)}  // Ajuste para exibir o valor correto
+                                                    onChange={(selectedOption) => handleMaritalChange('maritalStatus', selectedOption.value)}  // Ajuste do onChange
+                                                    options={maritalOptions}
+                                                    styles={customStyles}
+                                                    isSearchable={false}
+                                                />
                                             </div>
                                             <div className='form-group'>
                                                 <label htmlFor='cpf'>CPF</label>
@@ -385,15 +458,15 @@ const Config = () => {
                                             </div>
                                             <div className='form-group'>
                                                 <label htmlFor='cnh'>CNH</label>
-                                                <select
+                                                <ReactSelect
                                                     id='cnh'
                                                     name='cnh'
-                                                    value={userData.cnh} // userData.cnh agora é booleano
-                                                    onChange={handleCnhChange}
-                                                >
-                                                    <option value={true}>Tenho</option>
-                                                    <option value={false}>Não tenho</option>
-                                                </select>
+                                                    value={cnhOptions.find(option => option.value === String(userData.cnh))}
+                                                    onChange={(selectedOption) => handleCnhChange({ target: { value: selectedOption.value } })}
+                                                    options={cnhOptions}
+                                                    styles={customStyles}
+                                                    isSearchable={false}
+                                                />
                                             </div>
                                             {userData.cnh === true && (
                                                 <div className="form-group">
@@ -463,7 +536,7 @@ const Config = () => {
                                         </div>
                                     </div>
                                 )}
-                                <button type='submit' className='save-btn' disabled={!isFormChanged}>
+                                <button type='submit' className='save-btn d-flex justify-content-center' disabled={!isFormChanged}>
                                     {loadingSubmit ? (
                                         <div className="d-flex justify-content-center">
                                             <Spinner animation="border" variant="white" />

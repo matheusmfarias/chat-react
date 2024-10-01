@@ -51,19 +51,19 @@ const Main = () => {
                 <h1>Encontre vagas de emprego</h1>
                 <h4 style={{ fontWeight: '300' }}>Unimos talento e oportunidade, criando um mundo de possibilidades</h4>
                 <Row className="d-flex flex-row align-items-center justify-content-center mt-4">
-                    <Col xs={10} md={10}>
+                    <Col xs={11} md={10}>
                         <InputGroup className="shadow">
                             {/* Campo de pesquisa de cargos */}
                             <Form.Control
                                 type="text"
-                                placeholder="Pesquisar por cargos, cidade, modelo..."
+                                placeholder="Pesquisar por cargos..."
                                 aria-label="Pesquisar"
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
                                 className="rounded-start border-primary"
                             />
                             {/* Botão de busca */}
-                            <Button variant="light" onClick={handleSearch} className="btn-outline-primary rounded-end w-auto px-5">
+                            <Button variant="light" onClick={handleSearch} className="btn-outline-primary rounded-end w-auto px-4">
                                 <FontAwesomeIcon icon={faMagnifyingGlass} />
                             </Button>
                         </InputGroup>

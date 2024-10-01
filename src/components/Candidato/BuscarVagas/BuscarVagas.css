@@ -1,10 +1,88 @@
+.row-buscar-vagas {
+    padding-left: 140px;
+    padding-right: 140px;
+}
+
+.mobile-filter-btn {
+    display: none !important;
+}
+
 .vaga-card {
+    position: static;
+    top: auto;
+    z-index: auto;
     transition: all 0.3s ease-in-out;
 }
 
-/* Estilo para o card selecionado */
 .vaga-card-selecionada {
-    z-index: 10; /* Traz o card selecionado para frente */
-    box-shadow: 0px 4px 12px rgba(0, 123, 255, 0.6); /* Sombra com cor primária */
-    transform: scale(1.05); /* Aumenta levemente o tamanho do card */
+    top: 6px;
+    z-index: 1000;
+    box-shadow: 0px 4px 12px rgba(0, 123, 255, 0.6);
+    transform: scale(1.05);
+}
+
+
+.btn-limpar-busca {
+    display: block !important;
+    width: 200px;
+}
+
+.filter-tag-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.filter-tag {
+    display: inline-flex;
+    align-items: center;
+    background-color: #f1f1f1;
+    color: #333;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 14px;
+}
+
+.icon-remove-tag {
+    margin-left: 8px;
+    cursor: pointer;
+    color: #ff0000;
+}
+
+.icon-remove-tag:hover {
+    color: #cc0000;
+}
+
+@media (max-width: 768px) {
+    .row-buscar-vagas {
+        padding: 0;
+        margin: 0;
+    }
+
+    .coluna-filtros {
+        display: none;
+    }
+
+    .busca-coluna-vagas {
+        padding-top: 30px;
+    }
+
+    .btn-limpar-busca {
+        display: none !important;
+    }
+
+    .mobile-filter-btn {
+        display: block !important;
+    }
+
+    .coluna-detalhes-vagas {
+        display: none;
+    }
+
+    .vaga-card-selecionada {
+        transform: scale(1);
+        position: static;
+        top: auto;
+        z-index: auto;
+    }
 }

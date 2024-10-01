@@ -9,11 +9,13 @@ body {
 }
 
 html, body {
+    width: 100%;
     height: 100%;
     margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;
+    overflow-x: hidden;
 }
 
 .app-container {
@@ -26,4 +28,23 @@ html, body {
     flex: 1;
     display: flex;
     flex-direction: column;
+}
+
+/* Estilos globais para fixar o header no topo em dispositivos móveis */
+@media (max-width: 768px) {
+    .header-candidato {
+        position: fixed;           /* Fixa o header no topo da página */
+        top: 0;                    /* Posiciona no topo */
+        left: 0;
+        width: 100%;               /* O header ocupará toda a largura da tela */
+        z-index: 1000;             /* Garante que o header fique sobreposto a outros elementos */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Adiciona sombra para destaque */
+    }
+
+    /* Adiciona espaçamento no conteúdo para não ser sobreposto pelo header */
+    body, 
+    .main-content, 
+    .config-content-usuario {
+        padding-top: 50px;         /* Ajuste o padding-top para evitar sobreposição */
+    }
 }

@@ -156,13 +156,8 @@
 
 /* Estilos responsivos */
 @media (max-width: 768px) {
-    .header-candidato {
-        flex-wrap: wrap;
-        padding: 10px 3%;
-    }
-
     .logo-container {
-        width: 140px;
+        width: 120px;
     }
 
     .header-candidato nav {
