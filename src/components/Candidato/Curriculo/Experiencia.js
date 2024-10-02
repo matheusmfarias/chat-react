@@ -1,9 +1,10 @@
 // Import the necessary functions and hooks
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../../services/axiosConfig';
-import { Col, Row, Spinner } from 'react-bootstrap';
+import { Button, Col, Row, Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faChevronUp, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
+import ReactSelect from 'react-select';
 
 const Experiencia = ({ experiencias, setExperiencias }) => {
     const [showPopup, setShowPopup] = useState(false);
@@ -24,6 +25,11 @@ const Experiencia = ({ experiencias, setExperiencias }) => {
         'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
         'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
     ];
+
+    const mesesOptions = meses.map((mes) => ({
+        value: mes,
+        label: mes
+    }));
 
     const anos = [];
     for (let i = new Date().getFullYear(); i >= 1975; i--) {
@@ -127,6 +133,67 @@ const Experiencia = ({ experiencias, setExperiencias }) => {
         }
     };
 
+    // Convertendo os anos para o formato aceito pelo ReactSelect
+    const anosOptions = anos.map((ano) => ({
+        value: ano,
+        label: ano.toString()  // Transformando o número em string para exibir no select
+    }));
+
+    const customStyles = {
+        control: (provided, state) => ({
+            ...provided,
+            width: '100%',
+            padding: '0 15px',               // Adiciona padding horizontal
+            border: '2px solid #D3D3D3',
+            borderRadius: '8px',
+            fontSize: '16px',
+            height: '58px',               // Define a altura mínima para 58px
+            display: 'flex',
+            alignItems: 'center',
+            boxShadow: state.isFocused ? '0 0 0 2px rgba(31, 82, 145, 0.25)' : 'none',
+            '&:hover': {
+                borderColor: '#1F5291',
+            }
+        }),
+        valueContainer: (provided) => ({
+            ...provided,
+            height: '54px',
+            padding: '0',
+        }),
+        option: (provided, state) => ({
+            ...provided,
+            backgroundColor: state.isSelected ? '#1F5291' : 'white',
+            color: state.isSelected ? 'white' : '#575e67',
+            padding: '15px',
+            fontSize: '16px',
+            '&:hover': {
+                backgroundColor: '#286abb',
+                color: 'white',
+            }
+        }),
+        menu: (provided) => ({
+            ...provided,
+            borderRadius: '8px',
+            marginTop: '5px',
+            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+        }),
+        menuList: (provided) => ({
+            ...provided,
+            padding: '0',
+        }),
+        dropdownIndicator: (provided) => ({
+            ...provided,
+            color: '#1F5291',
+            '&:hover': {
+                color: '#286abb',
+            }
+        }),
+        indicatorSeparator: () => ({
+            display: 'none',
+        })
+    };
+
+
     return (
         <>
             <div className='form-columns-container'>
@@ -141,11 +208,11 @@ const Experiencia = ({ experiencias, setExperiencias }) => {
                         experiencias.map((exp, index) => (
                             <div key={index} className={`experience-card ${exp.expanded ? 'expanded' : ''}`}>
                                 <Row className="card-header" onClick={() => toggleExpand(index)}>
-                                    <Col md={11} className="header-left">
+                                    <Col md={11} xs={10}>
                                         <h4>{exp.empresa}</h4>
                                         <p>{exp.funcao}</p>
                                     </Col>
-                                    <Col md={1}>
+                                    <Col md={1} xs={2}>
                                         <span className="toggle-icon">
                                             {exp.expanded ? <FontAwesomeIcon icon={faChevronUp} /> : <FontAwesomeIcon icon={faChevronDown} />}
                                         </span>
@@ -160,37 +227,51 @@ const Experiencia = ({ experiencias, setExperiencias }) => {
                                         <div className="form-group">
                                             <label>Início</label>
                                             <div className="date-select">
-                                                <select name="mesInicial" value={exp.mesInicial || ''} onChange={(e) => handleEditChange(index, e)}>
-                                                    <option value="">Mês</option>
-                                                    {meses.map((mes, i) => (
-                                                        <option key={i} value={mes}>{mes}</option>
-                                                    ))}
-                                                </select>
-                                                <select name="anoInicial" value={exp.anoInicial || ''} onChange={(e) => handleEditChange(index, e)}>
-                                                    <option value="">Ano</option>
-                                                    {anos.map((ano, i) => (
-                                                        <option key={i} value={ano}>{ano}</option>
-                                                    ))}
-                                                </select>
+                                                <ReactSelect
+                                                    name="mesInicial"
+                                                    value={mesesOptions.find(option => option.value === exp.mesInicial) || ''}
+                                                    onChange={(selectedOption) => handleEditChange(index, { target: { name: 'mesInicial', value: selectedOption ? selectedOption.value : '' } })}
+                                                    options={mesesOptions}
+                                                    placeholder="Mês"
+                                                    styles={customStyles}
+                                                    isSearchable={false}
+                                                />
+                                                <ReactSelect
+                                                    name="anoInicial"
+                                                    value={anosOptions.find(option => option.value === exp.anoInicial) || ''}
+                                                    onChange={(selectedOption) => handleEditChange(index, { target: { name: 'anoInicial', value: selectedOption ? selectedOption.value : '' } })}
+                                                    options={anosOptions}
+                                                    placeholder="Ano"
+                                                    styles={customStyles}
+                                                    isSearchable={false}
+                                                />
                                             </div>
                                         </div>
                                         <div className="form-group">
                                             <label>Fim</label>
                                             <div className="date-select">
-                                                <select name="mesFinal" value={exp.mesFinal || ''} onChange={(e) => handleEditChange(index, e)} disabled={exp.trabalhoAtualmente}>
-                                                    <option value="">Mês</option>
-                                                    {meses.map((mes, i) => (
-                                                        <option key={i} value={mes}>{mes}</option>
-                                                    ))}
-                                                </select>
-                                                <select name="anoFinal" value={exp.anoFinal || ''} onChange={(e) => handleEditChange(index, e)} disabled={exp.trabalhoAtualmente}>
-                                                    <option value="">Ano</option>
-                                                    {anos.map((ano, i) => (
-                                                        <option key={i} value={ano}>{ano}</option>
-                                                    ))}
-                                                </select>
+                                                <ReactSelect
+                                                    name="mesFinal"
+                                                    value={mesesOptions.find(option => option.value === exp.mesFinal) || ''}
+                                                    onChange={(selectedOption) => handleEditChange(index, { target: { name: 'mesFinal', value: selectedOption ? selectedOption.value : '' } })}
+                                                    options={mesesOptions}
+                                                    placeholder="Mês"
+                                                    styles={customStyles}
+                                                    isSearchable={false}
+                                                    isDisabled={exp.trabalhoAtualmente}
+                                                />
+                                                <ReactSelect
+                                                    name="anoFinal"
+                                                    value={anosOptions.find(option => option.value === exp.anoFinal) || ''}
+                                                    onChange={(selectedOption) => handleEditChange(index, { target: { name: 'anoFinal', value: selectedOption ? selectedOption.value : '' } })}
+                                                    options={anosOptions}
+                                                    placeholder="Ano"
+                                                    styles={customStyles}
+                                                    isSearchable={false}
+                                                    isDisabled={exp.trabalhoAtualmente}
+                                                />
                                             </div>
-                                            <label>
+                                            <label className='text-dark'>
                                                 <input type="checkbox" name="trabalhoAtualmente" checked={exp.trabalhoAtualmente} onChange={(e) => handleEditChange(index, e)} />
                                                 Trabalho Atualmente
                                             </label>
@@ -203,11 +284,9 @@ const Experiencia = ({ experiencias, setExperiencias }) => {
                                             <label>Principais atividades</label>
                                             <textarea name="atividades" value={exp.atividades || ''} onChange={(e) => handleEditChange(index, e)}></textarea>
                                         </div>
-                                        <div className="button-group">
-                                            <button type="button" className="save-btn" onClick={() => handleSaveEdit(index)} disabled={!exp.edited}>Salvar</button>
-                                            <button type="button" className="delete-btn" onClick={() => handleDeleteExperiencia(index)}>
-                                                <FontAwesomeIcon icon={faTrash} />
-                                            </button>
+                                        <div className='d-flex flex-column align-items-center mb-2'>
+                                            <Button className="btn-exp btn-primary mt-2"  onClick={() => handleSaveEdit(index)} disabled={!exp.edited}>Salvar</Button>
+                                            <Button className="btn-exp btn-danger mt-2" onClick={() => handleDeleteExperiencia(index)}>Deletar</Button>
                                         </div>
                                     </div>
                                 )}
