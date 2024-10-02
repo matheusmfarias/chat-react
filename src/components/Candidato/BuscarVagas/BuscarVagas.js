@@ -212,9 +212,10 @@ const BuscarVagas = () => {
     return (
         <>
             <HeaderCandidato />
-            <Container fluid style={{ backgroundColor: '#f9f9f9f9' }}>
-                <Row className="row-buscar-vagas">
-                    <Col className='coluna-filtros mt-4 mb-4' style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000', overflowY: 'hidden' }}>
+            <Container fluid style={{ backgroundColor: '#f9f9f9f9', minHeight: "100vh" }}>
+                <Row className="row-buscar-vagas mt-4">
+                    <h1>Oportunidades</h1>
+                    <Col className='coluna-filtros mt-2 mb-4' style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000', overflowY: 'hidden' }}>
                         <Row className='mb-4 align-items-center'>
                             <h5>Tipo</h5>
                             <Col xs={12} md={10} >
@@ -323,18 +324,18 @@ const BuscarVagas = () => {
                             </Button>
                         </Row>
                     </Col>
-                    <Col xs={12} md={10} className='coluna-vagas mt-4'>
+                    <Col xs={12} md={10} className='coluna-vagas mt-2'>
                         <Row className='busca-coluna-vagas align-items-center'>
                             <InputGroup style={{ maxWidth: '800px' }}>
                                 <Form.Control
                                     type="text"
-                                    className='shadow border-0'
+                                    className='input-buscar-vagas shadow border-primary'
                                     placeholder="Pesquisar por cargos, cidade, modelo..."
                                     aria-label="Pesquisar"
                                     value={searchTerm}
                                     onChange={e => setSearchTerm(e.target.value)}
                                 />
-                                <Button variant="outline-primary" style={{ maxWidth: '100px' }}>
+                                <Button className="btn-buscar-vagas" variant="outline-primary">
                                     <FontAwesomeIcon icon={faSearch} />
                                 </Button>
                             </InputGroup>
@@ -350,7 +351,7 @@ const BuscarVagas = () => {
                             </Col>
                             <Col>
                                 <Button
-                                    variant="outline-primary"
+                                    variant="primary"
                                     onClick={handleOpenFilterModal}
                                     className="mt-2 mobile-filter-btn"
                                     style={{ width: '100%' }}
@@ -361,7 +362,7 @@ const BuscarVagas = () => {
                             </Col>
                         </Row>
                         {/* Tags para exibir os filtros selecionados */}
-                        <div className="filter-tag-container mt-3">
+                        <div className="filter-tag-container mt-2">
                             {filters.type.length > 0 && filters.type.map((filter, index) => (
                                 <div className="filter-tag" key={index}>
                                     {filter}
@@ -546,7 +547,7 @@ const BuscarVagas = () => {
                                         {currentItems.map(result => (
                                             <Card
                                                 key={result._id}
-                                                className={`vaga-card p-2 mb-4 border-0 shadow-sm rounded ${selectedJob && selectedJob._id === result._id ? 'vaga-card-selecionada shadow-lg' : ''}`}
+                                                className={`vaga-card p-2 mb-4 border-0 shadow-sm rounded ${selectedJob && selectedJob._id === result._id ? 'vaga-card-selecionada shadow' : ''}`}
                                                 onClick={() => {
                                                     if (window.innerWidth <= 768) {
                                                         // Chama o modal no mobile
@@ -613,7 +614,7 @@ const BuscarVagas = () => {
 
                                         {/* Paginação */}
                                         {currentItems.length > 0 && (
-                                            <div className="d-flex justify-content-center align-items-center mt-4">
+                                            <div className="d-flex flex-row p-2" style={{ marginLeft: '6px' }}>
                                                 <Button
                                                     className="btn-sm me-2 mb-2"
                                                     onClick={() => handlePageChange('prev')}

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../../services/axiosConfig';
 import { Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faChevronDown, faChevronUp, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 const Formacao = ({ formacoes, setFormacoes }) => {
     const [showPopup, setShowPopup] = useState(false);
@@ -140,7 +140,9 @@ const Formacao = ({ formacoes, setFormacoes }) => {
                                         <h4>{exp.escolaridade}</h4>
                                         <p>{exp.instituicao}</p>
                                     </div>
-                                    <span className="toggle-icon">{exp.expanded ? '▲' : '▼'}</span>
+                                    <span className="toggle-icon">
+                                        {exp.expanded ? <FontAwesomeIcon icon={faChevronUp} /> : <FontAwesomeIcon icon={faChevronDown} />}
+                                    </span>
                                 </div>
                                 {exp.expanded && (
                                     <div className={`card-body ${exp.expanded ? 'expanded' : ''}`}>

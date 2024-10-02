@@ -1,0 +1,10 @@
+@media (max-width: 768px) {
+    .curriculo-container {
+        display: none;
+    }
+
+    .icones-vaga {
+        display: flex;
+        flex-direction: column;
+    }
+}

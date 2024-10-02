@@ -21,6 +21,9 @@
     transform: scale(1.05);
 }
 
+.btn-buscar-vagas {
+    max-width: 100px;
+}
 
 .btn-limpar-busca {
     display: block !important;
@@ -63,12 +66,12 @@
         display: none;
     }
 
-    .busca-coluna-vagas {
-        padding-top: 30px;
-    }
-
     .btn-limpar-busca {
         display: none !important;
+    }
+
+    .btn-buscar-vagas {
+        max-width: 80px;
     }
 
     .mobile-filter-btn {
@@ -84,5 +87,9 @@
         position: static;
         top: auto;
         z-index: auto;
+    }
+
+    .btn-paginacao-vagas {
+        width: 40px;
     }
 }

@@ -1,0 +1,12 @@
+.row-inscricoes-candidato {
+    padding-left: 140px;
+    padding-right: 140px;
+}
+
+@media (max-width: 768px) {
+    .row-inscricoes-candidato {
+        padding: 0;
+        margin: 0;
+    }
+
+}

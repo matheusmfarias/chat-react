@@ -43,8 +43,7 @@ html, body {
 
     /* Adiciona espaçamento no conteúdo para não ser sobreposto pelo header */
     body, 
-    .main-content, 
-    .config-content-usuario {
-        padding-top: 50px;         /* Ajuste o padding-top para evitar sobreposição */
+    .main-content {
+        padding-top: 80px;         /* Ajuste o padding-top para evitar sobreposição */
     }
 }

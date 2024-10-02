@@ -7,6 +7,7 @@ import HeaderCandidato from '../HeaderCandidato/HeaderCandidato';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBriefcase, faBuilding, faHome, faLaptopHouse, faLocationDot, faMoneyBillWave, faWheelchair } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
+import './DetalhesVagas.css';
 
 const DetalhesVaga = () => {
     const location = useLocation();
@@ -108,16 +109,16 @@ const DetalhesVaga = () => {
                 <Container>
                     <Row>
                         <Col md={1} className="mt-2">
-                            <Button variant="secondary" className="me-2" onClick={handleVoltar}>
+                            <Button variant="primary" className="me-2" onClick={handleVoltar}>
                                 Voltar
                             </Button>
                         </Col>
                         <Col md={11} className="mt-2">
-                            <h1>Revisão do currículo</h1>
+                            <h1>Revisão</h1>
                         </Col>
                     </Row>
                     <Row>
-                        <Col md={7} style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000', overflowY: 'auto' }} className="curriculo-container shadow rounded bg-white" >
+                        <Col md={7} className="curriculo-container shadow rounded" >
                             <CurriculoTemplate
                                 experiencias={experiencias}
                                 formacoes={formacoes}
@@ -125,7 +126,7 @@ const DetalhesVaga = () => {
                             />
                         </Col>
 
-                        <Col md={5} style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000', overflowY: 'hidden' }}>
+                        <Col md={5}>
                             <Card className="vaga-detalhe border-0 p-0">
                                 <Card.Body className="shadow-sm rounded">
                                     <Card.Title>{job.title}</Card.Title>
@@ -134,18 +135,18 @@ const DetalhesVaga = () => {
                                     ) : (
                                         <Card.Text>Empresa confidencial</Card.Text>
                                     )}
-                                    <Row className="mb-3">
+                                    <Row className="mb-2">
                                         <Col>
                                             <Card.Text>
-                                                <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
+                                                <FontAwesomeIcon style={{ width: '14px' }} className="me-2" icon={faLocationDot} title="Localização" />
                                                 {job.location}
                                             </Card.Text>
                                         </Col>
                                     </Row>
-                                    <Row className="mb-3">
-                                        <Col>
+                                    <Row className="icones-vaga mb-3">
+                                        <Col className="mb-2">
                                             <Card.Text>
-                                                <FontAwesomeIcon className="me-2" icon={
+                                                <FontAwesomeIcon  style={{ width: '14px' }} className="me-2" icon={
                                                     job.modality === 'Remoto' ? faHome :
                                                         job.modality === 'Presencial' ? faBuilding :
                                                             faLaptopHouse
@@ -153,29 +154,29 @@ const DetalhesVaga = () => {
                                                 {job.modality}
                                             </Card.Text>
                                         </Col>
-                                        <Col>
+                                        <Col className="mb-2">
                                             <Card.Text>
-                                                <FontAwesomeIcon className="me-2" icon={faBriefcase} title="Tipo" />
+                                                <FontAwesomeIcon style={{ width: '14px' }} className="me-2" icon={faBriefcase} title="Tipo" />
                                                 {job.type}
                                             </Card.Text>
                                         </Col>
-                                        <Col>
+                                        <Col className="mb-2">
                                             <Card.Text>
-                                                <FontAwesomeIcon className="me-2" icon={faMoneyBillWave} title="Salário" />
+                                                <FontAwesomeIcon style={{ width: '14px' }} className="me-2" icon={faMoneyBillWave} title="Salário" />
                                                 {job.salary ? `${job.salary}` : "A combinar"}
                                             </Card.Text>
                                         </Col>
                                         {job.pcd && (
                                             <Col>
                                                 <Card.Text>
-                                                    <FontAwesomeIcon className="me-2" icon={faWheelchair} title="PcD" />
+                                                    <FontAwesomeIcon style={{ width: '14px' }} className="me-2" icon={faWheelchair} title="PcD" />
                                                     PcD
                                                 </Card.Text>
                                             </Col>
                                         )}
                                     </Row>
                                     <Col md={5}>
-                                        <Button onClick={handleSubmeterCurriculo}>
+                                        <Button variant='outline-primary' onClick={handleSubmeterCurriculo}>
                                             {loading ? (
                                                 <div className="d-flex justify-content-center">
                                                     <Spinner animation="border" variant="primary" />

@@ -101,14 +101,14 @@ const HeaderCandidato = () => {
                             </Link>
                             {isMobile && ( // Exibe os links no dropdown apenas no modo mobile
                                 <>
+                                    <Link to="/curriculo" className={`link ${location.pathname === '/curriculo' ? 'active' : ''}`}>
+                                        <Button className="opcao-usuario">Currículo</Button>
+                                    </Link>
                                     <Link to="/buscar-vagas" className={`link ${location.pathname === '/buscar-vagas' ? 'active' : ''}`}>
                                         <Button className="opcao-usuario">Oportunidades</Button>
                                     </Link>
                                     <Link to="/inscricoes-candidato" className={`link ${location.pathname === '/inscricoes-candidato' ? 'active' : ''}`}>
                                         <Button className="opcao-usuario">Inscrições</Button>
-                                    </Link>
-                                    <Link to="/curriculo" className={`link ${location.pathname === '/curriculo' ? 'active' : ''}`}>
-                                        <Button className="opcao-usuario">Currículo</Button>
                                     </Link>
                                 </>
                             )}

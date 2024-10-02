@@ -1,4 +1,3 @@
-// Curriculo.js
 import React, { useState, useEffect, useCallback } from 'react';
 import './Curriculo.css';
 import HeaderCandidato from '../HeaderCandidato/HeaderCandidato';
@@ -95,7 +94,7 @@ const Curriculo = () => {
             <HeaderCandidato />
             <main className='curriculo-content-usuario'>
                 <div className='curriculo-container-usuario'>
-                    <div className='tabs'>
+                    <div className='tabs-curriculo'>
                         <button className={activeTab === 'experiencia' ? 'active' : ''} onClick={() => setActiveTab('experiencia')}>Experiência</button>
                         <button className={activeTab === 'formacao' ? 'active' : ''} onClick={() => setActiveTab('formacao')}>Formação</button>
                         <button className={activeTab === 'adicionais' ? 'active' : ''} onClick={() => setActiveTab('adicionais')}>Informações</button>

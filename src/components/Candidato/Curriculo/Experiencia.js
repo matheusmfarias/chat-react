@@ -1,9 +1,9 @@
 // Import the necessary functions and hooks
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../../services/axiosConfig';
-import { Spinner } from 'react-bootstrap';
+import { Col, Row, Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faChevronDown, faChevronUp, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 const Experiencia = ({ experiencias, setExperiencias }) => {
     const [showPopup, setShowPopup] = useState(false);
@@ -140,13 +140,17 @@ const Experiencia = ({ experiencias, setExperiencias }) => {
                     ) : (
                         experiencias.map((exp, index) => (
                             <div key={index} className={`experience-card ${exp.expanded ? 'expanded' : ''}`}>
-                                <div className="card-header" onClick={() => toggleExpand(index)}>
-                                    <div className="header-left">
+                                <Row className="card-header" onClick={() => toggleExpand(index)}>
+                                    <Col md={11} className="header-left">
                                         <h4>{exp.empresa}</h4>
                                         <p>{exp.funcao}</p>
-                                    </div>
-                                    <span className="toggle-icon">{exp.expanded ? '▲' : '▼'}</span>
-                                </div>
+                                    </Col>
+                                    <Col md={1}>
+                                        <span className="toggle-icon">
+                                            {exp.expanded ? <FontAwesomeIcon icon={faChevronUp} /> : <FontAwesomeIcon icon={faChevronDown} />}
+                                        </span>
+                                    </Col>
+                                </Row>
                                 {exp.expanded && (
                                     <div className={`card-body ${exp.expanded ? 'expanded' : ''}`}>
                                         <div className="form-group">

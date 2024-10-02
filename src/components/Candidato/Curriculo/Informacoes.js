@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../../../services/axiosConfig';
 import { Spinner } from 'react-bootstrap';
 import './Informacoes.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 
 const Informacoes = () => {
     const [loading, setLoading] = useState('true');
@@ -148,7 +150,7 @@ const InformacaoCard = ({ title, inputName, inputValue, handleInputChange, tags,
             {tags.map((tag, index) => (
                 <div key={index} className="tag">
                     {tag}
-                    <span className="tag-close" onClick={() => handleRemoveTag(tag)}>x</span>
+                    <FontAwesomeIcon icon={faTimesCircle} className="tag-close" onClick={() => handleRemoveTag(tag)} />
                 </div>
             ))}
         </div>

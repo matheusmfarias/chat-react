@@ -4,6 +4,7 @@ import HeaderCandidato from "../HeaderCandidato/HeaderCandidato";
 import { Container, Row, Col, Card, Spinner, InputGroup, Form, Button, Pagination } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBriefcase, faBuilding, faHome, faLaptopHouse, faLocationDot, faMoneyBillWave, faSearch, faWheelchair } from "@fortawesome/free-solid-svg-icons";
+import './InscricoesCandidato.css';
 
 const InscricoesCandidato = () => {
     const [loading, setLoading] = useState(false);
@@ -38,11 +39,6 @@ const InscricoesCandidato = () => {
         fetchUserApplications();
     }, [currentPage, searchTerm]);
 
-    const handleClearSearch = () => {
-        setSearchTerm("");
-        setCurrentPage(1);
-    };
-
     const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
 
     const handleNextPage = () => {
@@ -60,38 +56,26 @@ const InscricoesCandidato = () => {
     return (
         <>
             <HeaderCandidato />
-            <Container fluid className='px-5' style={{ backgroundColor: '#f9f9f9f9', minHeight: "100vh" }}>
-                <Row className="mt-4" style={{ paddingLeft: '90px', paddingRight: '90px' }}>
+            <Container fluid style={{ backgroundColor: '#f9f9f9f9', minHeight: "100vh" }}>
+                <Row className="row-inscricoes-candidato mt-4">
                     <Col>
                         <h1>Minhas Inscrições</h1>
                     </Col>
-                </Row>
-                <Row style={{ paddingLeft: '90px', paddingRight: '90px' }}>
-                    <Col md={12} className="mt-2 mb-2">
+                    <Col xs={12} md={12} className="coluna-vagas mt-2">
                         <Row className="align-items-center">
-                            <InputGroup style={{ maxWidth: '700px' }}>
+                            <InputGroup style={{ maxWidth: '800px' }}>
                                 <Form.Control
                                     type="text"
-                                    className='shadow border-0'
+                                    className='input-buscar-vagas shadow border-primary'
                                     placeholder="Buscar por cargo..."
+                                    aria-label="Pesquisar"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
-                                <Button variant="outline-primary" style={{ maxWidth: '100px' }} onClick={() => setCurrentPage(1)}>
+                                <Button className="btn-buscar-vagas" variant="outline-primary" onClick={() => setCurrentPage(1)}>
                                     <FontAwesomeIcon icon={faSearch} />
                                 </Button>
                             </InputGroup>
-                            <Col md={2}>
-                                <Button
-                                    variant="outline-secondary"
-                                    className="m-2"
-                                    onClick={() => handleClearSearch()}
-                                    title="Limpar filtros"
-                                    style={{ width: '200px' }}
-                                >
-                                    Limpar busca
-                                </Button>
-                            </Col>
                         </Row>
                         <Row className="mt-4">
                             {loading ? (
@@ -103,7 +87,7 @@ const InscricoesCandidato = () => {
                             ) : (
                                 applications.map((application) => (
                                     <Col md={6} lg={4} key={application._id} className="mb-4 d-flex">
-                                        <Card className={`w-100 border-0 shadow-sm rounded p-3 d-flex flex-column candidate-card ${application.job && !application.job.status ? 'bg-light text-muted' : ''}`}>
+                                        <Card className={`w-100 border-0 shadow-sm rounded p-2 d-flex flex-column candidate-card ${application.job && !application.job.status ? 'bg-light text-muted' : ''}`}>
                                             <Card.Body>
                                                 {application.job ? (
                                                     <>
@@ -179,7 +163,7 @@ const InscricoesCandidato = () => {
 
                         {/* Paginação com botões de próximo e anterior */}
                         {totalPages > 1 && (
-                            <div className="d-flex justify-content-center mt-4">
+                            <div className="d-flex justify-content-center">
                                 <Pagination>
                                     <Pagination.Prev onClick={handlePreviousPage} disabled={currentPage === 1}>
                                     </Pagination.Prev>
