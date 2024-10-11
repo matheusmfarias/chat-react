@@ -17,17 +17,6 @@
     opacity: 0;
 }
 
-@media (max-width: 768px) {
-    .d-flex {
-        flex-direction: column;
-    }
-
-    .ml-2 {
-        margin-left: 0;
-        margin-top: 0.5rem;
-    }
-}
-
 .form-group-custom {
     margin-bottom: 20px;
 }
@@ -52,23 +41,34 @@
     cursor: pointer;
 }
 
-
+/* Estilos para dispositivos móveis */
 @media (max-width: 768px) {
-    .table-responsive {
-        overflow-x: auto;
-    }
 
     .table th,
     .table td {
-        padding: 5px;
-        font-size: 14px;
+        font-size: 12px;
+        /* Reduz o tamanho do texto para melhor ajuste */
     }
 
-    /* Optionally hide columns on smaller screens */
+    /* Opcionalmente ocultar colunas específicas no mobile */
     .table th:nth-child(2),
     .table td:nth-child(2),
     .table th:nth-child(4),
-    .table td:nth-child(4) {
+    .table td:nth-child(4),
+    .table th:nth-child(6),
+    .table td:nth-child(6),
+    .table th:nth-child(7),
+    .table td:nth-child(7) {
         display: none;
+    }
+
+    /* Ajustes em outros elementos de layout */
+    .d-flex {
+        flex-direction: column;
+    }
+
+    .ml-2 {
+        margin-left: 0;
+        margin-top: 0.5rem;
     }
 }

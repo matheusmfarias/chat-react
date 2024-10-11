@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './CarouselEmpresa.css';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Scrollbar } from 'swiper/modules';
+import { Autoplay } from 'swiper/modules'; // Importando o autoplay
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/scrollbar';
@@ -36,39 +36,38 @@ const CarouselEmpresa = () => {
         fetchJobs();
     }, []);
 
-    const swiperClass = jobs.length < 3 ? 'align-center' : 'align-start';
-
     return (
-        <div className={`carousel-empresa-container ${swiperClass}`}>
-            <h1>Vagas cadastradas</h1>
+        <div className="text-center carousel-container">
+            <h1 className="p-2 text-primary">Vagas cadastradas</h1>
             {jobs.length > 0 ? (
                 <Swiper
-                className='p-4 mb-4 w-100'
-                    modules={[Navigation, Pagination, Scrollbar]}
-                    navigation
-                    pagination={{ clickable: true }}
-                    loop={false}
-                    scrollbar={{ draggable: true }}
+                    className="w-100 p-4 mb-4"
+                    modules={[Autoplay]} // Adicionando o módulo Autoplay
+                    loop={true} // Faz o carrossel dar loop infinito
+                    autoplay={{
+                        delay: 0, // Sem delay entre transições
+                        disableOnInteraction: false, // O autoplay não para em interações
+                        pauseOnMouseEnter: false, // O autoplay continua mesmo com o mouse sobre o carrossel
+                    }}
+                    speed={3000}
+                    freeMode={true}
+                    allowTouchMove={false}
                     breakpoints={{
                         320: {
                             slidesPerView: 1,
-                            spaceBetween: 20,
+
                         },
                         640: {
-                            slidesPerView: 1,
-                            spaceBetween: 20, // Menor espaçamento em dispositivos móveis
+                            slidesPerView: 2,
                         },
                         768: {
-                            slidesPerView: 2, // Dois slides visíveis em tablets
-                            spaceBetween: 25,
+                            slidesPerView: 2,
                         },
                         1024: {
-                            slidesPerView: 2, // Três slides em desktops médios
-                            spaceBetween: 30,
+                            slidesPerView: 2,
                         },
-                        1440: {
-                            slidesPerView: 4, // Quatro slides em grandes desktops
-                            spaceBetween: 30,
+                        1500: {
+                            slidesPerView: 4,
                         }
                     }}
                 >

@@ -1,38 +1,3 @@
-.carousel-empresa-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    min-height: 50vh;
-}
-
-.carousel-empresa-container h1 {
-    font-size: 2.5rem;
-    color: #1876EA;
-    margin: 2vh;
-}
-
-.carousel-empresa-container .swiper {
-    width: 95%;
-    padding: 0 30px;
-}
-
-.swiper-scrollbar {
-    display: none;
-}
-
-.align-center .swiper-wrapper {
-    display: flex;
-    justify-content: center;
-    /* Centraliza os cartões */
-}
-
-.align-start .swiper-wrapper {
-    display: flex;
-    justify-content: flex-start;
-    /* Alinha os cartões no início */
-}
-
 .no-jobs-message {
     font-size: 1.2em;
     color: #1F5291;
@@ -44,78 +9,14 @@
     text-decoration: underline;
 }
 
-/* Garantir que todos os cards tenham a mesma altura */
 .swiper-slide .card {
     height: 350px;
-    width: 400px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    /* Garante que o conteúdo seja distribuído */
-    align-items: stretch;
-}
-
-/* Evitar que o conteúdo interno dos cards ultrapasse o tamanho definido */
-.swiper-slide .card-body {
-    overflow: hidden;
-    /* Ocultar qualquer conteúdo que ultrapasse o tamanho do card */
-    text-overflow: ellipsis;
-    /* Adiciona reticências (...) se o texto for muito longo */
+    max-width: 400px;
+    width: 100%;
 }
 
 @media (max-width: 768px) {
-    .carousel-empresa-container h1 {
-        font-size: 1.8rem;
-        /* Ajuste o título para dispositivos menores */
-    }
-
-    .carousel-empresa-container .swiper {
-        padding: 0 15px;
-        /* Reduzir padding para telas menores */
-    }
-
-    .carousel-empresa-container .swiper-slide {
-        width: auto;
-        /* Ajustar a largura automática para melhor responsividade */
-    }
-
-    .align-center .swiper-wrapper,
-    .align-start .swiper-wrapper {
-        justify-content: center;
-        /* Centraliza os cartões para evitar espaço vazio */
-    }
-
-    .carousel-empresa-container .swiper-button-prev {
-        left: -20px;
-        /* Ajustar para dispositivos móveis */
-    }
-
-    .carousel-empresa-container .swiper-button-next {
-        right: -20px;
-        /* Ajustar para dispositivos móveis */
-    }
-}
-
-.card-title {
-    font-size: 1.5rem;
-}
-
-@media (max-width: 768px) {
-    @media (max-width: 768px) {
-
-        /* Ajustes para dispositivos menores */
-        .swiper-slide .card {
-            height: 300px;
-            /* Altura menor para dispositivos móveis */
-        }
-
-        .card-title {
-            font-size: 1.2rem;
-            /* Reduzir tamanho da fonte para manter a consistência */
-        }
-
-        .card-body .text-primary {
-            font-size: 0.9rem;
-        }
+    .swiper-slide .card {
+        width: 95%;
     }
 }

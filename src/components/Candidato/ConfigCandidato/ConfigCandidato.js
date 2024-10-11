@@ -336,7 +336,7 @@ const Config = () => {
                         <button className={activeTab === 'address' ? 'active' : ''} onClick={() => setActiveTab('address')}>Configurações de endereço</button>
                     </div>
                     {loading ? (
-                        <div className="d-flex justify-content-center">
+                        <div className="d-flex justify-content-center align-items-center">
                             <Spinner animation="border" variant="primary" />
                         </div>
                     ) : (

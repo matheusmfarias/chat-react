@@ -13,12 +13,14 @@ const DetalhesVaga = () => {
     const location = useLocation();
     const navigate = useNavigate(); // Hook para navegação
     const { job } = location.state;
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const [loadingSubmit, setLoadingSubmit] = useState(false);
     const [experiencias, setExperiencias] = useState([]);
     const [formacoes, setFormacoes] = useState([]);
     const [informacoes, setInformacoes] = useState({});
 
     const fetchUserInfo = useCallback(async () => {
+        setLoading(true);
         try {
             const token = localStorage.getItem('token');
             const response = await api.get(`${process.env.REACT_APP_API_URL}/api/user/candidato`, {
@@ -46,7 +48,7 @@ const DetalhesVaga = () => {
             setFormacoes(user.formacao || []);
 
         } catch (error) {
-            console.error('Erro ao buscar informações do usuário', error);
+            console.error('Ocorreu um erro ao buscar as informações. Por favor, tente novamente mais tarde.');
         } finally {
             setLoading(false);
         }
@@ -62,7 +64,7 @@ const DetalhesVaga = () => {
     };
 
     const handleSubmeterCurriculo = async () => {
-        setLoading(true);
+        setLoadingSubmit(true);
         try {
             const token = localStorage.getItem('token');
             await api.post(`${process.env.REACT_APP_API_URL}/api/jobs/${job._id}/submit-curriculum`, {}, {
@@ -83,7 +85,7 @@ const DetalhesVaga = () => {
             });
 
         } catch (error) {
-            console.error('Erro ao submeter currículo:', error);
+            console.error('Ocorreu um erro ao submeter o currículo. Por favor, tente novamente mais tarde.');
 
             Swal.fire({
                 icon: 'error',
@@ -98,7 +100,7 @@ const DetalhesVaga = () => {
                 }
             });
         } finally {
-            setLoading(false);
+            setLoadingSubmit(false);
         }
     };
 
@@ -129,63 +131,73 @@ const DetalhesVaga = () => {
                         <Col md={5}>
                             <Card className="vaga-detalhe border-0 p-0">
                                 <Card.Body className="shadow-sm rounded">
-                                    <Card.Title>{job.title}</Card.Title>
-                                    {job.identifyCompany && job.company ? (
-                                        <Card.Text>{job.company.nome}</Card.Text>
+                                    {loading ? (
+                                        <div className="d-flex justify-content-center align-items-center">
+                                            <Spinner animation="border" variant="primary" />
+                                        </div>
                                     ) : (
-                                        <Card.Text>Empresa confidencial</Card.Text>
-                                    )}
-                                    <Row className="mb-2">
-                                        <Col>
-                                            <Card.Text>
-                                                <FontAwesomeIcon style={{ width: '14px' }} className="me-2" icon={faLocationDot} title="Localização" />
-                                                {job.location}
-                                            </Card.Text>
-                                        </Col>
-                                    </Row>
-                                    <Row className="icones-vaga mb-3">
-                                        <Col className="mb-2">
-                                            <Card.Text>
-                                                <FontAwesomeIcon  style={{ width: '14px' }} className="me-2" icon={
-                                                    job.modality === 'Remoto' ? faHome :
-                                                        job.modality === 'Presencial' ? faBuilding :
-                                                            faLaptopHouse
-                                                } title="Modelo" />
-                                                {job.modality}
-                                            </Card.Text>
-                                        </Col>
-                                        <Col className="mb-2">
-                                            <Card.Text>
-                                                <FontAwesomeIcon style={{ width: '14px' }} className="me-2" icon={faBriefcase} title="Tipo" />
-                                                {job.type}
-                                            </Card.Text>
-                                        </Col>
-                                        <Col className="mb-2">
-                                            <Card.Text>
-                                                <FontAwesomeIcon style={{ width: '14px' }} className="me-2" icon={faMoneyBillWave} title="Salário" />
-                                                {job.salary ? `${job.salary}` : "A combinar"}
-                                            </Card.Text>
-                                        </Col>
-                                        {job.pcd && (
-                                            <Col>
-                                                <Card.Text>
-                                                    <FontAwesomeIcon style={{ width: '14px' }} className="me-2" icon={faWheelchair} title="PcD" />
-                                                    PcD
-                                                </Card.Text>
-                                            </Col>
-                                        )}
-                                    </Row>
-                                    <Col md={5}>
-                                        <Button variant='outline-primary' onClick={handleSubmeterCurriculo}>
-                                            {loading ? (
-                                                <div className="d-flex justify-content-center">
-                                                    <Spinner animation="border" variant="primary" />
-                                                </div>
+                                        <>
+                                            <Card.Title>{job.title}</Card.Title>
+                                            {job.identifyCompany && job.company ? (
+                                                <Card.Text>{job.company.nome}</Card.Text>
                                             ) : (
-                                                <span>Submeter currículo</span>
+                                                <Card.Text>Empresa confidencial</Card.Text>
                                             )}
-                                        </Button>
-                                    </Col>
+                                            <Row className="mb-2">
+                                                <Col>
+                                                    <Card.Text>
+                                                        <FontAwesomeIcon style={{ width: '14px' }} className="me-2" icon={faLocationDot} title="Localização" />
+                                                        {job.location}
+                                                    </Card.Text>
+                                                </Col>
+                                            </Row>
+                                            <Row className="icones-vaga">
+                                                <Col className="mb-2">
+                                                    <Card.Text>
+                                                        <FontAwesomeIcon style={{ width: '14px' }} className="me-2" icon={
+                                                            job.modality === 'Remoto' ? faHome :
+                                                                job.modality === 'Presencial' ? faBuilding :
+                                                                    faLaptopHouse
+                                                        } title="Modelo" />
+                                                        {job.modality}
+                                                    </Card.Text>
+                                                </Col>
+                                                <Col className="mb-2">
+                                                    <Card.Text>
+                                                        <FontAwesomeIcon style={{ width: '14px' }} className="me-2" icon={faBriefcase} title="Tipo" />
+                                                        {job.type}
+                                                    </Card.Text>
+                                                </Col>
+                                                <Col className="mb-2">
+                                                    <Card.Text>
+                                                        <FontAwesomeIcon style={{ width: '14px' }} className="me-2" icon={faMoneyBillWave} title="Salário" />
+                                                        {job.salary ? `${job.salary}` : "A combinar"}
+                                                    </Card.Text>
+                                                </Col>
+                                            </Row>
+                                            <Row className="mb-2">
+                                                {job.pcd && (
+                                                    <Col>
+                                                        <Card.Text>
+                                                            <FontAwesomeIcon style={{ width: '14px' }} className="me-2" icon={faWheelchair} title="PcD" />
+                                                            PcD
+                                                        </Card.Text>
+                                                    </Col>
+                                                )}
+                                            </Row>
+                                            <Col md={5}>
+                                                <Button variant='outline-primary' onClick={handleSubmeterCurriculo}>
+                                                    {loadingSubmit ? (
+                                                        <div className="d-flex justify-content-center align-items-center">
+                                                            <Spinner animation="border" variant="primary" />
+                                                        </div>
+                                                    ) : (
+                                                        <span>Enviar currículo</span>
+                                                    )}
+                                                </Button>
+                                            </Col>
+                                        </>
+                                    )}
                                 </Card.Body>
 
                                 <Card.Body style={{ maxHeight: '60vh', overflowY: 'auto' }} className="shadow-sm rounded">

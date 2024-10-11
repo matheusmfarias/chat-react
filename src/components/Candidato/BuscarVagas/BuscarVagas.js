@@ -16,6 +16,7 @@ const BuscarVagas = () => {
     const [loadingDetails, setLoadingDetails] = useState(false);
     const keyword = location.state?.keyword || '';
     const [selectedJob, setSelectedJob] = useState(null);
+    const [visuallySelectedJob, setVisuallySelectedJob] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
@@ -94,20 +95,23 @@ const BuscarVagas = () => {
 
     // Função para abrir o modal ao clicar em uma vaga no mobile
     const handleCardClickMobile = async (job) => {
-        setLoadingDetails(true);
+        // Define o job visualmente selecionado e abre o modal imediatamente
+        setVisuallySelectedJob(job);
+        setShowJobModal(true); // Abre o modal instantaneamente
+    
+        setLoadingDetails(true); // Indica que os dados estão sendo carregados
         try {
             const token = localStorage.getItem('token');
             const response = await api.get(`${process.env.REACT_APP_API_URL}/api/jobsSearch/${job._id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setSelectedJob(response.data);
-            setShowJobModal(true);
+            setSelectedJob(response.data); // Atualiza os detalhes da vaga
         } catch (error) {
             console.error('Erro ao buscar detalhes da vaga:', error);
         } finally {
-            setLoadingDetails(false);
+            setLoadingDetails(false); // Indica que o carregamento terminou
         }
-    };
+    };    
 
     const handleCloseJobModal = () => setShowJobModal(false);
 
@@ -170,6 +174,7 @@ const BuscarVagas = () => {
     }, [jobs]);
 
     const handleCardClick = async (job) => {
+        setVisuallySelectedJob(job);
         setLoadingDetails(true);
         try {
             const token = localStorage.getItem('token');
@@ -201,6 +206,7 @@ const BuscarVagas = () => {
 
     useEffect(() => {
         const firstJobOnPage = jobs.slice(startIndex, startIndex + itemsPerPage)[0];
+        setVisuallySelectedJob(firstJobOnPage);
         setSelectedJob(firstJobOnPage);
     }, [currentPage, jobs, itemsPerPage, startIndex]);
 
@@ -212,7 +218,7 @@ const BuscarVagas = () => {
     return (
         <>
             <HeaderCandidato />
-            <Container fluid style={{ backgroundColor: '#f9f9f9f9', minHeight: "100vh" }}>
+            <Container fluid style={{ backgroundColor: '#f9f9f9f9' }}>
                 <Row className="row-buscar-vagas mt-4">
                     <h1>Oportunidades</h1>
                     <Col className='coluna-filtros mt-2 mb-4' style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000', overflowY: 'hidden' }}>
@@ -297,7 +303,7 @@ const BuscarVagas = () => {
                                 </Form.Control>
                             </Col>
                         </Row>
-                        <Row className='mb-4 align-items-center'>
+                        <Row className='mb-4 align-items-center '>
                             <h5>PCD</h5>
                             <Col xs={12} md={10}>
                                 <Form.Control
@@ -344,7 +350,7 @@ const BuscarVagas = () => {
                                     className="btn-limpar-busca"
                                     variant="outline-secondary"
                                     onClick={() => handleClearSearch()}
-                                    title="Limpar filtros"
+                                    title="Limpar busca"
                                 >
                                     Limpar busca
                                 </Button>
@@ -538,7 +544,7 @@ const BuscarVagas = () => {
                         </Modal>
                         <Row className="mt-3">
                             {loading ? (
-                                <div className="d-flex justify-content-center">
+                                <div className="d-flex justify-content-center align-items-center">
                                     <Spinner animation="border" variant="primary" />
                                 </div>
                             ) : currentItems.length > 0 ? (
@@ -547,7 +553,7 @@ const BuscarVagas = () => {
                                         {currentItems.map(result => (
                                             <Card
                                                 key={result._id}
-                                                className={`vaga-card p-2 mb-4 border-0 shadow-sm rounded ${selectedJob && selectedJob._id === result._id ? 'vaga-card-selecionada shadow' : ''}`}
+                                                className={`vaga-card p-2 mb-4 border-0 shadow-sm rounded ${visuallySelectedJob && visuallySelectedJob._id === result._id ? 'vaga-card-selecionada shadow' : ''}`}
                                                 onClick={() => {
                                                     if (window.innerWidth <= 768) {
                                                         // Chama o modal no mobile
@@ -764,118 +770,126 @@ const BuscarVagas = () => {
                                     </Col>
                                     {/* Modal para os detalhes da vaga no mobile */}
                                     <Modal show={showJobModal} onHide={handleCloseJobModal} centered>
-                                        <Modal.Header closeButton>
-                                            <Modal.Title>Detalhes da vaga</Modal.Title>
-                                        </Modal.Header>
-                                        <Modal.Body>
-                                            {selectedJob ? (
-                                                <>
-                                                    <Card className="vaga-detalhe border-0">
-                                                        <Card.Body className="p-0">
-                                                            <Card.Title>{selectedJob.title}</Card.Title>
-                                                            <Card.Text>{selectedJob.company ? selectedJob.company.nome : 'Empresa confidencial'}</Card.Text>
-                                                            <Row className="mb-2">
-                                                                <Col>
-                                                                    <Card.Text>
-                                                                        <FontAwesomeIcon style={{ width: '14px' }} className="me-2" icon={faLocationDot} title="Localização" />
-                                                                        {selectedJob.location}
-                                                                    </Card.Text>
-                                                                </Col>
-                                                            </Row>
-                                                            <Row className="mb-3 d-flex">
-                                                                <Col className="mb-2">
-                                                                    <Card.Text>
-                                                                        <FontAwesomeIcon
-                                                                            className="me-2"
-                                                                            icon={selectedJob.modality === 'Remoto' ? faHome : selectedJob.modality === 'Presencial' ? faBuilding : faLaptopHouse}
-                                                                            title="Modelo"
-                                                                            style={{ width: '14px' }}
-                                                                        />
-                                                                        {selectedJob.modality}
-                                                                    </Card.Text>
-                                                                </Col>
-                                                                <Col className="mb-2">
-                                                                    <Card.Text>
-                                                                        <FontAwesomeIcon className="me-2" icon={faBriefcase} title="Tipo" style={{ width: '14px' }} />
-                                                                        {selectedJob.type}
-                                                                    </Card.Text>
-                                                                </Col>
-                                                                <Col className="mb-2">
-                                                                    <Card.Text>
-                                                                        <FontAwesomeIcon className="me-2" icon={faMoneyBillWave} title="Salário" style={{ width: '14px' }} />
-                                                                        {selectedJob.salary ? selectedJob.salary : 'A combinar'}
-                                                                    </Card.Text>
-                                                                </Col>
-                                                                <Col>
-                                                                    {selectedJob.pcd && (
-                                                                        <Card.Text>
-                                                                            <FontAwesomeIcon className="me-2" icon={faWheelchair} title="PcD" style={{ width: '14px' }} />
-                                                                            PcD
-                                                                        </Card.Text>
-                                                                    )}
-                                                                </Col>
-                                                            </Row>
-                                                            <Col md={4} className="justify-content-center">
-                                                                <Button onClick={handleCandidatarClick}>
-                                                                    Candidatar-se <FontAwesomeIcon icon={faUpRightFromSquare} title="Link" />
-                                                                </Button>
-                                                            </Col>
-                                                        </Card.Body>
-                                                        <Card.Body className="p-0 mt-2">
-                                                            {selectedJob.offers || selectedJob.description || selectedJob.responsibilities || selectedJob.qualifications || selectedJob.requiriments || selectedJob.additionalInfo ? (
-                                                                <>
-                                                                    {selectedJob.offers && (
+                                        {loadingDetails ? (
+                                            <div className="d-flex justify-content-center align-items-center p-4">
+                                                <Spinner animation="border" variant="primary" />
+                                            </div>
+                                        ) : selectedJob ? (
+                                            <>
+                                                <Modal.Header closeButton>
+                                                    <Modal.Title>Detalhes da vaga</Modal.Title>
+                                                </Modal.Header>
+                                                <Modal.Body>
+                                                    {selectedJob ? (
+                                                        <>
+                                                            <Card className="vaga-detalhe border-0">
+                                                                <Card.Body className="p-0">
+                                                                    <Card.Title>{selectedJob.title}</Card.Title>
+                                                                    <Card.Text>{selectedJob.company ? selectedJob.company.nome : 'Empresa confidencial'}</Card.Text>
+                                                                    <Row className="mb-2">
+                                                                        <Col>
+                                                                            <Card.Text>
+                                                                                <FontAwesomeIcon style={{ width: '14px' }} className="me-2" icon={faLocationDot} title="Localização" />
+                                                                                {selectedJob.location}
+                                                                            </Card.Text>
+                                                                        </Col>
+                                                                    </Row>
+                                                                    <Row className="mb-3 d-flex">
+                                                                        <Col className="mb-2">
+                                                                            <Card.Text>
+                                                                                <FontAwesomeIcon
+                                                                                    className="me-2"
+                                                                                    icon={selectedJob.modality === 'Remoto' ? faHome : selectedJob.modality === 'Presencial' ? faBuilding : faLaptopHouse}
+                                                                                    title="Modelo"
+                                                                                    style={{ width: '14px' }}
+                                                                                />
+                                                                                {selectedJob.modality}
+                                                                            </Card.Text>
+                                                                        </Col>
+                                                                        <Col className="mb-2">
+                                                                            <Card.Text>
+                                                                                <FontAwesomeIcon className="me-2" icon={faBriefcase} title="Tipo" style={{ width: '14px' }} />
+                                                                                {selectedJob.type}
+                                                                            </Card.Text>
+                                                                        </Col>
+                                                                        <Col className="mb-2">
+                                                                            <Card.Text>
+                                                                                <FontAwesomeIcon className="me-2" icon={faMoneyBillWave} title="Salário" style={{ width: '14px' }} />
+                                                                                {selectedJob.salary ? selectedJob.salary : 'A combinar'}
+                                                                            </Card.Text>
+                                                                        </Col>
+                                                                        <Col>
+                                                                            {selectedJob.pcd && (
+                                                                                <Card.Text>
+                                                                                    <FontAwesomeIcon className="me-2" icon={faWheelchair} title="PcD" style={{ width: '14px' }} />
+                                                                                    PcD
+                                                                                </Card.Text>
+                                                                            )}
+                                                                        </Col>
+                                                                    </Row>
+                                                                    <Col md={4} className="justify-content-center">
+                                                                        <Button onClick={handleCandidatarClick}>
+                                                                            Candidatar-se <FontAwesomeIcon icon={faUpRightFromSquare} title="Link" />
+                                                                        </Button>
+                                                                    </Col>
+                                                                </Card.Body>
+                                                                <Card.Body className="p-0 mt-2">
+                                                                    {selectedJob.offers || selectedJob.description || selectedJob.responsibilities || selectedJob.qualifications || selectedJob.requiriments || selectedJob.additionalInfo ? (
                                                                         <>
-                                                                            <Card.Title>Benefícios</Card.Title>
-                                                                            <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.offers }} />
+                                                                            {selectedJob.offers && (
+                                                                                <>
+                                                                                    <Card.Title>Benefícios</Card.Title>
+                                                                                    <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.offers }} />
+                                                                                </>
+                                                                            )}
+                                                                            {selectedJob.description && (
+                                                                                <>
+                                                                                    <Card.Title>Descrição</Card.Title>
+                                                                                    <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.description }} />
+                                                                                </>
+                                                                            )}
+                                                                            {selectedJob.responsibilities && (
+                                                                                <>
+                                                                                    <Card.Title>Responsabilidades e atribuições</Card.Title>
+                                                                                    <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.responsibilities }} />
+                                                                                </>
+                                                                            )}
+                                                                            {selectedJob.qualifications && (
+                                                                                <>
+                                                                                    <Card.Title>Requisitos e qualificações</Card.Title>
+                                                                                    <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.qualifications }} />
+                                                                                </>
+                                                                            )}
+                                                                            {selectedJob.requiriments && (
+                                                                                <>
+                                                                                    <Card.Title>Será um diferencial</Card.Title>
+                                                                                    <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.requiriments }} />
+                                                                                </>
+                                                                            )}
+                                                                            {selectedJob.additionalInfo && (
+                                                                                <>
+                                                                                    <Card.Title>Informações adicionais</Card.Title>
+                                                                                    <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.additionalInfo }} />
+                                                                                </>
+                                                                            )}
                                                                         </>
+                                                                    ) : (
+                                                                        <Card.Text>Nenhuma informação adicional informada.</Card.Text>
                                                                     )}
-                                                                    {selectedJob.description && (
-                                                                        <>
-                                                                            <Card.Title>Descrição</Card.Title>
-                                                                            <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.description }} />
-                                                                        </>
-                                                                    )}
-                                                                    {selectedJob.responsibilities && (
-                                                                        <>
-                                                                            <Card.Title>Responsabilidades e atribuições</Card.Title>
-                                                                            <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.responsibilities }} />
-                                                                        </>
-                                                                    )}
-                                                                    {selectedJob.qualifications && (
-                                                                        <>
-                                                                            <Card.Title>Requisitos e qualificações</Card.Title>
-                                                                            <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.qualifications }} />
-                                                                        </>
-                                                                    )}
-                                                                    {selectedJob.requiriments && (
-                                                                        <>
-                                                                            <Card.Title>Será um diferencial</Card.Title>
-                                                                            <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.requiriments }} />
-                                                                        </>
-                                                                    )}
-                                                                    {selectedJob.additionalInfo && (
-                                                                        <>
-                                                                            <Card.Title>Informações adicionais</Card.Title>
-                                                                            <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.additionalInfo }} />
-                                                                        </>
-                                                                    )}
-                                                                </>
-                                                            ) : (
-                                                                <Card.Text>Nenhuma informação adicional informada.</Card.Text>
-                                                            )}
-                                                        </Card.Body>
-                                                    </Card>
-                                                </>
-                                            ) : (
-                                                <p>Carregando detalhes...</p>
-                                            )}
-                                        </Modal.Body>
-                                        <Modal.Footer>
-                                            <Button variant="secondary" onClick={handleCloseJobModal}>
-                                                Fechar
-                                            </Button>
-                                        </Modal.Footer>
+                                                                </Card.Body>
+                                                            </Card>
+                                                        </>
+                                                    ) : (
+                                                        <p>Carregando detalhes...</p>
+                                                    )}
+                                                </Modal.Body>
+                                                <Modal.Footer>
+                                                    <Button variant="secondary" onClick={handleCloseJobModal}>
+                                                        Fechar
+                                                    </Button>
+                                                </Modal.Footer>
+                                            </>
+                                        ) : null}
                                     </Modal>
                                 </>
                             ) : (

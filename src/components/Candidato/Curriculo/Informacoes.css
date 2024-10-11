@@ -4,6 +4,7 @@
     align-items: center;
     justify-content: center;
     gap: 20px;
+    padding: 10px;
 }
 
 .informacoes-card {
@@ -15,7 +16,7 @@
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    width: 70%;
+    width: 75%;
 }
 
 .tags-container {
@@ -54,6 +55,10 @@
 }
 
 @media (max-width: 768px) {
+    .informacoes-container {
+        padding: 0;
+    }
+
     .informacoes-card {
         width: 100%;
         padding: 10px;
@@ -72,5 +77,8 @@
         width: 100%;
     }
 
+    .txt-tag {
+        font-size: 14px;
+    }
 
 }

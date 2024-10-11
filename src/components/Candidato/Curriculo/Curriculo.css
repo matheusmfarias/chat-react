@@ -1,6 +1,5 @@
 .curriculo-content-usuario {
     display: flex;
-    min-height: calc(100vh - 210px);
     justify-content: center;
     padding: 20px;
     background-color: #f9f9f9f9;
@@ -58,7 +57,7 @@
     padding: 10px 10px 0px 10px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    width: 70%;
+    width: 75%;
     margin-bottom: 10px;
     transition: max-height 0.3s ease-in-out;
 }
@@ -167,12 +166,8 @@
 }
 
 .popup-content {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
     background-color: #ffffff;
-    padding: 30px;
+    padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     width: 100%;
@@ -187,8 +182,7 @@
 
 .popup-content .form-group {
     margin-bottom: 10px;
-    width: 400px;
-    max-width: 400px;
+    width: 100%;
 }
 
 .popup-content .form-group label {
@@ -225,23 +219,20 @@
     margin-top: 20px;
 }
 
-.popup-content button {
-    background-color: #1F5291;
-    justify-content: center;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    width: auto;
-}
-
-.popup-content button:hover {
-    background-color: #286abb;
+.btn-adicionar-curriculo {
+    width: 75%;
 }
 
 @media (max-width: 768px) {
-    
+
+    .curriculo-form .form-columns-container {
+        padding: 0;
+    }
+
+    .tabs-curriculo {
+        margin-bottom: 0;
+    }
+
     .experience-card {
         width: 100%;
     }
@@ -252,6 +243,14 @@
 
     .btn-exp {
         width: 100%;
+    }
+
+    .btn-adicionar-curriculo {
+        width: 100%;
+    }
+
+    .popup-content {
+        width: 95%;
     }
 
 }

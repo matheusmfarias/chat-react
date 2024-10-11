@@ -19,7 +19,7 @@ const Carousel = () => {
     <div className="text-center carousel-container">
       <h1 className="p-2 text-primary">Empresas que publicam vagas na ACI</h1>
       <Swiper
-      className="w-100 p-4 mb-4"
+        className="w-100 p-4 mb-4"
         modules={[Autoplay]} // Adicionando o módulo Autoplay
         loop={true} // Faz o carrossel dar loop infinito
         autoplay={{
@@ -33,7 +33,7 @@ const Carousel = () => {
         breakpoints={{
           320: {
             slidesPerView: 2,
-            
+
           },
           640: {
             slidesPerView: 4,

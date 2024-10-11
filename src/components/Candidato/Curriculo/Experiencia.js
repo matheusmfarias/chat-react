@@ -9,7 +9,9 @@ import ReactSelect from 'react-select';
 const Experiencia = ({ experiencias, setExperiencias }) => {
     const [showPopup, setShowPopup] = useState(false);
     const [isClosing, setIsClosing] = useState(false);
-    const [loading, setLoading] = useState('true');
+    const [loading, setLoading] = useState(true);
+    const [loadingAdd, setLoadingAdd] = useState(false);
+    const [loadingDelete, setLoadingDelete] = useState(false);
     const [newExperiencia, setNewExperiencia] = useState({
         empresa: '',
         mesInicial: '',
@@ -54,6 +56,7 @@ const Experiencia = ({ experiencias, setExperiencias }) => {
     }, [fetchExperiences]);
 
     const handleAddExperiencia = async () => {
+        setLoadingAdd(true);
         try {
             await api.post(`${process.env.REACT_APP_API_URL}/api/user/experiences`, newExperiencia, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -72,6 +75,8 @@ const Experiencia = ({ experiencias, setExperiencias }) => {
             });
         } catch (error) {
             console.error('Erro ao adicionar experiência:', error);
+        } finally {
+            setLoadingAdd(false);
         }
     };
 
@@ -93,6 +98,7 @@ const Experiencia = ({ experiencias, setExperiencias }) => {
 
     const handleSaveEdit = async (index) => {
         const experiencia = experiencias[index];
+        setLoadingAdd(true);
         try {
             await api.put(`${process.env.REACT_APP_API_URL}/api/user/experiences/${experiencia._id}`, experiencia, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -100,6 +106,8 @@ const Experiencia = ({ experiencias, setExperiencias }) => {
             fetchExperiences();
         } catch (error) {
             console.error('Erro ao atualizar experiência:', error);
+        } finally {
+            setLoadingAdd(false);
         }
     };
 
@@ -123,6 +131,7 @@ const Experiencia = ({ experiencias, setExperiencias }) => {
 
     const handleDeleteExperiencia = async (index) => {
         const experiencia = experiencias[index];
+        setLoadingDelete(true);
         try {
             await api.delete(`${process.env.REACT_APP_API_URL}/api/user/experiences/${experiencia._id}`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -130,6 +139,8 @@ const Experiencia = ({ experiencias, setExperiencias }) => {
             fetchExperiences();
         } catch (error) {
             console.error('Erro ao remover experiência:', error);
+        } finally {
+            setLoadingDelete(false);
         }
     };
 
@@ -203,7 +214,7 @@ const Experiencia = ({ experiencias, setExperiencias }) => {
                     </div>
                 ) : (
                     experiencias.length === 0 ? (
-                        <p>Nenhuma experiência informada. Clique em "Adicionar" para cadastrar.</p>
+                        <p className='text-center'>Nenhuma experiência informada. Clique em "Adicionar" para cadastrar.</p>
                     ) : (
                         experiencias.map((exp, index) => (
                             <div key={index} className={`experience-card ${exp.expanded ? 'expanded' : ''}`}>
@@ -285,75 +296,111 @@ const Experiencia = ({ experiencias, setExperiencias }) => {
                                             <textarea name="atividades" value={exp.atividades || ''} onChange={(e) => handleEditChange(index, e)}></textarea>
                                         </div>
                                         <div className='d-flex flex-column align-items-center mb-2'>
-                                            <Button className="btn-exp btn-primary mt-2"  onClick={() => handleSaveEdit(index)} disabled={!exp.edited}>Salvar</Button>
-                                            <Button className="btn-exp btn-danger mt-2" onClick={() => handleDeleteExperiencia(index)}>Deletar</Button>
+                                            <Button className="btn-exp btn-primary mt-2" onClick={() => handleSaveEdit(index)} disabled={!exp.edited}>
+                                                {loadingAdd ? (
+                                                    <div className="d-flex justify-content-center align-items-center">
+                                                        <Spinner animation="border" variant="white" />
+                                                    </div>
+                                                ) : (
+                                                    <span>Salvar</span>
+                                                )}
+                                            </Button>
+                                            <Button className="btn-exp btn-danger mt-2" onClick={() => handleDeleteExperiencia(index)}>
+                                                {loadingDelete ? (
+                                                    <div className="d-flex justify-content-center align-items-center">
+                                                        <Spinner animation="border" variant="white" />
+                                                    </div>
+                                                ) : (
+                                                    <span>Deletar</span>
+                                                )}
+                                            </Button>
                                         </div>
                                     </div>
                                 )}
                             </div>
                         ))
                     ))}
-                <button type="button" className="add-experience-btn" onClick={() => setShowPopup(true)}>Adicionar</button>
+                <Button className="btn-adicionar-curriculo mt-4" onClick={() => setShowPopup(true)}>Adicionar</Button>
             </div>
             {showPopup && (
                 <div className={`popup-overlay ${isClosing ? 'closing' : ''}`}>
                     <div className={`popup-content ${isClosing ? 'closing' : ''}`}>
                         <h3>Adicionar Experiência</h3>
-                        <div>
-                            <div className="form-group">
-                                <label>Empresa</label>
-                                <input type="text" name="empresa" value={newExperiencia.empresa} onChange={handleInputChange} />
+                        <div className="form-group">
+                            <label>Empresa</label>
+                            <input type="text" name="empresa" value={newExperiencia.empresa} onChange={handleInputChange} required />
+                        </div>
+                        <div className="form-group">
+                            <label>Início</label>
+                            <div className="date-select">
+                                <ReactSelect
+                                    name="mesInicial"
+                                    value={mesesOptions.find(option => option.value === newExperiencia.mesInicial) || null}
+                                    onChange={(selectedOption) => handleInputChange({ target: { name: 'mesInicial', value: selectedOption ? selectedOption.value : '' } })}
+                                    options={mesesOptions}
+                                    placeholder="Mês"
+                                    styles={customStyles}
+                                    isSearchable={false}
+                                />
+                                <ReactSelect
+                                    name="anoInicial"
+                                    value={anosOptions.find(option => option.value === newExperiencia.anoInicial) || null}
+                                    onChange={(selectedOption) => handleInputChange({ target: { name: 'anoInicial', value: selectedOption ? selectedOption.value : '' } })}
+                                    options={anosOptions}
+                                    placeholder="Ano"
+                                    styles={customStyles}
+                                    isSearchable={false}
+                                />
                             </div>
-                            <div className="form-group">
-                                <label>Início</label>
-                                <div className="date-select">
-                                    <select name="mesInicial" value={newExperiencia.mesInicial} onChange={handleInputChange}>
-                                        <option value="">Mês</option>
-                                        {meses.map((mes, index) => (
-                                            <option key={index} value={mes}>{mes}</option>
-                                        ))}
-                                    </select>
-                                    <select name="anoInicial" value={newExperiencia.anoInicial} onChange={handleInputChange}>
-                                        <option value="">Ano</option>
-                                        {anos.map((ano, index) => (
-                                            <option key={index} value={ano}>{ano}</option>
-                                        ))}
-                                    </select>
-                                </div>
+                        </div>
+                        <div className="form-group">
+                            <label>Fim</label>
+                            <div className="date-select">
+                                <ReactSelect
+                                    name="mesFinal"
+                                    value={mesesOptions.find(option => option.value === newExperiencia.mesFinal) || null}
+                                    onChange={(selectedOption) => handleInputChange({ target: { name: 'mesFinal', value: selectedOption ? selectedOption.value : '' } })}
+                                    options={mesesOptions}
+                                    placeholder="Mês"
+                                    isSearchable={false}
+                                    styles={customStyles}
+                                    isDisabled={newExperiencia.trabalhoAtualmente} // Desativa o select se estiver trabalhando atualmente
+                                />
+                                <ReactSelect
+                                    name="anoFinal"
+                                    value={anosOptions.find(option => option.value === newExperiencia.anoFinal) || null}
+                                    onChange={(selectedOption) => handleInputChange({ target: { name: 'anoFinal', value: selectedOption ? selectedOption.value : '' } })}
+                                    options={anosOptions}
+                                    placeholder="Ano"
+                                    isSearchable={false}
+                                    styles={customStyles}
+                                    isDisabled={newExperiencia.trabalhoAtualmente} // Desativa o select se estiver trabalhando atualmente
+                                />
                             </div>
-                            <div className="form-group">
-                                <label>Fim</label>
-                                <div className="date-select">
-                                    <select name="mesFinal" value={newExperiencia.mesFinal} onChange={handleInputChange} disabled={newExperiencia.trabalhoAtualmente}>
-                                        <option value="">Mês</option>
-                                        {meses.map((mes, index) => (
-                                            <option key={index} value={mes}>{mes}</option>
-                                        ))}
-                                    </select>
-                                    <select name="anoFinal" value={newExperiencia.anoFinal} onChange={handleInputChange} disabled={newExperiencia.trabalhoAtualmente}>
-                                        <option value="">Ano</option>
-                                        {anos.map((ano, index) => (
-                                            <option key={index} value={ano}>{ano}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <label>
-                                    <input type="checkbox" name="trabalhoAtualmente" checked={newExperiencia.trabalhoAtualmente} onChange={handleInputChange} />
-                                    Trabalho Atualmente
-                                </label>
-                            </div>
-                            <div className="form-group">
-                                <label>Função/Cargo</label>
-                                <input type="text" name="funcao" value={newExperiencia.funcao} onChange={handleInputChange} />
-                            </div>
-                            <div className="form-group">
-                                <label>Principais atividades</label>
-                                <textarea name="atividades" value={newExperiencia.atividades} onChange={handleInputChange}></textarea>
-                            </div>
-                            <div className="button-group">
-                                <button type="button" onClick={handleAddExperiencia}>Adicionar</button>
-                                <button type="button" onClick={closePopup}>Cancelar</button>
-                            </div>
+                            <label className='text-dark'>
+                                <input type="checkbox" name="trabalhoAtualmente" checked={newExperiencia.trabalhoAtualmente} onChange={handleInputChange} />
+                                Trabalho Atualmente
+                            </label>
+                        </div>
+                        <div className="form-group">
+                            <label>Função/Cargo</label>
+                            <input type="text" name="funcao" value={newExperiencia.funcao} onChange={handleInputChange} />
+                        </div>
+                        <div className="form-group">
+                            <label>Principais atividades</label>
+                            <textarea name="atividades" value={newExperiencia.atividades} onChange={handleInputChange}></textarea>
+                        </div>
+                        <div className='d-flex flex-column align-items-center'>
+                            <Button onClick={handleAddExperiencia}>
+                                {loadingAdd ? (
+                                    <div className="d-flex justify-content-center align-items-center">
+                                        <Spinner animation="border" variant="white" />
+                                    </div>
+                                ) : (
+                                    <span>Adicionar</span>
+                                )}
+                            </Button>
+                            <Button variant='secondary' onClick={closePopup}>Cancelar</Button>
                         </div>
                     </div>
                 </div>

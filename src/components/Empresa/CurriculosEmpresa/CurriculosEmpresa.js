@@ -71,37 +71,37 @@ const CurriculosEmpresa = () => {
   return (
     <>
       <HeaderEmpresa />
-      <Container fluid className='px-5' style={{ backgroundColor: '#f9f9f9f9', minHeight: "100vh" }}>
-        <Row className="mt-4" style={{ paddingLeft: '90px', paddingRight: '90px' }}>
-          <Col md={10}>
-            <Button variant="outline-secondary" className="mb-3" onClick={() => navigate('/vagas-empresa')}>
-              Voltar para Vagas
+      <Container fluid style={{ backgroundColor: '#f9f9f9f9' }}>
+        <Row className="row-buscar-vagas mt-4">
+          <Col md={2}>
+            <Button variant="primary" className="mb-3" onClick={() => navigate('/vagas-empresa')}>
+              Voltar para vagas
             </Button>
             <h1>Recrutamento</h1>
           </Col>
         </Row>
-        <Row style={{ paddingLeft: '90px', paddingRight: '90px' }}>
-          <Col md={12} className="mt-2 mb-2">
-            <Row className="align-items-center">
-              <InputGroup style={{ maxWidth: '700px' }}>
+        <Row className="row-buscar-vagas mt-2">
+          <Col xs={12} md={12} className='coluna-vagas mt-2'>
+            <Row className='busca-coluna-vagas align-items-center'>
+              <InputGroup style={{ maxWidth: '800px' }}>
                 <Form.Control
                   type="text"
-                  className='shadow border-0'
-                  placeholder="Buscar por nome ou palavra-chave"
+                  className='input-buscar-vagas shadow border-primary'
+                  placeholder="Pesquisar por candidato..."
+                  aria-label="Pesquisar"
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={e => setSearchTerm(e.target.value)}
                 />
-                <Button variant="outline-primary" style={{ maxWidth: '100px' }} onClick={() => setCurrentPage(1)}>
+                <Button className="btn-buscar-vagas" variant="outline-primary">
                   <FontAwesomeIcon icon={faSearch} />
                 </Button>
               </InputGroup>
               <Col md={2}>
                 <Button
+                  className="btn-limpar-busca"
                   variant="outline-secondary"
-                  className="m-2"
                   onClick={() => handleClearSearch()}
-                  title="Limpar filtros"
-                  style={{ width: '200px' }}
+                  title="Limpar busca"
                 >
                   Limpar busca
                 </Button>
@@ -109,7 +109,7 @@ const CurriculosEmpresa = () => {
             </Row>
             <Row className="mt-4">
               {loading ? (
-                <div className="d-flex justify-content-center">
+                <div className="d-flex justify-content-center align-items-center">
                   <Spinner animation='border' variant='primary' />
                 </div>
               ) : applications.length === 0 ? (
@@ -142,7 +142,7 @@ const CurriculosEmpresa = () => {
                             />
                           )}
                           <div className="m-2">
-                            <h5 className="mb-1">{user.nome} {user.sobrenome}</h5>
+                            <h5 className="txt-nome-candidato mb-1">{user.nome} {user.sobrenome}</h5>
                             <p className="mb-0 text-muted">{user.email}</p>
                           </div>
                         </div>
@@ -183,10 +183,10 @@ const CurriculosEmpresa = () => {
                           )}
                         </div>
                         <Button
-                          variant="outline-primary"
+                          variant="primary"
                           onClick={() => viewCurriculum(user._id)}
                           className="mt-auto"
-                          style={{ fontSize: "14px", padding: "8px 12px" }}
+                          style={{ padding: "8px 12px" }}
                           disabled={!user._id}
                         >
                           Ver Currículo
@@ -200,7 +200,7 @@ const CurriculosEmpresa = () => {
 
             {/* Paginação com botões de próximo e anterior */}
             {totalPages > 1 && (
-              <div className="d-flex justify-content-center mt-4">
+              <div className="d-flex justify-content-center mt-2">
                 <Pagination>
                   <Pagination.Prev onClick={handlePreviousPage} disabled={currentPage === 1}>
                   </Pagination.Prev>

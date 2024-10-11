@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAngleDown, faAngleUp, faBars } from '@fortawesome/free-solid-svg-icons';
+import { faAngleDown, faAngleUp } from '@fortawesome/free-solid-svg-icons';
 import logo from '../../assets/images/logo-aci-transparente.png';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import api from './../../services/axiosConfig';
@@ -13,11 +13,11 @@ const Button = React.forwardRef(({ children, onClick, className, isActive }, ref
 
 const HeaderEmpresa = () => {
     const [userName, setUserName] = useState(sessionStorage.getItem('userName') || '');
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isLoginActive, setIsLoginActive] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
     const buttonRef = useRef(null);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -47,6 +47,12 @@ const HeaderEmpresa = () => {
         }
     }, [userName, navigate]);
 
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const toggleLoginOptions = useCallback(() => {
         setIsLoginActive(prevState => !prevState);
     }, []);
@@ -57,10 +63,6 @@ const HeaderEmpresa = () => {
         navigate('/', { replace: true }); // Redireciona para a página inicial após o logout
     };
 
-    const toggleMenu = () => {
-        setIsMenuOpen(!isMenuOpen);
-    };
-
     return (
         <>
             <header className="header-candidato">
@@ -69,15 +71,14 @@ const HeaderEmpresa = () => {
                         <img src={logo} alt="Logo" loading="lazy" />
                     </a>
                 </div>
-                <div className="hamburger-menu" onClick={toggleMenu}>
-                    <FontAwesomeIcon icon={faBars} />
-                </div>
-                <nav className={isMenuOpen ? 'active' : ''}>
-                    <ul>
-                        <Link to="/dashboard-empresa" className={`header-link ${location.pathname === '/dashboard-empresa' ? 'active' : ''}`}><li>Início</li></Link>
-                        <Link to="/vagas-empresa" className={`header-link ${location.pathname === '/vagas-empresa' ? 'active' : ''}`}><li>Vagas</li></Link>
-                    </ul>
-                </nav>
+                {!isMobile && (
+                    <nav className="desktop-menu">
+                        <ul>
+                            <Link to="/dashboard-empresa" className={`header-link ${location.pathname === '/dashboard-empresa' ? 'active' : ''}`}><li>Início</li></Link>
+                            <Link to="/vagas-empresa" className={`header-link ${location.pathname === '/vagas-empresa' ? 'active' : ''}`}><li>Vagas</li></Link>
+                        </ul>
+                    </nav>
+                )}
                 <div className="opcoes-area">
                     <Button
                         ref={buttonRef}
@@ -94,6 +95,13 @@ const HeaderEmpresa = () => {
 
                     {isLoginActive && (
                         <div className="opcoes-usuario">
+                            {isMobile && (
+                                <>
+                                    <Link to="/vagas-empresa" className={`header-link p-0 m-0 ${location.pathname === '/vagas-empresa' ? 'active' : ''}`}>
+                                        <Button className="opcao-usuario">Vagas</Button>
+                                    </Link>
+                                </>
+                            )}
                             <Button className="opcao-usuario" onClick={handleLogout}>Sair</Button>
                         </div>
                     )}

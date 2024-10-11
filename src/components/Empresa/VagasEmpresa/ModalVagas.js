@@ -197,7 +197,7 @@ const ModalVagas = ({
                         </Col>
                         <Col md={6}>
                             <Form.Group className="form-group-custom">
-                                <div className="d-flex justify-content-between align-items-center">
+                                <div className="d-flex justify-content-between">
                                     <Form.Label>Salário</Form.Label>
                                     <Form.Check
                                         type="switch"
@@ -222,7 +222,7 @@ const ModalVagas = ({
                     <Row>
                         <Col md={12}>
                             <Form.Group className="form-group-custom">
-                                <div className="d-flex justify-content-between align-items-center">
+                                <div className="d-flex justify-content-between">
                                     <Form.Label>Benefícios</Form.Label>
                                     <Form.Check
                                         type="switch"
@@ -247,7 +247,7 @@ const ModalVagas = ({
                     <Row>
                         <Col md={12}>
                             <Form.Group className="form-group-custom">
-                                <div className="d-flex justify-content-between align-items-center">
+                                <div className="d-flex justify-content-between">
                                     <Form.Label>Descrição Completa</Form.Label>
                                     <Form.Check
                                         type="switch"
@@ -272,7 +272,7 @@ const ModalVagas = ({
                     <Row>
                         <Col md={12}>
                             <Form.Group className="form-group-custom">
-                                <div className="d-flex justify-content-between align-items-center">
+                                <div className="d-flex justify-content-between">
                                     <Form.Label>Responsabilidades e Atribuições</Form.Label>
                                     <Form.Check
                                         type="switch"
@@ -297,7 +297,7 @@ const ModalVagas = ({
                     <Row>
                         <Col md={12}>
                             <Form.Group className="form-group-custom">
-                                <div className="d-flex justify-content-between align-items-center">
+                                <div className="d-flex justify-content-between">
                                     <Form.Label>Requisitos e Qualificações</Form.Label>
                                     <Form.Check
                                         type="switch"
@@ -322,7 +322,7 @@ const ModalVagas = ({
                     <Row>
                         <Col md={12}>
                             <Form.Group className="form-group-custom">
-                                <div className="d-flex justify-content-between align-items-center">
+                                <div className="d-flex justify-content-between">
                                     <Form.Label>Será um diferencial</Form.Label>
                                     <Form.Check
                                         type="switch"
@@ -347,7 +347,7 @@ const ModalVagas = ({
                     <Row>
                         <Col md={12}>
                             <Form.Group className="form-group-custom">
-                                <div className="d-flex justify-content-between align-items-center">
+                                <div className="d-flex justify-content-between">
                                     <Form.Label>Informações Adicionais</Form.Label>
                                     <Form.Check
                                         type="switch"
@@ -371,41 +371,49 @@ const ModalVagas = ({
                     </Row>
                     <Row>
                         <Col md={12} className="d-flex justify-content-between">
-                            <Form.Group className="form-group-custom">
-                                <div className="d-flex justify-content-between">
-                                    <Form.Label className="me-2">Status</Form.Label>
-                                    <Form.Check
-                                        type="switch"
-                                        id="status-switch"
-                                        checked={newJob.status}
-                                        onChange={() => handleToggleChange('status')}
-                                    />
-                                </div>
-                            </Form.Group>
-                            <Form.Group className="form-group-custom">
-                                <div className="d-flex justify-content-between">
-                                    <Form.Label className="me-2">PCD</Form.Label>
-                                    <Form.Check
-                                        type="switch"
-                                        id="pcd-switch"
-                                        checked={newJob.pcd}
-                                        onChange={() => handleToggleChange('pcd')}
-                                    />
+                            <Row>
+                                <Col xs={4}>
+                                    <Form.Group className="form-group-custom">
+                                        <div className="d-flex justify-content-between">
+                                            <Form.Label className="me-2">Status</Form.Label>
+                                            <Form.Check
+                                                type="switch"
+                                                id="status-switch"
+                                                checked={newJob.status}
+                                                onChange={() => handleToggleChange('status')}
+                                            />
+                                        </div>
+                                    </Form.Group>
+                                </Col>
+                                <Col xs={3}>
+                                    <Form.Group className="form-group-custom">
+                                        <div className="d-flex justify-content-between">
+                                            <Form.Label className="me-2">PCD</Form.Label>
+                                            <Form.Check
+                                                type="switch"
+                                                id="pcd-switch"
+                                                checked={newJob.pcd}
+                                                onChange={() => handleToggleChange('pcd')}
+                                            />
 
-                                </div>
-                            </Form.Group>
-                            <Form.Group className="form-group-custom">
-                                <div className="d-flex justify-content-between">
-                                    <Form.Label className="me-2">Identificação</Form.Label>
-                                    <Form.Check
-                                        type="switch"
-                                        id="identificacao-switch"
-                                        checked={newJob.identifyCompany}
-                                        onChange={() => handleToggleChange('identifyCompany')}
-                                    />
+                                        </div>
+                                    </Form.Group>
+                                </Col>
+                                <Col xs={5}>
+                                    <Form.Group className="form-group-custom">
+                                        <div className="d-flex justify-content-between">
+                                            <Form.Label className="me-2">Identificação</Form.Label>
+                                            <Form.Check
+                                                type="switch"
+                                                id="identificacao-switch"
+                                                checked={newJob.identifyCompany}
+                                                onChange={() => handleToggleChange('identifyCompany')}
+                                            />
 
-                                </div>
-                            </Form.Group>
+                                        </div>
+                                    </Form.Group>
+                                </Col>
+                            </Row>
                         </Col>
                     </Row>
                     <Button type="submit" variant="primary" disabled={!isFormValid}>

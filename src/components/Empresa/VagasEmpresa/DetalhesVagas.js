@@ -17,7 +17,7 @@ const DetalhesVagas = ({ job, onBack }) => {
         <Container fluid style={{ backgroundColor: '#f9f9f9f9' }}>
             <Container>
                 <Col md={2}>
-                    <Button variant="primary" onClick={onBack} className="mb-4">Voltar para a lista</Button>
+                    <Button variant="primary" onClick={onBack} className="mt-2 mb-4">Voltar para a lista</Button>
                 </Col>
                     <Card className="border-0 p-4 shadow-sm">
                         <h2 className="text-center">{job.title}</h2>

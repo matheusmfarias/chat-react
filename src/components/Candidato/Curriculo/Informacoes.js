@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../../../services/axiosConfig';
-import { Spinner } from 'react-bootstrap';
+import { Button, Spinner } from 'react-bootstrap';
 import './Informacoes.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 
 const Informacoes = () => {
-    const [loading, setLoading] = useState('true');
+    const [loading, setLoading] = useState(true);
     const [informacoes, setInformacoes] = useState({
         cursos: [],
         habilidadesProfissionais: [],
@@ -149,19 +149,12 @@ const InformacaoCard = ({ title, inputName, inputValue, handleInputChange, tags,
         <div className='tags-container'>
             {tags.map((tag, index) => (
                 <div key={index} className="tag">
-                    {tag}
+                    <span className='txt-tag'>{tag}</span>
                     <FontAwesomeIcon icon={faTimesCircle} className="tag-close" onClick={() => handleRemoveTag(tag)} />
                 </div>
             ))}
         </div>
-        <button
-            type="button"
-            onClick={handleAddTag}
-            className='save-btn'
-            disabled={!inputValue}
-        >
-            Adicionar
-        </button>
+        <Button className="btn-adicionar-curriculo mt-4" onClick={handleAddTag} disabled={!inputValue}>Adicionar</Button>
     </div>
 );
 

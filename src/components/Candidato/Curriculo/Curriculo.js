@@ -6,7 +6,8 @@ import Formacao from './Formacao';
 import Informacoes from './Informacoes';
 import CurriculoTemplate from './CurriculoTemplate';
 import api from '../../../services/axiosConfig';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
+import { Button, Container } from 'react-bootstrap';
 
 const Curriculo = () => {
     const [activeTab, setActiveTab] = useState('experiencia');
@@ -52,7 +53,7 @@ const Curriculo = () => {
 
     const handleViewCurriculo = () => {
         fetchUserInfo();
-        
+
         // Abrir uma nova janela
         const newWindow = window.open('', '', 'width=800,height=600');
         newWindow.document.write('<html><head><title>Currículo</title></head><body><div id="curriculo-template-root"></div></body></html>');
@@ -72,13 +73,13 @@ const Curriculo = () => {
 
         // Garantir que os links CSS sejam carregados antes de renderizar o componente
         const renderCurriculo = () => {
-            ReactDOM.render(
+            const root = createRoot(newWindow.document.getElementById('curriculo-template-root'));
+            root.render(
                 <CurriculoTemplate
                     experiencias={experiencias}
                     formacoes={formacoes}
                     informacoes={informacoes}
-                />,
-                newWindow.document.getElementById('curriculo-template-root')
+                />
             );
         };
 
@@ -100,12 +101,15 @@ const Curriculo = () => {
                         <button className={activeTab === 'adicionais' ? 'active' : ''} onClick={() => setActiveTab('adicionais')}>Informações</button>
                     </div>
 
-                    <form className='curriculo-form'>
+                    <Container className='curriculo-form'>
                         {activeTab === "experiencia" && <Experiencia experiencias={experiencias} setExperiencias={setExperiencias} />}
                         {activeTab === "formacao" && <Formacao formacoes={formacoes} setFormacoes={setFormacoes} />}
                         {activeTab === "adicionais" && <Informacoes informacoes={informacoes} setInformacoes={setInformacoes} />}
-                    </form>
-                    <button className='btn-visualizar-curriculo' onClick={handleViewCurriculo}>Visualizar Currículo</button>
+                    </Container>
+
+                    <Container className='d-flex justify-content-center align-items-center'>
+                        <Button className="btn-adicionar-curriculo" variant='secondary' onClick={handleViewCurriculo}>Visualizar Currículo</Button>
+                    </Container>
                 </div>
             </main>
         </>
