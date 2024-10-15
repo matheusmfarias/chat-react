@@ -40,7 +40,7 @@ const Formacao = ({ formacoes, setFormacoes }) => {
     }));
 
     const escolaridades = [
-        'Ensino Fundamental', 'Ensino Médio', 'Técnico', 'Superior'
+        'Ensino Fundamental', 'Ensino Médio', 'Técnico', 'Graduação', 'Pós-graduação'
     ];
 
     const escolaridadeOptions = escolaridades.map((escolaridade) => ({
@@ -57,11 +57,20 @@ const Formacao = ({ formacoes, setFormacoes }) => {
         label: situacao
     }));
 
-    const graus = [
-        'Tecnólogo', 'Graduação', 'Pós-graduação', 'Mestrado', 'Doutorado'
+    const grausGraduacao = [
+        'Tecnólogo', 'Bacharelado', 'Licenciatura'
     ];
 
-    const grauOptions = graus.map((grau) => ({
+    const grauOptions = grausGraduacao.map((grau) => ({
+        value: grau,
+        label: grau
+    }));
+
+    const grausPosGraduacao = [
+        'Especialização', 'Mestrado', 'Doutorado', 'Pós-doutorado'
+    ];
+
+    const grauPosOptions = grausPosGraduacao.map((grau) => ({
         value: grau,
         label: grau
     }));
@@ -238,132 +247,227 @@ const Formacao = ({ formacoes, setFormacoes }) => {
                     formacoes.length === 0 ? (
                         <p className='text-center'>Nenhuma formação informada. Clique em "Adicionar" para cadastrar.</p>
                     ) : (
-                        formacoes.map((exp, index) => (
-                            <div key={index} className={`experience-card ${exp.expanded ? 'expanded' : ''}`}>
-                                <div className="card-header" onClick={() => toggleExpand(index)}>
-                                    <div className="header-left">
-                                        {exp.escolaridade === "Superior" ? (
-                                            <>
-                                                <h4>{exp.grau} em {exp.curso}</h4>
-                                                <p>{exp.instituicao}</p>
-                                            </>
-                                        ) : exp.escolaridade === "Técnico" ? (
-                                            <>
-                                                <h4>{exp.escolaridade} em {exp.curso}</h4>
-                                                <p>{exp.instituicao}</p>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <h4>{exp.escolaridade}</h4>
-                                                <p>{exp.instituicao}</p>
-                                            </>
-                                        )}
+                        formacoes
+                            .sort((a, b) => {
+                                // Se ambos têm o ano de finalização
+                                if (a.anoFinal && b.anoFinal) {
+                                    if (a.anoFinal !== b.anoFinal) {
+                                        // Ordena pelo ano de forma decrescente
+                                        return b.anoFinal - a.anoFinal;
+                                    } else {
+                                        // Se os anos são iguais, ordena pelo mês (usando o índice do array 'meses')
+                                        return meses.indexOf(b.mesFinal) - meses.indexOf(a.mesFinal);
+                                    }
+                                } else if (a.anoFinal) {
+                                    // Se o primeiro item tem anoFinal e o segundo não, o primeiro vem primeiro
+                                    return -1;
+                                } else if (b.anoFinal) {
+                                    // Se o segundo item tem anoFinal e o primeiro não, o segundo vem primeiro
+                                    return 1;
+                                } else {
+                                    // Se nenhum tem anoFinal, mantêm a ordem original
+                                    return 0;
+                                }
+                            })
+                            .map((exp, index) => (
+                                <div key={index} className={`experience-card ${exp.expanded ? 'expanded' : ''}`}>
+                                    <div className="card-header" onClick={() => toggleExpand(index)}>
+                                        <div className="header-left">
+                                            {exp.escolaridade === "Graduação" || exp.escolaridade === "Pós-graduação" ? (
+                                                <>
+                                                    <h4>{exp.grau} em {exp.curso}</h4>
+                                                    <p>{exp.instituicao}</p>
+                                                </>
+                                            ) : exp.escolaridade === "Técnico" ? (
+                                                <>
+                                                    <h4>{exp.escolaridade} em {exp.curso}</h4>
+                                                    <p>{exp.instituicao}</p>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <h4>{exp.escolaridade}</h4>
+                                                    <p>{exp.instituicao}</p>
+                                                </>
+                                            )}
+                                        </div>
+                                        <span className="toggle-icon">
+                                            {exp.expanded ? <FontAwesomeIcon icon={faChevronUp} /> : <FontAwesomeIcon icon={faChevronDown} />}
+                                        </span>
                                     </div>
-                                    <span className="toggle-icon">
-                                        {exp.expanded ? <FontAwesomeIcon icon={faChevronUp} /> : <FontAwesomeIcon icon={faChevronDown} />}
-                                    </span>
-                                </div>
-                                {exp.expanded && (
-                                    <div className={`card-body ${exp.expanded ? 'expanded' : ''}`}>
-                                        <div className="form-group">
-                                            <label>Instituição</label>
-                                            <input type="text" name="instituicao" value={exp.instituicao || ''} onChange={(e) => handleEditChange(index, e)} />
-                                        </div>
-                                        <div className="form-group">
-                                            <label>Escolaridade</label>
-                                            <div className="escolaridade-select">
-                                                <ReactSelect
-                                                    name="escolaridade"
-                                                    value={escolaridadeOptions.find(option => option.value === exp.escolaridade) || null}
-                                                    onChange={(selectedOption) =>
-                                                        handleEditChange(index, {
-                                                            target: {
-                                                                name: 'escolaridade',
-                                                                value: selectedOption ? selectedOption.value : ''
-                                                            }
-                                                        })
-                                                    }
-                                                    styles={customStyles}
-                                                    options={escolaridadeOptions}
-                                                    placeholder="Selecione"
-                                                    isSearchable={false}
-                                                />
-                                            </div>
-                                        </div>
-                                        {(exp.escolaridade === 'Técnico' || exp.escolaridade === 'Superior') && (
+                                    {exp.expanded && (
+                                        <div className={`card-body ${exp.expanded ? 'expanded' : ''}`}>
                                             <div className="form-group">
-                                                <label>Curso</label>
-                                                <input type="text" name="curso" value={exp.curso || ''} onChange={(e) => handleEditChange(index, e)} />
+                                                <label>Instituição</label>
+                                                <input type="text" name="instituicao" value={exp.instituicao || ''} onChange={(e) => handleEditChange(index, e)} />
                                             </div>
-                                        )}
-                                        {exp.escolaridade === 'Superior' && (
                                             <div className="form-group">
-                                                <label>Grau</label>
-                                                <div className="grau-select">
+                                                <label>Escolaridade</label>
+                                                <div className="escolaridade-select">
                                                     <ReactSelect
-                                                        name="grau"
-                                                        value={grauOptions.find(option => option.value === exp.grau) || null}
+                                                        name="escolaridade"
+                                                        value={escolaridadeOptions.find(option => option.value === exp.escolaridade) || null}
                                                         onChange={(selectedOption) =>
                                                             handleEditChange(index, {
                                                                 target: {
-                                                                    name: 'grau',
+                                                                    name: 'escolaridade',
                                                                     value: selectedOption ? selectedOption.value : ''
                                                                 }
                                                             })
                                                         }
-                                                        options={grauOptions}
+                                                        styles={customStyles}
+                                                        options={escolaridadeOptions}
+                                                        placeholder="Selecione"
+                                                        isSearchable={false}
+                                                    />
+                                                </div>
+                                            </div>
+                                            {(exp.escolaridade === 'Técnico' || exp.escolaridade === 'Graduação' || exp.escolaridade === 'Pós-graduação') && (
+                                                <div className="form-group">
+                                                    <label>Curso</label>
+                                                    <input type="text" name="curso" value={exp.curso || ''} onChange={(e) => handleEditChange(index, e)} />
+                                                </div>
+                                            )}
+                                            {exp.escolaridade === 'Graduação' && (
+                                                <div className="form-group">
+                                                    <label>Grau</label>
+                                                    <div className="grau-select">
+                                                        <ReactSelect
+                                                            name="grau"
+                                                            value={grauOptions.find(option => option.value === exp.grau) || null}
+                                                            onChange={(selectedOption) =>
+                                                                handleEditChange(index, {
+                                                                    target: {
+                                                                        name: 'grau',
+                                                                        value: selectedOption ? selectedOption.value : ''
+                                                                    }
+                                                                })
+                                                            }
+                                                            options={grauOptions}
+                                                            styles={customStyles}
+                                                            placeholder="Selecione"
+                                                            isSearchable={false}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {exp.escolaridade === 'Pós-graduação' && (
+                                                <div className="form-group">
+                                                    <label>Grau</label>
+                                                    <div className="grau-select">
+                                                        <ReactSelect
+                                                            name="grau"
+                                                            value={grauPosOptions.find(option => option.value === exp.grau) || null}
+                                                            onChange={(selectedOption) =>
+                                                                handleEditChange(index, {
+                                                                    target: {
+                                                                        name: 'grau',
+                                                                        value: selectedOption ? selectedOption.value : ''
+                                                                    }
+                                                                })
+                                                            }
+                                                            options={grauPosOptions}
+                                                            styles={customStyles}
+                                                            placeholder="Selecione"
+                                                            isSearchable={false}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <div className="form-group">
+                                                <label>Situação</label>
+                                                <div className="situacao-select">
+                                                    <ReactSelect
+                                                        name="situacao"
+                                                        value={situacaoOptions.find(option => option.value === exp.situacao) || null}
+                                                        onChange={(selectedOption) =>
+                                                            handleEditChange(index, {
+                                                                target: {
+                                                                    name: 'situacao',
+                                                                    value: selectedOption ? selectedOption.value : ''
+                                                                }
+                                                            })
+                                                        }
+                                                        options={situacaoOptions}
                                                         styles={customStyles}
                                                         placeholder="Selecione"
                                                         isSearchable={false}
                                                     />
                                                 </div>
                                             </div>
-                                        )}
-                                        <div className="form-group">
-                                            <label>Situação</label>
-                                            <div className="situacao-select">
-                                                <ReactSelect
-                                                    name="situacao"
-                                                    value={situacaoOptions.find(option => option.value === exp.situacao) || null}
-                                                    onChange={(selectedOption) =>
-                                                        handleEditChange(index, {
-                                                            target: {
-                                                                name: 'situacao',
-                                                                value: selectedOption ? selectedOption.value : ''
-                                                            }
-                                                        })
-                                                    }
-                                                    options={situacaoOptions}
-                                                    styles={customStyles}
-                                                    placeholder="Selecione"
-                                                    isSearchable={false}
-                                                />
+                                            <div className="form-group">
+                                                <label>Início</label>
+                                                <div className="date-select">
+                                                    <ReactSelect
+                                                        name="mesInicial"
+                                                        value={mesesOptions.find(option => option.value === exp.mesInicial) || null}
+                                                        onChange={(selectedOption) => handleEditChange(index, { target: { name: 'mesInicial', value: selectedOption ? selectedOption.value : '' } })}
+                                                        options={mesesOptions}
+                                                        placeholder="Mês"
+                                                        styles={customStyles}
+                                                        isSearchable={false}
+                                                    />
+                                                    <ReactSelect
+                                                        name="anoInicial"
+                                                        value={anosOptions.find(option => option.value === exp.anoInicial) || null}
+                                                        onChange={(selectedOption) => handleEditChange(index, { target: { name: 'anoInicial', value: selectedOption ? selectedOption.value : '' } })}
+                                                        options={anosOptions}
+                                                        placeholder="Ano"
+                                                        styles={customStyles}
+                                                        isSearchable={false}
+                                                    />
+                                                </div>
+                                            </div>
+                                            {(exp.situacao === 'Completo') && (
+                                                <div className="form-group">
+                                                    <label>Fim</label>
+                                                    <div className="date-select">
+                                                        <ReactSelect
+                                                            name="mesFinal"
+                                                            value={mesesOptions.find(option => option.value === exp.mesFinal) || null}
+                                                            onChange={(selectedOption) => handleEditChange(index, { target: { name: 'mesFinal', value: selectedOption ? selectedOption.value : '' } })}
+                                                            options={mesesOptions}
+                                                            placeholder="Mês"
+                                                            isSearchable={false}
+                                                            styles={customStyles}
+                                                            isDisabled={exp.trabalhoAtualmente} // Desativa o select se estiver trabalhando atualmente
+                                                        />
+                                                        <ReactSelect
+                                                            name="anoFinal"
+                                                            value={anosOptions.find(option => option.value === exp.anoFinal) || null}
+                                                            onChange={(selectedOption) => handleEditChange(index, { target: { name: 'anoFinal', value: selectedOption ? selectedOption.value : '' } })}
+                                                            options={anosOptions}
+                                                            placeholder="Ano"
+                                                            isSearchable={false}
+                                                            styles={customStyles}
+                                                            isDisabled={exp.trabalhoAtualmente} // Desativa o select se estiver trabalhando atualmente
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <div className='d-flex flex-column align-items-center mb-2'>
+                                                <Button className="btn-exp btn-primary mt-2" onClick={() => handleSaveEdit(index)} disabled={!exp.edited}>
+                                                    {loadingAdd ? (
+                                                        <div className="d-flex justify-content-center align-items-center">
+                                                            <Spinner animation="border" variant="white" />
+                                                        </div>
+                                                    ) : (
+                                                        <span>Salvar</span>
+                                                    )}
+                                                </Button>
+                                                <Button className="btn-exp btn-danger mt-2" onClick={() => handleDeleteFormacao(index)}>
+                                                    {loadingDelete ? (
+                                                        <div className="d-flex justify-content-center align-items-center">
+                                                            <Spinner animation="border" variant="white" />
+                                                        </div>
+                                                    ) : (
+                                                        <span>Deletar</span>
+                                                    )}
+                                                </Button>
                                             </div>
                                         </div>
-                                        <div className='d-flex flex-column align-items-center mb-2'>
-                                            <Button className="btn-exp btn-primary mt-2" onClick={() => handleSaveEdit(index)} disabled={!exp.edited}>
-                                                {loadingAdd ? (
-                                                    <div className="d-flex justify-content-center align-items-center">
-                                                        <Spinner animation="border" variant="white" />
-                                                    </div>
-                                                ) : (
-                                                    <span>Salvar</span>
-                                                )}
-                                            </Button>
-                                            <Button className="btn-exp btn-danger mt-2" onClick={() => handleDeleteFormacao(index)}>
-                                                {loadingDelete ? (
-                                                    <div className="d-flex justify-content-center align-items-center">
-                                                        <Spinner animation="border" variant="white" />
-                                                    </div>
-                                                ) : (
-                                                    <span>Deletar</span>
-                                                )}
-                                            </Button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        ))
+                                    )}
+                                </div>
+                            ))
                     ))}
                 <Button className="btn-adicionar-curriculo mt-4" onClick={() => setShowPopup(true)}>Adicionar</Button>
             </div>
@@ -389,21 +493,38 @@ const Formacao = ({ formacoes, setFormacoes }) => {
                                 />
                             </div>
                         </div>
-                        {(newFormacao.escolaridade === 'Técnico' || newFormacao.escolaridade === 'Superior') && (
+                        {(newFormacao.escolaridade === 'Técnico' || newFormacao.escolaridade === 'Graduação' || newFormacao.escolaridade === 'Pós-graduação') && (
                             <div className="form-group">
                                 <label>Curso</label>
                                 <input type="text" name="curso" value={newFormacao.curso} onChange={handleInputChange} />
                             </div>
                         )}
-                        {newFormacao.escolaridade === 'Superior' && (
+                        {newFormacao.escolaridade === 'Graduação' && (
                             <div className="form-group">
                                 <label>Grau</label>
                                 <div className="grau-select">
                                     <ReactSelect
                                         name="grau"
-                                        value={graus.map((grau) => ({ value: grau, label: grau })).find(option => option.value === newFormacao.grau) || null}
+                                        value={grausGraduacao.map((grau) => ({ value: grau, label: grau })).find(option => option.value === newFormacao.grau) || null}
                                         onChange={(selectedOption) => handleInputChange({ target: { name: 'grau', value: selectedOption ? selectedOption.value : '' } })}
-                                        options={graus.map((grau) => ({ value: grau, label: grau }))}
+                                        options={grausGraduacao.map((grau) => ({ value: grau, label: grau }))}
+                                        placeholder="Selecione"
+                                        styles={customStyles}
+                                        isSearchable={false}
+                                    />
+
+                                </div>
+                            </div>
+                        )}
+                        {newFormacao.escolaridade === 'Pós-graduação' && (
+                            <div className="form-group">
+                                <label>Grau</label>
+                                <div className="grau-select">
+                                    <ReactSelect
+                                        name="grau"
+                                        value={grausPosGraduacao.map((grau) => ({ value: grau, label: grau })).find(option => option.value === newFormacao.grau) || null}
+                                        onChange={(selectedOption) => handleInputChange({ target: { name: 'grau', value: selectedOption ? selectedOption.value : '' } })}
+                                        options={grausPosGraduacao.map((grau) => ({ value: grau, label: grau }))}
                                         placeholder="Selecione"
                                         styles={customStyles}
                                         isSearchable={false}
@@ -450,31 +571,33 @@ const Formacao = ({ formacoes, setFormacoes }) => {
                                 />
                             </div>
                         </div>
-                        <div className="form-group">
-                            <label>Fim</label>
-                            <div className="date-select">
-                                <ReactSelect
-                                    name="mesFinal"
-                                    value={mesesOptions.find(option => option.value === newFormacao.mesFinal) || null}
-                                    onChange={(selectedOption) => handleInputChange({ target: { name: 'mesFinal', value: selectedOption ? selectedOption.value : '' } })}
-                                    options={mesesOptions}
-                                    placeholder="Mês"
-                                    isSearchable={false}
-                                    styles={customStyles}
-                                    isDisabled={newFormacao.trabalhoAtualmente} // Desativa o select se estiver trabalhando atualmente
-                                />
-                                <ReactSelect
-                                    name="anoFinal"
-                                    value={anosOptions.find(option => option.value === newFormacao.anoFinal) || null}
-                                    onChange={(selectedOption) => handleInputChange({ target: { name: 'anoFinal', value: selectedOption ? selectedOption.value : '' } })}
-                                    options={anosOptions}
-                                    placeholder="Ano"
-                                    isSearchable={false}
-                                    styles={customStyles}
-                                    isDisabled={newFormacao.trabalhoAtualmente} // Desativa o select se estiver trabalhando atualmente
-                                />
+                        {(newFormacao.situacao === 'Completo') && (
+                            <div className="form-group">
+                                <label>Fim</label>
+                                <div className="date-select">
+                                    <ReactSelect
+                                        name="mesFinal"
+                                        value={mesesOptions.find(option => option.value === newFormacao.mesFinal) || null}
+                                        onChange={(selectedOption) => handleInputChange({ target: { name: 'mesFinal', value: selectedOption ? selectedOption.value : '' } })}
+                                        options={mesesOptions}
+                                        placeholder="Mês"
+                                        isSearchable={false}
+                                        styles={customStyles}
+                                        isDisabled={newFormacao.trabalhoAtualmente} // Desativa o select se estiver trabalhando atualmente
+                                    />
+                                    <ReactSelect
+                                        name="anoFinal"
+                                        value={anosOptions.find(option => option.value === newFormacao.anoFinal) || null}
+                                        onChange={(selectedOption) => handleInputChange({ target: { name: 'anoFinal', value: selectedOption ? selectedOption.value : '' } })}
+                                        options={anosOptions}
+                                        placeholder="Ano"
+                                        isSearchable={false}
+                                        styles={customStyles}
+                                        isDisabled={newFormacao.trabalhoAtualmente} // Desativa o select se estiver trabalhando atualmente
+                                    />
+                                </div>
                             </div>
-                        </div>
+                        )}
                         <div className='d-flex flex-column align-items-center'>
                             <Button onClick={handleAddFormacao}>
                                 {loadingAdd ? (

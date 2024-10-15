@@ -714,7 +714,7 @@ const AdminDashboard = () => {
             </Navbar>
             <Container className="mt-3">
                 <Row className="mb-3">
-                    <Col>
+                    <Col md={6} xs={12}>
                         <Button
                             variant={activeTab === 'empresas' ? 'primary' : 'secondary'}
                             onClick={() => {
@@ -726,6 +726,8 @@ const AdminDashboard = () => {
                         >
                             Empresas
                         </Button>
+                    </Col>
+                    <Col md={6} xs={12}>
                         <Button
                             variant={activeTab === 'candidatos' ? 'primary' : 'secondary'}
                             onClick={() => {

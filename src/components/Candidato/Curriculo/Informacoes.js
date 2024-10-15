@@ -3,16 +3,25 @@ import api from '../../../services/axiosConfig';
 import { Button, Spinner } from 'react-bootstrap';
 import './Informacoes.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimesCircle } from '@fortawesome/free-solid-svg-icons';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
 const Informacoes = () => {
     const [loading, setLoading] = useState(true);
+    const [loadingCursos, setLoadingCursos] = useState(false);
+    const [loadingHabilidadesProfissionais, setLoadingHabilidadesProfissionais] = useState(false);
+    const [loadingHabilidadesComportamentais, setLoadingHabilidadesComportamentais] = useState(false);
+    const [loadingObjetivos, setLoadingObjetivos] = useState(false);
+
+    // Estados para remoção de cada tag (associado ao valor da tag)
+    const [loadingRemoveTags, setLoadingRemoveTags] = useState({});
+
     const [informacoes, setInformacoes] = useState({
         cursos: [],
         habilidadesProfissionais: [],
         habilidadesComportamentais: [],
         objetivos: []
     });
+
     const [inputValues, setInputValues] = useState({
         curso: '',
         habilidadeProfissional: '',
@@ -49,6 +58,15 @@ const Informacoes = () => {
     }), []);
 
     const handleAddTag = useCallback(async (type, value) => {
+        let setLoading;
+
+        // Defina o estado de loading correto para adição
+        if (type === 'cursos') setLoading = setLoadingCursos;
+        else if (type === 'habilidadesProfissionais') setLoading = setLoadingHabilidadesProfissionais;
+        else if (type === 'habilidadesComportamentais') setLoading = setLoadingHabilidadesComportamentais;
+        else if (type === 'objetivos') setLoading = setLoadingObjetivos;
+
+        setLoading(true);
         try {
             const item = { [fieldMap[type]]: value };
             await api.post(`${process.env.REACT_APP_API_URL}/api/user/${type}`, item, {
@@ -62,10 +80,15 @@ const Informacoes = () => {
             setInputValues((prevValues) => ({ ...prevValues, [fieldMap[type]]: '' }));
         } catch (error) {
             console.error(`Erro ao adicionar ${fieldMap[type]}:`, error);
+        } finally {
+            setLoading(false);
         }
     }, [fieldMap]);
 
     const handleRemoveTag = useCallback(async (type, value) => {
+        // Inicia o estado de loading para a tag específica
+        setLoadingRemoveTags(prevState => ({ ...prevState, [value]: true }));
+
         try {
             const item = { [fieldMap[type]]: value };
             await api.delete(`${process.env.REACT_APP_API_URL}/api/user/${type}`, {
@@ -79,6 +102,9 @@ const Informacoes = () => {
             }));
         } catch (error) {
             console.error(`Erro ao remover ${fieldMap[type]}:`, error);
+        } finally {
+            // Remove o estado de loading após a operação
+            setLoadingRemoveTags(prevState => ({ ...prevState, [value]: false }));
         }
     }, [fieldMap]);
 
@@ -99,6 +125,8 @@ const Informacoes = () => {
                         placeholder="Adicionar curso/qualificação"
                         handleAddTag={() => handleAddTag('cursos', inputValues.curso)}
                         handleRemoveTag={(value) => handleRemoveTag('cursos', value)}
+                        loading={loadingCursos}
+                        loadingRemoveTags={loadingRemoveTags}
                     />
                     <InformacaoCard
                         title="Habilidades profissionais"
@@ -109,6 +137,8 @@ const Informacoes = () => {
                         placeholder="Adicionar habilidade profissional"
                         handleAddTag={() => handleAddTag('habilidadesProfissionais', inputValues.habilidadeProfissional)}
                         handleRemoveTag={(value) => handleRemoveTag('habilidadesProfissionais', value)}
+                        loading={loadingHabilidadesProfissionais}
+                        loadingRemoveTags={loadingRemoveTags}
                     />
                     <InformacaoCard
                         title="Habilidades comportamentais"
@@ -119,6 +149,8 @@ const Informacoes = () => {
                         placeholder="Adicionar habilidade comportamental"
                         handleAddTag={() => handleAddTag('habilidadesComportamentais', inputValues.habilidadeComportamental)}
                         handleRemoveTag={(value) => handleRemoveTag('habilidadesComportamentais', value)}
+                        loading={loadingHabilidadesComportamentais}
+                        loadingRemoveTags={loadingRemoveTags}
                     />
                     <InformacaoCard
                         title="Objetivos"
@@ -129,6 +161,8 @@ const Informacoes = () => {
                         placeholder="Adicionar objetivo"
                         handleAddTag={() => handleAddTag('objetivos', inputValues.objetivo)}
                         handleRemoveTag={(value) => handleRemoveTag('objetivos', value)}
+                        loading={loadingObjetivos}
+                        loadingRemoveTags={loadingRemoveTags}
                     />
                 </>
             )}
@@ -136,7 +170,7 @@ const Informacoes = () => {
     );
 };
 
-const InformacaoCard = ({ title, inputName, inputValue, handleInputChange, tags, handleAddTag, handleRemoveTag, placeholder }) => (
+const InformacaoCard = ({ title, inputName, inputValue, handleInputChange, tags, handleAddTag, handleRemoveTag, placeholder, loading, loadingRemoveTags }) => (
     <div className='informacoes-card'>
         <h4>{title}</h4>
         <input
@@ -148,13 +182,37 @@ const InformacaoCard = ({ title, inputName, inputValue, handleInputChange, tags,
         />
         <div className='tags-container'>
             {tags.map((tag, index) => (
-                <div key={index} className="tag">
-                    <span className='txt-tag'>{tag}</span>
-                    <FontAwesomeIcon icon={faTimesCircle} className="tag-close" onClick={() => handleRemoveTag(tag)} />
+                <div
+                    key={index}
+                    className={`tag ${loadingRemoveTags[tag] ? 'tag-removing' : ''}`} // Adiciona a classe 'tag-removing' apenas para a tag que está sendo removida
+                >
+                    {loadingRemoveTags[tag] ? (
+                        // Exibe o spinner no centro da tag quando está removendo
+                        <div className="d-flex justify-content-center">
+                            <Spinner animation="border" variant="primary" size="sm"/>
+                        </div>
+                    ) : (
+                        <>
+                            <span className='txt-tag'>{tag}</span>
+                            <FontAwesomeIcon
+                                icon={faTrash}
+                                className="tag-close"
+                                onClick={() => handleRemoveTag(tag)}
+                            />
+                        </>
+                    )}
                 </div>
             ))}
         </div>
-        <Button className="btn-adicionar-curriculo mt-4" onClick={handleAddTag} disabled={!inputValue}>Adicionar</Button>
+        <Button className="btn-adicionar-curriculo mt-4" onClick={handleAddTag} disabled={!inputValue}>
+            {loading ? (
+                <div className="d-flex justify-content-center">
+                    <Spinner animation="border" variant="primary" />
+                </div>
+            ) : (
+                <span>Adicionar</span>
+            )}
+        </Button>
     </div>
 );
 

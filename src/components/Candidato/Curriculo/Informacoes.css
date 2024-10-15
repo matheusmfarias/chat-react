@@ -24,21 +24,35 @@
     padding: 10px;
     gap: 10px;
     flex-wrap: wrap;
-    width: 80%; /* Garante que o container das tags tenha a mesma largura do input */
+    width: 80%;
+    /* Garante que o container das tags tenha a mesma largura do input */
 }
 
 .tag {
     display: flex;
     align-items: center;
+    justify-content: center;
+    position: relative;
     background-color: #e0e0e0;
     border-radius: 16px;
     padding: 5px 10px;
+    transition: opacity 0.3s ease;
 }
 
 .tag-close {
     margin-left: 10px;
     cursor: pointer;
     color: red;
+}
+
+.spinner-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .informacoes-card input {
@@ -80,5 +94,4 @@
     .txt-tag {
         font-size: 14px;
     }
-
 }
