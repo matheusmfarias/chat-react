@@ -158,6 +158,7 @@ const AdminDashboard = () => {
     };
 
     const handleShowDeleteModal = (empresa) => {
+        handleCloseModal(true);
         setEmpresaToDelete(empresa);
         setShowDeleteModal(true);
     };
@@ -458,7 +459,6 @@ const AdminDashboard = () => {
                                             <FontAwesomeIcon icon={faEye} className="icon-btn" onClick={() => fetchJobsByCompany(empresa._id)} title="Visualizar vagas" />
                                             <FontAwesomeIcon icon={faEdit} className="icon-btn" onClick={() => handleShowModal(empresa)} title="Editar" />
                                             <FontAwesomeIcon icon={empresa.status ? faToggleOn : faToggleOff} className="icon-btn" onClick={() => handleShowDisableModal(empresa)} title={empresa.status ? 'Desabilitar' : 'Habilitar'} />
-                                            <FontAwesomeIcon icon={faTrash} className="icon-btn" onClick={() => handleShowDeleteModal(empresa)} title="Excluir" />
                                         </div>
                                     </td>
                                 </tr>
@@ -850,6 +850,13 @@ const AdminDashboard = () => {
                                 onChange={handleInputChange}
                             />
                         </Form.Group>
+                        {editMode ?
+                            <Form.Group className='campos-empresa'>
+                                <Button variant="danger" className='w-100' onClick={() => handleShowDeleteModal(currentEmpresa)} title="Deletar">
+                                    Deletar empresa
+                                </Button>
+                            </Form.Group>
+                            : null}
                     </Form>
                 }
                 footer={
