@@ -10,6 +10,7 @@ import useFormattedCNPJ, { formatCNPJ } from '../../hooks/useFormattedCNPJ';
 import ModalComponent from './ModalComponent';
 import CurriculoTemplate from '../Candidato/Curriculo/CurriculoTemplate';
 import { createRoot } from 'react-dom/client'; // Importar createRoot do react-dom/client
+import useFormattedDate from '../../hooks/useFormattedDate';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -26,6 +27,7 @@ const AdminDashboard = () => {
     const [empresaToDelete, setEmpresaToDelete] = useState(null);
     const [empresaToDisable, setEmpresaToDisable] = useState(null);
     const [formattedCnpj, setFormattedCnpj] = useFormattedCNPJ('');
+    const { formatDate } = useFormattedDate();
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortColumn, setSortColumn] = useState('nome');
@@ -47,7 +49,6 @@ const AdminDashboard = () => {
     const [candidatosVaga, setCandidatosVaga] = useState([]);
     const [selectedCompanyId, setSelectedCompanyId] = useState(null); // Armazena o ID da empresa selecionada
     const [selectedJobId, setSelectedJobId] = useState(null); // Armazena o ID da vaga selecionada
-
 
     const fetchEmpresas = useCallback(async (page = 1, search = '', filter = '') => {
         setLoading(true);
@@ -81,6 +82,7 @@ const AdminDashboard = () => {
             setLoading(false);
         }
     }, [itemsPerPage]);
+
 
     useEffect(() => {
         if (activeTab === 'empresas') {
@@ -410,7 +412,7 @@ const AdminDashboard = () => {
                 </div>
             ) : empresas.length > 0 ? (
                 <>
-                    <Table striped hover className="shadow-sm mt-3 rounded">
+                    <Table striped hover className="shadow mt-3 rounded">
                         <thead>
                             <tr>
                                 <th onClick={() => handleSort('nome')}>
@@ -502,23 +504,21 @@ const AdminDashboard = () => {
                 </div>
             ) : candidatos.length > 0 ? (
                 <>
-                    <Table striped hover className="shadow-sm mt-3 rounded">
+                    <Table striped hover className="shadow mt-3 rounded">
                         <thead>
                             <tr>
                                 <th>Nome</th>
                                 <th>Sobrenome</th>
-                                <th>Email</th>
-                                <th>Telefone</th>
+                                <th>Último acesso</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody>
                             {candidatos.map((candidato) => (
-                                <tr key={candidato._id}>
+                                <tr key={candidato._id} className={candidato.isInactive ? 'table-danger' : ''}>
                                     <td>{candidato.nome}</td>
                                     <td>{candidato.sobrenome}</td>
-                                    <td>{candidato.email}</td>
-                                    <td>{candidato.additionalInfo?.contactPhone || ''}</td>
+                                    <td>{formatDate(candidato.lastAccess)}</td>
                                     <td>
                                         <Button variant="primary" onClick={() => handleViewCurriculo(candidato._id)}>
                                             Currículo
@@ -527,6 +527,8 @@ const AdminDashboard = () => {
                                 </tr>
                             ))}
                         </tbody>
+
+
                     </Table>
                 </>
             ) : (
@@ -550,7 +552,7 @@ const AdminDashboard = () => {
                 </div>
             ) : jobs.length > 0 ? (
                 <>
-                    <Table striped hover className="shadow-sm mt-3 rounded">
+                    <Table striped hover className="shadow mt-3 rounded">
                         <thead>
                             <tr>
                                 <th>Título</th>
@@ -596,7 +598,7 @@ const AdminDashboard = () => {
                 </div>
             ) : candidatosVaga.length > 0 ? (
                 <>
-                    <Table striped hover className="shadow-sm mt-3 rounded">
+                    <Table striped hover className="shadow mt-3 rounded">
                         <thead>
                             <tr>
                                 <th>Nome</th>
