@@ -1,3 +1,7 @@
+.carousel-empresa-container {
+    min-height: 50vh;
+}
+
 .no-jobs-message {
     font-size: 1.2em;
     color: #1F5291;

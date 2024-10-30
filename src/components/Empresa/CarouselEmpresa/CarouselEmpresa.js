@@ -37,7 +37,7 @@ const CarouselEmpresa = () => {
     }, []);
 
     return (
-        <div className="text-center carousel-container">
+        <div className="text-center carousel-empresa-container">
             <h1 className="p-2 text-primary">Vagas cadastradas</h1>
             {jobs.length > 0 ? (
                 <Swiper

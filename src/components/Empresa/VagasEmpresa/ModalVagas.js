@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Modal, Button, Form, Row, Col } from 'react-bootstrap';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import Select from 'react-select';
 
 const ModalVagas = ({
     show,
@@ -35,6 +36,10 @@ const ModalVagas = ({
         setNewJob(prevJob => ({ ...prevJob, [name]: value }));
     };
 
+    const handleSelectChange = (name, selectedOption) => {
+        setNewJob(prevJob => ({ ...prevJob, [name]: selectedOption.value }));
+    };
+
     const handleToggleChange = (name) => {
         setNewJob(prevJob => ({
             ...prevJob,
@@ -51,12 +56,10 @@ const ModalVagas = ({
     };
 
     const handleQuillChange = (name, value) => {
-        // Atualiza o valor somente se o toggle correspondente estiver ativo
         if (newJob[`${name}Active`]) {
             setNewJob(prevJob => ({ ...prevJob, [name]: value }));
         }
     };
-
 
     const formatCurrency = (value) => {
         const numberValue = Number(value.replace(/[^0-9]/g, '')) / 100;
@@ -65,7 +68,6 @@ const ModalVagas = ({
 
     const handleSalaryChange = (e) => {
         const { value } = e.target;
-        // Atualiza o valor formatado para o campo de salário, mas somente se o toggle estiver ativo
         if (newJob.salaryActive) {
             setNewJob(prevJob => ({ ...prevJob, salary: formatCurrency(value) }));
         }
@@ -74,7 +76,6 @@ const ModalVagas = ({
     const validateForm = useCallback(() => {
         const isValid = newJob.title && newJob.modality && selectedState && selectedCity && newJob.type;
 
-        // Verificação adicional para campos com toggle ativo
         const areToggledFieldsValid = (
             (!newJob.salaryActive || newJob.salary.trim().length > 0) &&
             (!newJob.offersActive || newJob.offers.trim().length > 0) &&
@@ -120,17 +121,17 @@ const ModalVagas = ({
                         <Col md={6}>
                             <Form.Group className="form-group-custom">
                                 <Form.Label>Modelo *</Form.Label>
-                                <Form.Control
-                                    as="select"
-                                    name="modality"
-                                    value={newJob.modality}
-                                    onChange={handleInputChange}
+                                <Select
+                                    options={[
+                                        { value: 'Presencial', label: 'Presencial' },
+                                        { value: 'Híbrido', label: 'Híbrido' },
+                                        { value: 'Remoto', label: 'Remoto' }
+                                    ]}
+                                    value={{ value: newJob.modality, label: newJob.modality }}
+                                    onChange={(selectedOption) => handleSelectChange('modality', selectedOption)}
+                                    placeholder="Selecione..."
                                     required
-                                >
-                                    <option value="Presencial">Presencial</option>
-                                    <option value="Híbrido">Híbrido</option>
-                                    <option value="Remoto">Remoto</option>
-                                </Form.Control>
+                                />
                             </Form.Group>
                         </Col>
                     </Row>
@@ -138,38 +139,25 @@ const ModalVagas = ({
                         <Col md={6}>
                             <Form.Group className="form-group-custom">
                                 <Form.Label>Localização *</Form.Label>
-                                <Form.Control
-                                    as="select"
-                                    value={selectedState}
-                                    onChange={(e) => setSelectedState(e.target.value)}
+                                <Select
+                                    options={states.map(state => ({ value: state.sigla, label: state.nome }))}
+                                    value={selectedState ? { value: selectedState, label: selectedState } : null}
+                                    onChange={(selectedOption) => setSelectedState(selectedOption.value)}
+                                    placeholder="Selecione..."
                                     required
-                                    className="mb-3"
-                                >
-                                    <option value="">Selecione o estado</option>
-                                    {states.map((state) => (
-                                        <option key={state.id} value={state.sigla}>
-                                            {state.nome}
-                                        </option>
-                                    ))}
-                                </Form.Control>
+                                />
                             </Form.Group>
                         </Col>
                         <Col md={6}>
                             <Form.Group className="form-group-custom">
                                 <Form.Label>&nbsp;</Form.Label>
-                                <Form.Control
-                                    as="select"
-                                    value={selectedCity}
-                                    onChange={(e) => setSelectedCity(e.target.value)}
+                                <Select
+                                    options={cities.map(city => ({ value: city.nome, label: city.nome }))}
+                                    value={selectedCity ? { value: selectedCity, label: selectedCity } : null}
+                                    onChange={(selectedOption) => setSelectedCity(selectedOption.value)}
+                                    placeholder="Selecione..."
                                     required
-                                >
-                                    <option value="">Selecione a cidade</option>
-                                    {cities.map((city) => (
-                                        <option key={city.id} value={city.nome}>
-                                            {city.nome}
-                                        </option>
-                                    ))}
-                                </Form.Control>
+                                />
                             </Form.Group>
                         </Col>
                     </Row>
@@ -177,22 +165,22 @@ const ModalVagas = ({
                         <Col md={6}>
                             <Form.Group className="form-group-custom">
                                 <Form.Label>Tipo *</Form.Label>
-                                <Form.Control
-                                    as="select"
-                                    name="type"
-                                    value={newJob.type}
-                                    onChange={handleInputChange}
+                                <Select
+                                    options={[
+                                        { value: 'Efetivo', label: 'Efetivo' },
+                                        { value: 'Aprendiz', label: 'Aprendiz' },
+                                        { value: 'Estágio', label: 'Estágio' },
+                                        { value: 'Pessoa Jurídica', label: 'Pessoa Jurídica' },
+                                        { value: 'Trainee', label: 'Trainee' },
+                                        { value: 'Temporário', label: 'Temporário' },
+                                        { value: 'Freelancer', label: 'Freelancer' },
+                                        { value: 'Terceiro', label: 'Terceiro' }
+                                    ]}
+                                    value={{ value: newJob.type, label: newJob.type }}
+                                    onChange={(selectedOption) => handleSelectChange('type', selectedOption)}
+                                    placeholder="Selecione..."
                                     required
-                                >
-                                    <option value="Efetivo">Efetivo</option>
-                                    <option value="Aprendiz">Aprendiz</option>
-                                    <option value="Estágio">Estágio</option>
-                                    <option value="Pessoa Jurídica">Pessoa Jurídica</option>
-                                    <option value="Trainee">Trainee</option>
-                                    <option value="Temporário">Temporário</option>
-                                    <option value="Freelancer">Freelancer</option>
-                                    <option value="Terceiro">Terceiro</option>
-                                </Form.Control>
+                                />
                             </Form.Group>
                         </Col>
                         <Col md={6}>
@@ -375,7 +363,7 @@ const ModalVagas = ({
                                 <Col xs={4}>
                                     <Form.Group className="form-group-custom">
                                         <div className="d-flex justify-content-between">
-                                            <Form.Label className="me-2">Status</Form.Label>
+                                            <Form.Label className="me-2">Ativa</Form.Label>
                                             <Form.Check
                                                 type="switch"
                                                 id="status-switch"
@@ -385,7 +373,7 @@ const ModalVagas = ({
                                         </div>
                                     </Form.Group>
                                 </Col>
-                                <Col xs={3}>
+                                <Col xs={4}>
                                     <Form.Group className="form-group-custom">
                                         <div className="d-flex justify-content-between">
                                             <Form.Label className="me-2">PCD</Form.Label>
@@ -399,10 +387,10 @@ const ModalVagas = ({
                                         </div>
                                     </Form.Group>
                                 </Col>
-                                <Col xs={5}>
+                                <Col xs={4}>
                                     <Form.Group className="form-group-custom">
                                         <div className="d-flex justify-content-between">
-                                            <Form.Label className="me-2">Identificação</Form.Label>
+                                            <Form.Label className="me-2">Confidencial</Form.Label>
                                             <Form.Check
                                                 type="switch"
                                                 id="identificacao-switch"

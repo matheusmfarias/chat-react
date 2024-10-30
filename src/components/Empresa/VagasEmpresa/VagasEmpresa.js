@@ -421,7 +421,7 @@ const VagasEmpresa = () => {
                         <h1>Gestão de vagas</h1>
                         <Col className='coluna-filtros mt-2 mb-4' style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000', overflowY: 'hidden' }}>
                             <Row className='mb-4 align-items-center'>
-                                <h5>Status</h5>
+                                <h5>Ativa</h5>
                                 <Col xs={12} md={10}>
                                     <Form.Control
                                         as="select"
@@ -430,8 +430,8 @@ const VagasEmpresa = () => {
                                         onChange={(e) => setFilters({ ...filters, status: e.target.value })}
                                     >
                                         <option value="">Selecione</option>
-                                        <option value="true">Ativa</option>
-                                        <option value="false">Inativa</option>
+                                        <option value="true">Sim</option>
+                                        <option value="false">Não</option>
                                     </Form.Control>
                                 </Col>
                             </Row>
@@ -589,7 +589,7 @@ const VagasEmpresa = () => {
                             <div className="filter-tag-container mt-2">
                                 {filters.status && (
                                     <div className="filter-tag">
-                                        Status: {filters.status === 'true' ? 'Ativa' : 'Inativa'}
+                                        Ativa: {filters.status === 'true' ? 'Sim' : 'Não'}
                                         <FontAwesomeIcon
                                             icon={faTimesCircle}
                                             className="icon-remove-tag"
@@ -663,7 +663,7 @@ const VagasEmpresa = () => {
                                 </Modal.Header>
                                 <Modal.Body>
                                     <Row className='mb-4 align-items-center'>
-                                        <h5>Status</h5>
+                                        <h5>Ativa</h5>
                                         <Col xs={12}>
                                             <Form.Control
                                                 as="select"
@@ -672,8 +672,8 @@ const VagasEmpresa = () => {
                                                 onChange={(e) => setFilters({ ...filters, status: e.target.value })}
                                             >
                                                 <option value="">Selecione</option>
-                                                <option value="true">Ativa</option>
-                                                <option value="false">Inativa</option>
+                                                <option value="true">Sim</option>
+                                                <option value="false">Não</option>
                                             </Form.Control>
                                         </Col>
                                     </Row>
@@ -798,7 +798,7 @@ const VagasEmpresa = () => {
                                                     <th>Localidade</th>
                                                     <th>Modelo</th>
                                                     <th>Tipo</th>
-                                                    <th>Status</th>
+                                                    <th>Ativa</th>
                                                     <th>PCD</th>
                                                     <th>Salário</th>
                                                     <th>Ações</th>
@@ -813,7 +813,7 @@ const VagasEmpresa = () => {
                                                         <td>{job.type}</td>
                                                         <td>
                                                             <span className={`status-indicator ${job.status ? 'active' : 'inactive'}`} />
-                                                            {job.status ? 'Ativa' : 'Inativa'}
+                                                            {job.status ? 'Sim' : 'Não'}
                                                         </td>
                                                         <td>{job.pcd ? 'Sim' : 'Não'}</td>
                                                         <td>{job.salary ? job.salary : 'Não informado'}</td>

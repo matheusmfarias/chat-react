@@ -41,7 +41,6 @@ const Curriculo = () => {
 
             setExperiencias(user.experiences || []);
             setFormacoes(user.formacao || []);
-
         } catch (error) {
             console.error('Erro ao buscar informações do usuário', error);
         }
@@ -51,27 +50,26 @@ const Curriculo = () => {
         fetchUserInfo();
     }, [fetchUserInfo]);
 
-    const handleViewCurriculo = () => {
-        fetchUserInfo();
-
-        // Abrir uma nova janela
-        const newWindow = window.open('', '', 'width=800,height=600');
-        newWindow.document.write('<html><head><title>Currículo</title></head><body><div id="curriculo-template-root"></div></body></html>');
-
-        // Injetar link CSS do Bootstrap na nova janela
+    const injectStyles = (newWindow) => {
         const bootstrapLink = newWindow.document.createElement('link');
         bootstrapLink.rel = 'stylesheet';
         bootstrapLink.href = 'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css';
         newWindow.document.head.appendChild(bootstrapLink);
 
-        // Injetar link CSS personalizado na nova janela
         const customLink = newWindow.document.createElement('link');
         customLink.rel = 'stylesheet';
-        customLink.type = 'text/css';
         customLink.href = `${window.location.origin}/CurriculoTemplate.css`;
         newWindow.document.head.appendChild(customLink);
 
-        // Garantir que os links CSS sejam carregados antes de renderizar o componente
+        return { bootstrapLink, customLink };
+    };
+
+    const handleViewCurriculo = useCallback(() => {
+        const newWindow = window.open('', '', 'width=1024,height=768');
+        newWindow.document.write('<html><head><title>Currículo</title></head><body><div id="curriculo-template-root"></div></body></html>');
+
+        const { bootstrapLink, customLink } = injectStyles(newWindow);
+
         const renderCurriculo = () => {
             const root = createRoot(newWindow.document.getElementById('curriculo-template-root'));
             root.render(
@@ -83,12 +81,9 @@ const Curriculo = () => {
             );
         };
 
-        bootstrapLink.onload = () => {
-            customLink.onload = renderCurriculo;
-        };
-
-        newWindow.document.close(); // Necessário para garantir que o conteúdo do documento seja carregado
-    };
+        bootstrapLink.onload = () => customLink.onload = renderCurriculo;
+        newWindow.document.close();
+    }, [experiencias, formacoes, informacoes]);
 
     return (
         <>
@@ -114,6 +109,6 @@ const Curriculo = () => {
             </main>
         </>
     );
-}
+};
 
 export default Curriculo;

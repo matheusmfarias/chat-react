@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import api from "../../../services/axiosConfig";
 import HeaderEmpresa from "../HeaderEmpresa";
 import { Spinner, Pagination, Row, Col, Card, Button, Form, InputGroup, Container } from "react-bootstrap";
@@ -6,6 +6,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import './CurriculosEmpresa.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleUser, faSearch } from "@fortawesome/free-solid-svg-icons";
+import { createRoot } from "react-dom/client";
+import CurriculoTemplate from "../../Candidato/Curriculo/CurriculoTemplate";
 
 const CurriculosEmpresa = () => {
   const { jobId } = useParams();
@@ -22,13 +24,11 @@ const CurriculosEmpresa = () => {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
-
-        // Chama a API passando o jobId e o termo de busca como parte da rota
         const response = await api.get(`${process.env.REACT_APP_API_URL}/api/jobs/applications/${jobId}`, {
           headers: { Authorization: `Bearer ${token}` },
           params: {
             page: currentPage,
-            limit: itemsPerPage, // Envia o número de itens por página
+            limit: itemsPerPage,
             searchTerm
           }
         });
@@ -50,22 +50,86 @@ const CurriculosEmpresa = () => {
     setCurrentPage(1);
   };
 
-  const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
+  const handlePageChange = useCallback((pageNumber) => setCurrentPage(pageNumber), []);
 
-  const handleNextPage = () => {
+  const handleNextPage = useCallback(() => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
     }
-  };
+  }, [currentPage, totalPages]);
 
-  const handlePreviousPage = () => {
+  const handlePreviousPage = useCallback(() => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
+  }, [currentPage]);
+
+  const injectStyles = (newWindow) => {
+    const bootstrapLink = newWindow.document.createElement('link');
+    bootstrapLink.rel = 'stylesheet';
+    bootstrapLink.href = 'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css';
+    newWindow.document.head.appendChild(bootstrapLink);
+
+    const customLink = newWindow.document.createElement('link');
+    customLink.rel = 'stylesheet';
+    customLink.href = `${window.location.origin}/CurriculoTemplate.css`;
+    newWindow.document.head.appendChild(customLink);
+
+    return { bootstrapLink, customLink };
   };
 
-  const viewCurriculum = (userId) => {
-    window.open(`/curriculo/${userId}`, "_blank");
+  const viewCurriculum = async (userId) => {
+    const newWindow = window.open('', '', 'width=1024,height=768');
+    newWindow.document.write('<html><head><title>Currículo</title></head><body><div id="curriculo-template-root"></div></body></html>');
+
+    const { bootstrapLink, customLink } = injectStyles(newWindow);
+
+    const renderCurriculo = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await api.get(`${process.env.REACT_APP_API_URL}/api/user/candidato/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const user = response.data;
+
+        // Atualizar o título da nova janela com o nome do usuário
+        newWindow.document.title = `Currículo de ${user.nome} ${user.sobrenome}`;
+
+        const informacoes = {
+          nome: user.nome,
+          sobrenome: user.sobrenome,
+          dataNascimento: user.nascimento ? user.nascimento.split('T')[0] : '',
+          email: user.email,
+          telefoneContato: user.additionalInfo?.contactPhone || '',
+          telefoneRecado: user.additionalInfo?.backupPhone || '',
+          cnh: user.additionalInfo?.cnh || 'Não tenho',
+          tipoCnh: user.additionalInfo?.cnhTypes || [],
+          fotoPerfil: `${process.env.REACT_APP_API_URL}${user.profilePicture}` || '',
+          habilidadesProfissionais: user.habilidadesProfissionais || [],
+          habilidadesComportamentais: user.habilidadesComportamentais || [],
+          cursos: user.cursos || [],
+          objetivos: user.objetivos || []
+        };
+
+        const experiencias = user.experiences || [];
+        const formacoes = user.formacao || [];
+
+        const root = createRoot(newWindow.document.getElementById('curriculo-template-root'));
+        root.render(
+          <CurriculoTemplate
+            experiencias={experiencias}
+            formacoes={formacoes}
+            informacoes={informacoes}
+          />
+        );
+      } catch (error) {
+        console.error('Erro ao obter informações do usuário:', error);
+        newWindow.close();
+      }
+    };
+
+    bootstrapLink.onload = () => customLink.onload = renderCurriculo;
+    newWindow.document.close();
   };
 
   return (

@@ -98,7 +98,7 @@ const BuscarVagas = () => {
         // Define o job visualmente selecionado e abre o modal imediatamente
         setVisuallySelectedJob(job);
         setShowJobModal(true); // Abre o modal instantaneamente
-    
+
         setLoadingDetails(true); // Indica que os dados estão sendo carregados
         try {
             const token = localStorage.getItem('token');
@@ -111,7 +111,7 @@ const BuscarVagas = () => {
         } finally {
             setLoadingDetails(false); // Indica que o carregamento terminou
         }
-    };    
+    };
 
     const handleCloseJobModal = () => setShowJobModal(false);
 
@@ -169,7 +169,23 @@ const BuscarVagas = () => {
 
     useEffect(() => {
         if (jobs.length > 0) {
-            setSelectedJob(jobs[0]);
+            const fetchFirstJobDetails = async () => {
+                setVisuallySelectedJob(jobs[0]);
+                setLoadingDetails(true);
+                try {
+                    const token = localStorage.getItem('token');
+                    const response = await api.get(`${process.env.REACT_APP_API_URL}/api/jobsSearch/${jobs[0]._id}`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    setSelectedJob(response.data);
+                } catch (error) {
+                    console.error('Erro ao buscar detalhes da vaga:', error);
+                } finally {
+                    setLoadingDetails(false);
+                }
+            };
+
+            fetchFirstJobDetails();
         }
     }, [jobs]);
 
