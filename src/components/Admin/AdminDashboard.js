@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../services/axiosConfig';
 import { Button, Form, Table, Navbar, Nav, Container, Row, Col, InputGroup, Pagination, Breadcrumb, Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faToggleOn, faToggleOff, faPlus, faSearch, faSortDown, faSortUp, faSignOutAlt, faEye } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faToggleOn, faToggleOff, faPlus, faSearch, faSortDown, faSortUp, faSignOutAlt, faEye } from '@fortawesome/free-solid-svg-icons';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import useFormattedCNPJ, { formatCNPJ } from '../../hooks/useFormattedCNPJ';
@@ -85,6 +85,7 @@ const AdminDashboard = () => {
 
 
     useEffect(() => {
+        document.title = "ACI Empregos | Painel Administrativo";
         if (activeTab === 'empresas') {
             fetchEmpresas(currentPage, searchTerm);
         } else {

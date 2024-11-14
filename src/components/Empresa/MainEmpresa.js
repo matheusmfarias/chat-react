@@ -8,6 +8,7 @@ const MainEmpresa = () => {
   const [companyName, setCompanyName] = useState('');
 
   useEffect(() => {
+    document.title = "ACI Empregos | Promovendo Desenvolvimento";
     const fetchCompanyData = async () => {
       const token = localStorage.getItem('token');
       if (token) {

@@ -1,11 +1,12 @@
 .textbox-wrapper {
     width: 100%;
-    margin-bottom: 24px;
     position: relative;
+    text-align: center;
 }
 
 .textbox {
     width: 100%;
+    padding: 10px 0;
     position: relative;
     display: inline-block;
 }
@@ -119,14 +120,6 @@
 
 .spinner.visible {
     opacity: 1;
-}
-
-.error-message {
-    color: #ff5360;
-    font-size: 12px;
-    position: absolute;
-    top: 100%;
-    right: 4px;
 }
 
 button {

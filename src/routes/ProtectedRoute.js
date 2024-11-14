@@ -1,22 +1,23 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
+import { destroySession } from '../utils/sessionUtils';
 
 const ProtectedRoute = ({ children, requiredRole }) => {
   const token = localStorage.getItem('token');
-  const userRole = localStorage.getItem('role'); // Pode ser 'user', 'empresa', ou 'admin'
+  const userRole = localStorage.getItem('role'); // Deve ser 'user', 'empresa', ou 'admin'
 
   // Verifica se o token existe
   if (!token) {
-    return <Navigate to="/login" replace />;
-  }
-
-  // Verifica se o papel do usuário corresponde ao exigido pela rota
-  if (requiredRole && userRole !== requiredRole) {
-    // Se o papel do usuário não corresponder, redireciona para a tela inicial
+    destroySession();
     return <Navigate to="/" replace />;
   }
 
-  // Se o token e o papel estiverem corretos, renderiza o conteúdo protegido
+  // Verifica se a role do usuário corresponde ao exigido pela rota
+  if (requiredRole && userRole !== requiredRole) {
+    destroySession();
+    return <Navigate to="/" replace />;
+  }
+
   return children;
 };
 

@@ -53,6 +53,7 @@ const Config = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        document.title = "ACI Empregos | Perfil";
         const fetchUserData = async () => {
             try {
                 const token = localStorage.getItem('token');

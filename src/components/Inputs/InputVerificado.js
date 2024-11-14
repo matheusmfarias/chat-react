@@ -30,7 +30,7 @@ const InputVerificado = ({ type, label, name, onChange, maxLength, value, title,
                 const exists = name === 'email' ? response.data.emailExists : response.data.cpfExists;
                 setIsValid(!exists && !!value);
                 setIsButtonDisabled(exists || !value);
-                setErrorMessage(exists ? `${label} já está sendo utilizado.` : '');
+                setErrorMessage(exists ? `${label} não está disponível.` : '');
             } catch (error) {
                 console.error('Erro ao verificar disponibilidade:', error);
                 setIsValid(false);
@@ -52,17 +52,20 @@ const InputVerificado = ({ type, label, name, onChange, maxLength, value, title,
 
     const handleChange = (event) => {
         let { value } = event.target;
-        if (name === 'rg') {
-            value = value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
+        
+        if (name === 'cpf') {
+            value = value.replace(/[^\d.-]/g, '');
         }
         setInputValue(value);
+    
         if (shouldValidate) {
             debounce(() => {
                 updateUi(value);
             }, 500)();
         }
+    
         onChange({ target: { name, value } });
-    };
+    };    
 
     const handleBlur = () => {
         if (shouldValidate) {
@@ -114,7 +117,7 @@ const InputVerificado = ({ type, label, name, onChange, maxLength, value, title,
                 <label htmlFor={name}>{label}</label>
                 {isTyping && <span className="spinner visible"></span>}
             </div>
-            {!isValid && errorMessage && <span className="error-message">{errorMessage}</span>}
+            {!isValid && errorMessage && <span className="text-danger">{errorMessage}</span>}
             {showButton && (
                 <button disabled={isButtonDisabled}>
                     <p>Cadastrar</p>

@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const TokenInput = ({ length, onChange }) => {
     const [values, setValues] = useState(Array(length).fill(''));
+
+    useEffect(() => {
+        document.title = "ACI Empregos | Cadastro";
+      }, []);
 
     const handleChange = (e, index) => {
         const { value } = e.target;

@@ -16,6 +16,7 @@ const ChangeEmail = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        document.title = "ACI Empregos | Perfil";
         const fetchCurrentEmail = async () => {
             try {
                 const token = localStorage.getItem('token');

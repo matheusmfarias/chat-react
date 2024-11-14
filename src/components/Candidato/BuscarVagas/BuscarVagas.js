@@ -38,6 +38,7 @@ const BuscarVagas = () => {
     const [showJobModal, setShowJobModal] = useState(false);
 
     useEffect(() => {
+        document.title = "ACI Empregos | Oportunidades";
         if (keyword) {
             const fetchJobs = async () => {
                 try {

@@ -19,6 +19,10 @@ const DetalhesVaga = () => {
     const [formacoes, setFormacoes] = useState([]);
     const [informacoes, setInformacoes] = useState({});
 
+    useEffect(() => {
+        document.title = "ACI Empregos | Oportunidades";
+      }, []);
+
     const fetchUserInfo = useCallback(async () => {
         setLoading(true);
         try {

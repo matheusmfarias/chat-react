@@ -1,4 +1,23 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap');
+@font-face {
+    font-family: 'Poppins';
+    src: url('../fonts/Poppins-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Poppins';
+    src: url('../fonts/Poppins-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Poppins';
+    src: url('../fonts/Poppins-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
 
 * {
     font-family: 'Poppins', sans-serif;
@@ -29,29 +48,17 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    background-color: #f9f9f9f9;
+    background-color: #f9f9f9;
 }
 
 /* Estilos globais para fixar o header no topo em dispositivos móveis */
 @media (max-width: 768px) {
-    .header-candidato {
+    header {
         position: fixed;
-        /* Fixa o header no topo da página */
         top: 0;
-        /* Posiciona no topo */
         left: 0;
         width: 100%;
-        /* O header ocupará toda a largura da tela */
         z-index: 1000;
-        /* Garante que o header fique sobreposto a outros elementos */
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        /* Adiciona sombra para destaque */
-    }
-
-    /* Adiciona espaçamento no conteúdo para não ser sobreposto pelo header */
-    body,
-    .main-content {
-        padding-top: 80px;
-        /* Ajuste o padding-top para evitar sobreposição */
     }
 }

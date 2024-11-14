@@ -20,6 +20,7 @@ const CurriculosEmpresa = () => {
   const itemsPerPage = 9; // Define o número de itens por página
 
   useEffect(() => {
+    document.title = "ACI Empregos | Candidatos";
     const fetchCandidates = async () => {
       setLoading(true);
       try {

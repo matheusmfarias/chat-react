@@ -103,7 +103,7 @@ const ModalVagas = ({
             <Modal.Header closeButton>
                 <Modal.Title>{isEditMode ? 'Editar Vaga' : 'Adicionar Vaga'}</Modal.Title>
             </Modal.Header>
-            <Modal.Body>
+            <Modal.Body style={{ maxHeight: '90vh', overflowY: 'auto' }}>
                 <Form onSubmit={handleSubmit}>
                     <Row>
                         <Col md={6}>

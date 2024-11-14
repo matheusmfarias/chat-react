@@ -21,6 +21,7 @@ const TokenCadastro = ({ onVerify }) => {
     const urlToken = queryParams.get('token');
 
     useEffect(() => {
+        document.title = "ACI Empregos | Cadastro";
         if (urlToken) {
             setToken(urlToken);
         }

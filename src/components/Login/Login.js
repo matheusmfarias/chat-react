@@ -1,19 +1,26 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import api from '../../services/axiosConfig';
 import logo from '../../assets/images/logo-aci-transparente.png';
 import SenhaInput from "../SenhaInput/SenhaInput";
 import './Login.css';
 import { useNavigate } from 'react-router-dom';
 import InputVerificado from "../Inputs/InputVerificado";
+import { Spinner } from "react-bootstrap";
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [erroLogin, setErroLogin] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        document.title = "ACI Empregos | Login";
+      }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
         try {
             const response = await api.post(`${process.env.REACT_APP_API_URL}/api/auth/login`, { email, senha });
 
@@ -36,6 +43,8 @@ const Login = () => {
             } else {
                 setErroLogin('Erro ao fazer login. Por favor, tente novamente mais tarde.');
             }
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -70,7 +79,13 @@ const Login = () => {
                     />
                     {erroLogin && <div className='text-danger'>{erroLogin}</div>}
                     <button type="submit" className="btn btn-primary btn-entrar">
-                        Entrar
+                        {loading ? (
+                            <div className="d-flex justify-content-center align-items-center">
+                                <Spinner animation="border" variant="white" />
+                            </div>
+                        ) : (
+                            <span>Entrar</span>
+                        )}
                     </button>
                     <p>Não possui cadastro? <a href='/cadastro'>Cadastrar</a></p>
                     <a href='/email-senha'>Esqueceu a senha?</a>

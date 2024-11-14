@@ -15,6 +15,7 @@ const InscricoesCandidato = () => {
     const itemsPerPage = 9;
 
     useEffect(() => {
+        document.title = "ACI Empregos | Inscrições";
         const fetchUserApplications = async () => {
             setLoading(true);
             try {

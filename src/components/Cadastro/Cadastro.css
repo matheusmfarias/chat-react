@@ -4,7 +4,6 @@
     align-items: center;
     flex-direction: column;
     width: 100%;
-    height: auto;
     padding: 10px;
     color: #1f5291;
 }
@@ -12,8 +11,8 @@
 .form-cadastro {
     position: relative;
     width: 100%;
+    max-width: 500px; /* Limita a largura máxima do formulário */
     margin: 10px;
-    max-width: 500px;
     padding: 20px;
     background-color: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -42,7 +41,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    text-align: center;
     width: 250px;
     margin-bottom: 10px;
 }
@@ -84,7 +82,6 @@
     cursor: not-allowed;
 }
 
-
 .form-cadastro .btn-voltar {
     position: absolute;
     left: 0;
@@ -114,13 +111,13 @@
     color: #ff5360;
     font-size: 16px;
     text-align: center;
-    padding: 10px;
 }
 
-
+/* Ajustes responsivos */
 @media (max-width: 605px) {
-    .credencial-cadastro .text-danger {
-        margin-bottom: 10px;
-        background-color: #1f5291;
+
+    .form-cadastro {
+        padding: 15px; /* Ajusta o padding em dispositivos menores */
     }
+
 }

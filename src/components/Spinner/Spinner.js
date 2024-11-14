@@ -1,4 +1,3 @@
-// src/components/Spinner/Spinner.js
 import React from 'react';
 import './Spinner.css';
 

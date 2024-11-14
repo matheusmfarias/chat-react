@@ -172,6 +172,8 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
     transform: scale(0.8);
     animation: scaleIn 0.5s forwards;
 }

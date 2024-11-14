@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import './MainCandidato.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
@@ -10,6 +10,10 @@ import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 const Main = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const navigate = useNavigate();
+
+    useEffect(() => {
+        document.title = "ACI Empregos | Promovendo Desenvolvimento";
+      }, []);
 
     const handleSearch = useCallback(async () => {
         if (!searchTerm.trim()) {
@@ -46,7 +50,7 @@ const Main = () => {
     };
 
     return (
-        <main className="d-flex justify-content-center align-items-center text-center vh-50 bg-cover bg-center" style={{ backgroundImage: `url(${require('../../../assets/images/fundo.png')})` }}>
+        <main className="d-flex justify-content-center align-items-center text-center vh-50 bg-cover bg-center" style={{ backgroundImage: `url(${require('../../../assets/images/fundo.webp')})` }}>
             <div className="text-white">
                 <h1>Encontre vagas de emprego</h1>
                 <h4 style={{ fontWeight: '300' }}>Unimos talento e oportunidade, criando um mundo de possibilidades</h4>

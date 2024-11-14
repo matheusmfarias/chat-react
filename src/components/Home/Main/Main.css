@@ -3,7 +3,8 @@
     justify-content: center;
     align-items: center;
     text-align: center;
-    background-image: url('../../assets/images/fundo.png');
+    background-image: url('../../../assets/images/fundo.webp');
+    background-color: var(--primary-color); /* Fallback */
     background-position: center center;
     background-repeat: no-repeat;
     background-size: cover;
@@ -46,7 +47,12 @@
     background-color: var(--hover-background-color);
 }
 
+/* Responsividade */
 @media (max-width: 605px) {
+    .main-content {
+        margin-top: 80px;
+    }
+
     .central-container h1 {
         font-size: 32px;
     }
@@ -55,5 +61,10 @@
         margin-top: 3%;
         font-size: 16px;
         font-weight: 300;
+    }
+
+    .btn-main-login {
+        width: 100px; /* Ajuste para telas menores */
+        padding: 8px;
     }
 }

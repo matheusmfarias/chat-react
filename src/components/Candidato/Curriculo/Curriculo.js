@@ -15,6 +15,10 @@ const Curriculo = () => {
     const [formacoes, setFormacoes] = useState([]);
     const [informacoes, setInformacoes] = useState({});
 
+    useEffect(() => {
+        document.title = "ACI Empregos | Currículo";
+      }, []);
+
     const fetchUserInfo = useCallback(async () => {
         try {
             const token = localStorage.getItem('token');

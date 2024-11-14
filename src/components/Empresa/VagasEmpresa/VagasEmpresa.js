@@ -114,6 +114,7 @@ const VagasEmpresa = () => {
     }, [filters, selectedStateFilter, selectedCityFilter, handleFilterSearch]);
 
     useEffect(() => {
+        document.title = "ACI Empregos | Vagas";
         const fetchJobs = async () => {
             const token = localStorage.getItem('token');
             if (token) {

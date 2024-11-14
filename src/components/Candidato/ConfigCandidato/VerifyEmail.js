@@ -17,6 +17,7 @@ const VerifyEmail = () => {
     const email = location.state?.email || localStorage.getItem('verificationEmail'); // Obtém o email do estado ou do localStorage
 
     useEffect(() => {
+        document.title = "ACI Empregos | Perfil";
         if (!email) {
             navigate('/'); // Redireciona para a página inicial se o email não estiver disponível
         }

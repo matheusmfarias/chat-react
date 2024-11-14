@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import InputVerificado from '../Inputs/InputVerificado';
 import { ErrorContext, ErrorProvider } from '../../context/ErrorContext';
 
-const Cadastro = ({ onRegister }) => {
+const Cadastro = () => {
     const [nome, handleNomeChange] = useFormattedNome('');
     const [sobrenome, handleSobrenomeChange] = useFormattedNome('');
     const [userData, setUserData] = useState({
@@ -26,6 +26,7 @@ const Cadastro = ({ onRegister }) => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        document.title = "ACI Empregos | Cadastro";
         const dataAtual = new Date();
         const anoMinimo = dataAtual.getFullYear() - 14;
         const mes = String(dataAtual.getMonth() + 1).padStart(2, '0');
@@ -86,12 +87,10 @@ const Cadastro = ({ onRegister }) => {
 
             // Armazene o e-mail no LocalStorage
             localStorage.setItem('email', userData.email);
-
-            onRegister();
             navigate('/verificacao-token', { state: { email: userData.email } });
         } catch (error) {
             console.error('Erro no cadastro:', error);
-            setErrors({ cadastro: 'E-mail e/ou CPF já cadastrados, verifique suas informações!' });
+            setErrors({ cadastro: 'E-mail e/ou CPF não disponíveis, verifique suas informações!' });
         }
     };
 
@@ -181,11 +180,11 @@ const Cadastro = ({ onRegister }) => {
                         showRequirements={false}
                         required
                     />
-                    {errors.cpf && <div className="text-danger">{errors.cpf}</div>}
-                    {errors.nascimento && <div className="text-danger">{errors.nascimento}</div>}
-                    {errors.confirmacaoSenha && <div className="text-danger">{errors.confirmacaoSenha}</div>}
-                    {errors.senha && <div className="text-danger">{errors.senha}</div>}
-                    {errors.cadastro && <div className='text-danger'>{errors.cadastro}</div>}
+                    {errors.cpf && <div className="text-danger m-1">{errors.cpf}</div>}
+                    {errors.nascimento && <div className="text-danger m-1">{errors.nascimento}</div>}
+                    {errors.confirmacaoSenha && <div className="text-danger m-1">{errors.confirmacaoSenha}</div>}
+                    {errors.senha && <div className="text-danger m-1">{errors.senha}</div>}
+                    {errors.cadastro && <div className='text-danger m-1'>{errors.cadastro}</div>}
                     <p>
                         Ao se inscrever com o e-mail, você concorda com nossos <a href="termos.html" target="_blank">termos</a> e com a nossa <a href="politica-privacidade.html" target="_blank">política de privacidade ACI</a>.
                     </p>

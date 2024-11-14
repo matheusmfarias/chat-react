@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import api from '../../services/axiosConfig';
 import logo from '../../assets/images/logo-aci-transparente.png';
 import SenhaInput from "../SenhaInput/SenhaInput";
@@ -11,6 +11,10 @@ const LoginEmpresa = () => {
     const [senha, setSenha] = useState('');
     const [erroLogin, setErroLogin] = useState('');
     const navigate = useNavigate();
+
+    useEffect(() => {
+        document.title = "ACI Empregos | Login";
+      }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
