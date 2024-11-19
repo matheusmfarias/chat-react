@@ -12,6 +12,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import './VagasEmpresa.css';
 import DetalhesVagas from './DetalhesVagas';
 import { useNavigate } from 'react-router-dom';
+import Select from 'react-select';
 
 const VagasEmpresa = () => {
     const navigate = useNavigate();
@@ -420,23 +421,30 @@ const VagasEmpresa = () => {
                 <Container fluid style={{ backgroundColor: '#f9f9f9f9' }}>
                     <Row className="row-buscar-vagas mt-4">
                         <h1>Gestão de vagas</h1>
-                        <Col className='coluna-filtros mt-2 mb-4' style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000', overflowY: 'hidden' }}>
-                            <Row className='mb-4 align-items-center'>
+                        <Col className='coluna-filtros mt-2 mb-2' style={{ position: 'sticky', top: '10px', height: '120vh', zIndex: '1000', overflowY: 'hidden' }}>
+                            <Row>
                                 <h5>Ativa</h5>
                                 <Col xs={12} md={10}>
-                                    <Form.Control
-                                        as="select"
-                                        value={filters.status}
-                                        style={{ width: '200px' }}
-                                        onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                                    >
-                                        <option value="">Selecione</option>
-                                        <option value="true">Sim</option>
-                                        <option value="false">Não</option>
-                                    </Form.Control>
+                                    <Form.Group className="form-group-custom">
+                                        <Select
+                                            options={[
+                                                { value: 'true', label: 'Sim' },
+                                                { value: 'false', label: 'Não' },
+                                            ]}
+                                            value={[
+                                                { value: 'true', label: 'Sim' },
+                                                { value: 'false', label: 'Não' },
+                                            ].find((option) => option.value === filters.status) || null}
+                                            onChange={(selectedOption) =>
+                                                setFilters({ ...filters, status: selectedOption?.value || '' })
+                                            }
+                                            placeholder="Selecione"
+                                            isSearchable={false}
+                                        />
+                                    </Form.Group>
                                 </Col>
                             </Row>
-                            <Row className='mb-4 align-items-center'>
+                            <Row className='mb-2'>
                                 <h5>Tipo</h5>
                                 <Col xs={12} md={10} >
                                     <Form.Group>
@@ -458,7 +466,7 @@ const VagasEmpresa = () => {
                                     </Form.Group>
                                 </Col>
                             </Row>
-                            <Row className='mb-4 align-items-center'>
+                            <Row className='mb-2'>
                                 <h5>Modalidade</h5>
                                 <Col xs={12} md={10}>
                                     <Form.Group>
@@ -480,56 +488,74 @@ const VagasEmpresa = () => {
                                     </Form.Group>
                                 </Col>
                             </Row>
-                            <Row className='mb-2 align-items-center'>
+                            <Row>
                                 <h5>Localização</h5>
-                                <span className='text-muted'>Estado</span>
+                                <span>Estado</span>
                                 <Col xs={12} md={10}>
-                                    <Form.Control
-                                        as="select"
-                                        style={{ width: '200px' }}
-                                        value={selectedStateFilter}
-                                        onChange={(e) => setSelectedStateFilter(e.target.value)}
-                                    >
-                                        <option value="">Selecione</option>
-                                        {states.map((state) => (
-                                            <option key={state.id} value={state.sigla}>
-                                                {state.nome}
-                                            </option>
-                                        ))}
-                                    </Form.Control>
+                                    <Form.Group className="form-group-custom">
+                                        <Select
+                                            options={states.map((state) => ({
+                                                value: state.sigla,
+                                                label: state.nome,
+                                            }))}
+                                            value={
+                                                states
+                                                    .map((state) => ({ value: state.sigla, label: state.nome }))
+                                                    .find((option) => option.value === selectedStateFilter) || null
+                                            }
+                                            onChange={(selectedOption) => {
+                                                setSelectedStateFilter(selectedOption?.value || '');
+                                                setCities([]); // Limpa as cidades ao remover o estado
+                                            }}
+                                            placeholder="Selecione"
+                                            isSearchable={false}
+                                        />
+                                    </Form.Group>
                                 </Col>
                             </Row>
-                            <Row className='mb-4 align-items-center'>
-                                <span className='text-muted'>Cidade</span>
+                            <Row>
+                                <span>Cidade</span>
                                 <Col xs={12} md={10}>
-                                    <Form.Control
-                                        as="select"
-                                        style={{ width: '200px' }}
-                                        value={selectedCityFilter}
-                                        onChange={(e) => setSelectedCityFilter(e.target.value)}
-                                    >
-                                        <option value="">Selecione</option>
-                                        {cities.map((city) => (
-                                            <option key={city.id} value={city.nome}>
-                                                {city.nome}
-                                            </option>
-                                        ))}
-                                    </Form.Control>
+                                    <Form.Group className="form-group-custom">
+                                        <Select
+                                            options={cities.map((city) => ({
+                                                value: city.nome,
+                                                label: city.nome,
+                                            }))}
+                                            value={
+                                                cities
+                                                    .map((city) => ({ value: city.nome, label: city.nome }))
+                                                    .find((option) => option.value === selectedCityFilter) || null
+                                            }
+                                            onChange={(selectedOption) =>
+                                                setSelectedCityFilter(selectedOption?.value || '')
+                                            }
+                                            placeholder="Selecione"
+                                            isSearchable={false}
+                                        />
+                                    </Form.Group>
                                 </Col>
                             </Row>
-                            <Row className='mb-4 align-items-center'>
+                            <Row>
                                 <h5>PCD</h5>
                                 <Col xs={12} md={10}>
-                                    <Form.Control
-                                        as="select"
-                                        style={{ width: '200px' }}
-                                        value={filters.pcd}
-                                        onChange={(e) => setFilters({ ...filters, pcd: e.target.value })}
-                                    >
-                                        <option value="">Selecione</option>
-                                        <option value="true">Sim</option>
-                                        <option value="false">Não</option>
-                                    </Form.Control>
+                                    <Form.Group className="form-group-custom">
+                                        <Select
+                                            options={[
+                                                { value: 'true', label: 'Sim' },
+                                                { value: 'false', label: 'Não' },
+                                            ]}
+                                            value={[
+                                                { value: 'true', label: 'Sim' },
+                                                { value: 'false', label: 'Não' },
+                                            ].find((option) => option.value === filters.pcd) || null}
+                                            onChange={(selectedOption) =>
+                                                setFilters({ ...filters, pcd: selectedOption?.value || '' })
+                                            }
+                                            placeholder="Selecione"
+                                            isSearchable={false}
+                                        />
+                                    </Form.Group>
                                 </Col>
                             </Row>
                             <Row>
@@ -594,7 +620,7 @@ const VagasEmpresa = () => {
                                         <FontAwesomeIcon
                                             icon={faTimesCircle}
                                             className="icon-remove-tag"
-                                            onClick={() => setFilters({ ...filters, status: '' })} // Remove o filtro de PCD
+                                            onClick={() => setFilters({ ...filters, status: '' })} // Remove o filtro de Status
                                         />
                                     </div>
                                 )}
@@ -605,8 +631,7 @@ const VagasEmpresa = () => {
                                             icon={faTimesCircle}
                                             className="icon-remove-tag"
                                             onClick={() => {
-                                                // Remove o filtro de tipo específico ao clicar no "x"
-                                                const newTypes = filters.type.filter(t => t !== filter);
+                                                const newTypes = filters.type.filter((t) => t !== filter);
                                                 setFilters({ ...filters, type: newTypes });
                                             }}
                                         />
@@ -619,8 +644,7 @@ const VagasEmpresa = () => {
                                             icon={faTimesCircle}
                                             className="icon-remove-tag"
                                             onClick={() => {
-                                                // Remove o filtro de modalidade específico ao clicar no "x"
-                                                const newModalities = filters.modality.filter(m => m !== modality);
+                                                const newModalities = filters.modality.filter((m) => m !== modality);
                                                 setFilters({ ...filters, modality: newModalities });
                                             }}
                                         />
@@ -632,7 +656,10 @@ const VagasEmpresa = () => {
                                         <FontAwesomeIcon
                                             icon={faTimesCircle}
                                             className="icon-remove-tag"
-                                            onClick={() => setSelectedStateFilter('')} // Remove o filtro de estado
+                                            onClick={() => {
+                                                setSelectedStateFilter(''); // Reseta o estado
+                                                setCities([]); // Limpa as cidades
+                                            }}
                                         />
                                     </div>
                                 )}
@@ -642,7 +669,7 @@ const VagasEmpresa = () => {
                                         <FontAwesomeIcon
                                             icon={faTimesCircle}
                                             className="icon-remove-tag"
-                                            onClick={() => setSelectedCityFilter('')} // Remove o filtro de cidade
+                                            onClick={() => setSelectedCityFilter('')} // Reseta a cidade
                                         />
                                     </div>
                                 )}

@@ -238,8 +238,8 @@ const BuscarVagas = () => {
             <Container fluid style={{ backgroundColor: '#f9f9f9f9' }}>
                 <Row className="row-buscar-vagas mt-4">
                     <h1>Oportunidades</h1>
-                    <Col className='coluna-filtros mt-2 mb-4' style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000', overflowY: 'hidden' }}>
-                        <Row className='mb-4 align-items-center'>
+                    <Col className='coluna-filtros mt-2 mb-4' style={{ position: 'sticky', top: '10px', height: '120vh', overflowY: 'hidden', zIndex: '1000' }}>
+                        <Row className="mb-2">
                             <h5>Tipo</h5>
                             <Col xs={12} md={10} >
                                 <Form.Group>
@@ -261,7 +261,7 @@ const BuscarVagas = () => {
                                 </Form.Group>
                             </Col>
                         </Row>
-                        <Row className='mb-4 align-items-center'>
+                        <Row className='mb-2'>
                             <h5>Modalidade</h5>
                             <Col xs={12} md={10}>
                                 <Form.Group>
@@ -283,7 +283,7 @@ const BuscarVagas = () => {
                                 </Form.Group>
                             </Col>
                         </Row>
-                        <Row className='mb-2 align-items-center'>
+                        <Row className='mb-2'>
                             <h5>Localização</h5>
                             <span className='text-muted'>Estado</span>
                             <Col xs={12} md={10}>
@@ -302,7 +302,7 @@ const BuscarVagas = () => {
                                 </Form.Control>
                             </Col>
                         </Row>
-                        <Row className='mb-4 align-items-center'>
+                        <Row className='mb-2'>
                             <span className='text-muted'>Cidade</span>
                             <Col xs={12} md={10}>
                                 <Form.Control
@@ -320,7 +320,7 @@ const BuscarVagas = () => {
                                 </Form.Control>
                             </Col>
                         </Row>
-                        <Row className='mb-4 align-items-center '>
+                        <Row className='mb-2'>
                             <h5>PCD</h5>
                             <Col xs={12} md={10}>
                                 <Form.Control
@@ -566,7 +566,7 @@ const BuscarVagas = () => {
                                 </div>
                             ) : currentItems.length > 0 ? (
                                 <>
-                                    <Col md={4} style={{ position: 'relative' }}>
+                                    <Col md={5} style={{ position: 'relative' }}>
                                         {currentItems.map(result => (
                                             <Card
                                                 key={result._id}
@@ -680,7 +680,7 @@ const BuscarVagas = () => {
                                     </Col>
 
                                     {/* Detalhes da vaga à direita */}
-                                    <Col md={8} className="coluna-detalhes-vagas" style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000', overflowY: 'hidden' }}>
+                                    <Col md={7} className="coluna-detalhes-vagas" style={{ position: 'sticky', top: '10px', height: '100vh', zIndex: '1000', overflowY: 'hidden' }}>
                                         {loadingDetails ? (
                                             <div className="d-flex justify-content-center">
                                                 <Spinner animation="border" variant="primary" />
