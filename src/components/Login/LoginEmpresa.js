@@ -5,19 +5,22 @@ import SenhaInput from "../SenhaInput/SenhaInput";
 import './Login.css';
 import { useNavigate } from 'react-router-dom';
 import InputVerificado from "../Inputs/InputVerificado";
+import { Spinner } from "react-bootstrap";
 
 const LoginEmpresa = () => {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [erroLogin, setErroLogin] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
         document.title = "ACI Empregos | Login";
-      }, []);
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
         try {
             const response = await api.post(`${process.env.REACT_APP_API_URL}/api/auth/login-empresa`, { email, senha });
 
@@ -38,6 +41,8 @@ const LoginEmpresa = () => {
             } else {
                 setErroLogin('Erro ao fazer login. Por favor, tente novamente mais tarde.');
             }
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -72,7 +77,13 @@ const LoginEmpresa = () => {
                     />
                     {erroLogin && <div className='text-danger'>{erroLogin}</div>}
                     <button type="submit" className="btn btn-primary btn-entrar">
-                        Entrar
+                        {loading ? (
+                            <div className="d-flex justify-content-center align-items-center">
+                                <Spinner animation="border" variant="white" />
+                            </div>
+                        ) : (
+                            <span>Entrar</span>
+                        )}
                     </button>
                     <p>Não possui cadastro? <a href='https://web.whatsapp.com/send?phone=5555992128613' target="_blank" rel="noreferrer">Solicitar</a></p>
                 </form>

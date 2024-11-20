@@ -99,11 +99,11 @@ const ModalVagas = ({
     };
 
     return (
-        <Modal show={show} onHide={onHide} centered>
+        <Modal show={show} onHide={onHide}>
             <Modal.Header closeButton>
                 <Modal.Title>{isEditMode ? 'Editar Vaga' : 'Adicionar Vaga'}</Modal.Title>
             </Modal.Header>
-            <Modal.Body style={{ maxHeight: '90vh', overflowY: 'auto' }}>
+            <Modal.Body>
                 <Form onSubmit={handleSubmit}>
                     <Row>
                         <Col md={6}>
