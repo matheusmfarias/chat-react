@@ -52,6 +52,7 @@
 
 .btn-group {
     display: flex;
+    flex-wrap: wrap;
     gap: 10px;
     justify-content: space-between;
 }
@@ -105,7 +106,6 @@
     /* Garantir que os botões e grupos de botões se comportem bem em telas menores */
     .btn-group {
         flex-wrap: wrap;
-        justify-content: space-between;
     }
 
     .btn-group .icon-btn {

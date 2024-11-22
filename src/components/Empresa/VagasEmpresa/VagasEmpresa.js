@@ -419,34 +419,14 @@ const VagasEmpresa = () => {
                 <DetalhesVagas job={selectedJob} onBack={closeViewJob} />
             ) : (
                 <Container fluid style={{ backgroundColor: '#f9f9f9f9' }}>
-                    <Row className="row-buscar-vagas mt-4">
-                        <h1>Gestão de vagas</h1>
-                        <Col className='coluna-filtros mt-2 mb-2' style={{ position: 'sticky', top: '10px', height: '120vh', zIndex: '1000', overflowY: 'hidden' }}>
-                            <Row>
-                                <h5>Ativa</h5>
-                                <Col xs={12} md={10}>
-                                    <Form.Group className="form-group-custom">
-                                        <Select
-                                            options={[
-                                                { value: 'true', label: 'Sim' },
-                                                { value: 'false', label: 'Não' },
-                                            ]}
-                                            value={[
-                                                { value: 'true', label: 'Sim' },
-                                                { value: 'false', label: 'Não' },
-                                            ].find((option) => option.value === filters.status) || null}
-                                            onChange={(selectedOption) =>
-                                                setFilters({ ...filters, status: selectedOption?.value || '' })
-                                            }
-                                            placeholder="Selecione"
-                                            isSearchable={false}
-                                        />
-                                    </Form.Group>
-                                </Col>
-                            </Row>
+                    <Row className="m-md-2 mt-2">
+                        <Row className='mb-2'>
+                            <h1>Gestão de vagas</h1>
+                        </Row>
+                        <Col md={2} className='coluna-filtros'>
                             <Row className='mb-2'>
                                 <h5>Tipo</h5>
-                                <Col xs={12} md={10} >
+                                <Col >
                                     <Form.Group>
                                         {['Efetivo', 'Aprendiz', 'Estágio', 'Pessoa Jurídica', 'Trainee', 'Temporário', 'Freelancer', 'Terceiro'].map((type) => (
                                             <Form.Check
@@ -468,7 +448,7 @@ const VagasEmpresa = () => {
                             </Row>
                             <Row className='mb-2'>
                                 <h5>Modalidade</h5>
-                                <Col xs={12} md={10}>
+                                <Col>
                                     <Form.Group>
                                         {['Presencial', 'Híbrido', 'Remoto'].map((modality) => (
                                             <Form.Check
@@ -488,11 +468,33 @@ const VagasEmpresa = () => {
                                     </Form.Group>
                                 </Col>
                             </Row>
-                            <Row>
+                            <Row className='mb-2'>
+                                <h5>Ativa</h5>
+                                <Col>
+                                    <Form.Group>
+                                        <Select
+                                            options={[
+                                                { value: 'true', label: 'Sim' },
+                                                { value: 'false', label: 'Não' },
+                                            ]}
+                                            value={[
+                                                { value: 'true', label: 'Sim' },
+                                                { value: 'false', label: 'Não' },
+                                            ].find((option) => option.value === filters.status) || null}
+                                            onChange={(selectedOption) =>
+                                                setFilters({ ...filters, status: selectedOption?.value || '' })
+                                            }
+                                            placeholder="Selecione"
+                                            isSearchable={false}
+                                        />
+                                    </Form.Group>
+                                </Col>
+                            </Row>
+                            <Row className='mb-2'>
                                 <h5>Localização</h5>
                                 <span>Estado</span>
-                                <Col xs={12} md={10}>
-                                    <Form.Group className="form-group-custom">
+                                <Col>
+                                    <Form.Group>
                                         <Select
                                             options={states.map((state) => ({
                                                 value: state.sigla,
@@ -513,10 +515,10 @@ const VagasEmpresa = () => {
                                     </Form.Group>
                                 </Col>
                             </Row>
-                            <Row>
+                            <Row className='mb-2'>
                                 <span>Cidade</span>
-                                <Col xs={12} md={10}>
-                                    <Form.Group className="form-group-custom">
+                                <Col>
+                                    <Form.Group>
                                         <Select
                                             options={cities.map((city) => ({
                                                 value: city.nome,
@@ -536,10 +538,10 @@ const VagasEmpresa = () => {
                                     </Form.Group>
                                 </Col>
                             </Row>
-                            <Row>
+                            <Row className='mb-2'>
                                 <h5>PCD</h5>
-                                <Col xs={12} md={10}>
-                                    <Form.Group className="form-group-custom">
+                                <Col>
+                                    <Form.Group>
                                         <Select
                                             options={[
                                                 { value: 'true', label: 'Sim' },
@@ -558,42 +560,44 @@ const VagasEmpresa = () => {
                                     </Form.Group>
                                 </Col>
                             </Row>
-                            <Row>
+                            <Row className='justify-content-center'>
                                 <Button
                                     variant="primary"
                                     className="m-2"
                                     onClick={handleResetSearch}
                                     title="Limpar filtros"
-                                    style={{ width: '200px' }}
+                                    style={{ width: '160px' }}
                                 >
                                     Limpar filtros
                                 </Button>
                             </Row>
                         </Col>
-                        <Col xs={12} md={10} className='coluna-vagas mt-2'>
-                            <Row className='busca-coluna-vagas align-items-center'>
-                                <Col md={2} className='mt-2'>
-                                    <Button className="shadow border-0" onClick={() => openModal()}>
-                                        <FontAwesomeIcon icon={faPlus} /> Adicionar vaga
+                        <Col md={12} lg={10}>
+                            <Row>
+                                <Col md={2}>
+                                    <Button className="shadow" title="Adicionar vaga" onClick={() => openModal()}>
+                                        <FontAwesomeIcon icon={faPlus} /> Adicionar
                                     </Button>
                                 </Col>
-                                <InputGroup style={{ maxWidth: '800px' }}>
-                                    <Form.Control
-                                        type="text"
-                                        className='input-buscar-vagas shadow border-primary'
-                                        placeholder="Pesquisar por cargos, cidade, modelo..."
-                                        aria-label="Pesquisar"
-                                        value={searchTerm}
-                                        onChange={e => setSearchTerm(e.target.value)}
-                                    />
-                                    <Button className="btn-buscar-vagas" variant="outline-primary">
-                                        <FontAwesomeIcon icon={faSearch} />
-                                    </Button>
-                                </InputGroup>
+                                <Col md={8}>
+                                    <InputGroup>
+                                        <Form.Control
+                                            type="text"
+                                            className='shadow border-primary'
+                                            placeholder="Pesquisar por cargos, cidade, modelo..."
+                                            aria-label="Pesquisar"
+                                            value={searchTerm}
+                                            onChange={e => setSearchTerm(e.target.value)}
+                                        />
+                                        <Button variant="outline-primary" className='btn-buscar-vagas'>
+                                            <FontAwesomeIcon icon={faSearch} />
+                                        </Button>
+                                    </InputGroup>
+                                </Col>
                                 <Col md={2}>
                                     <Button
-                                        className="btn-limpar-busca"
-                                        variant="outline-secondary"
+                                        className="shadow btn-limpar-busca"
+                                        variant="secondary"
                                         onClick={() => handleClearSearch()}
                                         title="Limpar busca"
                                     >
@@ -613,7 +617,7 @@ const VagasEmpresa = () => {
                                 </Col>
                             </Row>
                             {/* Tags para exibir os filtros selecionados */}
-                            <div className="filter-tag-container mt-2">
+                            <div className="filter-tag-container">
                                 {filters.status && (
                                     <div className="filter-tag">
                                         Ativa: {filters.status === 'true' ? 'Sim' : 'Não'}
@@ -812,14 +816,14 @@ const VagasEmpresa = () => {
                                     </Button>
                                 </Modal.Footer>
                             </Modal>
-                            <Row className="mt-3">
+                            <Row>
                                 {loading ? (
                                     <div className="d-flex justify-content-center align-items-center">
                                         <Spinner animation="border" variant="primary" />
                                     </div>
                                 ) : jobs.length > 0 ? (
                                     <>
-                                        <Table striped hover responsive className="table-responsive shadow-sm mt-3 rounded">
+                                        <Table striped hover responsive className="shadow-sm mt-2 rounded text-wrap">
                                             <thead>
                                                 <tr>
                                                     <th>Cargo</th>

@@ -27,7 +27,6 @@
 
 .btn-limpar-busca {
     display: block !important;
-    width: 200px;
 }
 
 .filter-tag-container {
@@ -56,12 +55,7 @@
     color: #cc0000;
 }
 
-@media (max-width: 768px) {
-    .row-buscar-vagas {
-        padding: 0;
-        margin: 0;
-    }
-
+@media (max-width: 767px) {
     .coluna-filtros {
         display: none;
     }
@@ -87,6 +81,21 @@
         position: static;
         top: auto;
         z-index: auto;
+    }
+
+    .btn-paginacao-vagas {
+        width: 40px;
+    }
+}
+
+@media (max-width: 991px) {
+
+    .coluna-filtros {
+        display: none;
+    }
+
+    .mobile-filter-btn {
+        display: block !important;
     }
 
     .btn-paginacao-vagas {

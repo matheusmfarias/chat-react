@@ -12,15 +12,3 @@
     color: #1876EA;
     text-decoration: underline;
 }
-
-.swiper-slide .card {
-    height: 350px;
-    max-width: 400px;
-    width: 100%;
-}
-
-@media (max-width: 768px) {
-    .swiper-slide .card {
-        width: 95%;
-    }
-}

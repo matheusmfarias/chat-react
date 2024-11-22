@@ -37,12 +37,12 @@ const CarouselEmpresa = () => {
     }, []);
 
     return (
-        <div className="text-center carousel-empresa-container">
-            <h1 className="p-2 text-primary">Vagas cadastradas</h1>
+        <div className="text-center carousel-empresa-container bg-secondary">
+            <h1 className="text-primary m-4">Vagas cadastradas</h1>
             {jobs.length > 0 ? (
                 <Swiper
-                    className="w-100 p-4 mb-4"
-                    modules={[Autoplay]} // Adicionando o módulo Autoplay
+                    className="p-2 bg-primary"
+                     // Adicionando o módulo Autoplay
                     loop={true} // Faz o carrossel dar loop infinito
                     autoplay={{
                         delay: 0, // Sem delay entre transições
@@ -60,22 +60,16 @@ const CarouselEmpresa = () => {
                         640: {
                             slidesPerView: 2,
                         },
-                        768: {
-                            slidesPerView: 2,
-                        },
-                        1024: {
-                            slidesPerView: 2,
-                        },
                         1500: {
                             slidesPerView: 4,
                         }
                     }}
                 >
                     {jobs.map((job, index) => (
-                        <SwiperSlide key={index} className='d-flex justify-content-center'>
-                            <Card className='shadow p-4 rounded border-0'>
+                        <SwiperSlide key={index} className='d-flex bg-danger'>
+                            <Card className='shadow p-4 rounded border-0 bg-success'>
                                 <h2 className="card-title">{job.title}</h2>
-                                <Card.Body className='p-1 d-flex flex-column justify-content-between'>
+                                <Card.Body className='d-flex flex-column justify-content-between'>
                                     <Row className="mb-2">
                                         <Col>
                                             <Card.Text className='text-primary'>

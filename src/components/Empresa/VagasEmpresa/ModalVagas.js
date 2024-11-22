@@ -99,11 +99,11 @@ const ModalVagas = ({
     };
 
     return (
-        <Modal show={show} onHide={onHide}>
+        <Modal show={show} onHide={onHide} centered dialogClassName="modal-dialog-scrollable">
             <Modal.Header closeButton>
                 <Modal.Title>{isEditMode ? 'Editar Vaga' : 'Adicionar Vaga'}</Modal.Title>
             </Modal.Header>
-            <Modal.Body>
+            <Modal.Body style={{ maxHeight: '90vh', overflowY: 'auto' }}>
                 <Form onSubmit={handleSubmit}>
                     <Row>
                         <Col md={6}>

@@ -154,7 +154,6 @@
     color: var(--hover-text-color);
 }
 
-/* Estilos responsivos */
 @media (max-width: 768px) {
     .logo-container {
         width: 120px;
