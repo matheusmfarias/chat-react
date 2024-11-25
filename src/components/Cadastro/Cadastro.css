@@ -45,6 +45,12 @@
     margin-bottom: 10px;
 }
 
+.logo-container-cadastro a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}	
+
 .logo-container-cadastro img,
 .logo-container-cadastro a {
     max-width: 100%;

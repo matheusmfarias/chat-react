@@ -49,10 +49,6 @@
 
 /* Responsividade */
 @media (max-width: 605px) {
-    .main-content {
-        margin-top: 80px;
-    }
-
     .central-container h1 {
         font-size: 32px;
     }

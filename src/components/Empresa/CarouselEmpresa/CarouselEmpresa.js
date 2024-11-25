@@ -37,37 +37,28 @@ const CarouselEmpresa = () => {
     }, []);
 
     return (
-        <div className="text-center carousel-empresa-container bg-secondary">
+        <div className="text-center carousel-empresa-container">
             <h1 className="text-primary m-4">Vagas cadastradas</h1>
             {jobs.length > 0 ? (
                 <Swiper
-                    className="p-2 bg-primary"
-                     // Adicionando o módulo Autoplay
+                    className="w-100 p-4"
+                    modules={[Autoplay]}// Adicionando o módulo Autoplay
                     loop={true} // Faz o carrossel dar loop infinito
-                    autoplay={{
-                        delay: 0, // Sem delay entre transições
-                        disableOnInteraction: false, // O autoplay não para em interações
-                        pauseOnMouseEnter: false, // O autoplay continua mesmo com o mouse sobre o carrossel
-                    }}
+                    autoplay={{ delay: 0, disableOnInteraction: false }}
                     speed={3000}
                     freeMode={true}
                     allowTouchMove={false}
                     breakpoints={{
-                        320: {
-                            slidesPerView: 1,
-
-                        },
-                        640: {
-                            slidesPerView: 2,
-                        },
-                        1500: {
-                            slidesPerView: 4,
-                        }
+                        320: { slidesPerView: 1 },
+                        640: { slidesPerView: 2 },
+                        768: { slidesPerView: 3 },
+                        1024: { slidesPerView: 4 },
+                        1500: { slidesPerView: 5 },
                     }}
                 >
                     {jobs.map((job, index) => (
-                        <SwiperSlide key={index} className='d-flex bg-danger'>
-                            <Card className='shadow p-4 rounded border-0 bg-success'>
+                        <SwiperSlide key={index} className='carousel-slide'>
+                            <Card className='shadow p-2 m-2 rounded border-0'>
                                 <h2 className="card-title">{job.title}</h2>
                                 <Card.Body className='d-flex flex-column justify-content-between'>
                                     <Row className="mb-2">
