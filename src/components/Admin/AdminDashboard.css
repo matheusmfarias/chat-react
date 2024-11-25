@@ -81,6 +81,7 @@
     margin-top: 20px;
 }
 
+
 /* Ajustar o layout de acordo com a largura da tela */
 @media (max-width: 1200px) {
     .container {
@@ -101,6 +102,15 @@
         font-size: 14px;
         word-break: break-word;
         /* Evita quebra de layout com texto longo */
+    }
+
+    .table-admin th:nth-child(2),
+    .table-admin td:nth-child(2),
+    .table-admin th:nth-child(3),
+    .table-admin td:nth-child(3),
+    .table-admin th:nth-child(4),
+    .table-admin td:nth-child(4) {
+        display: none;
     }
 
     /* Garantir que os botões e grupos de botões se comportem bem em telas menores */

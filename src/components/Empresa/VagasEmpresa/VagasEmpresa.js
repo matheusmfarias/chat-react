@@ -823,7 +823,7 @@ const VagasEmpresa = () => {
                                     </div>
                                 ) : jobs.length > 0 ? (
                                     <>
-                                        <Table striped hover responsive className="shadow-sm mt-2 rounded text-wrap">
+                                        <Table striped hover responsive className="table-vagas-empresa shadow-sm mt-2 rounded text-wrap">
                                             <thead>
                                                 <tr>
                                                     <th>Cargo</th>

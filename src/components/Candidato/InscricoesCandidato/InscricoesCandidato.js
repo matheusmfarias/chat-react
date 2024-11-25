@@ -4,7 +4,6 @@ import HeaderCandidato from "../HeaderCandidato/HeaderCandidato";
 import { Container, Row, Col, Card, Spinner, InputGroup, Form, Button, Pagination } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBriefcase, faBuilding, faHome, faLaptopHouse, faLocationDot, faMoneyBillWave, faSearch, faWheelchair } from "@fortawesome/free-solid-svg-icons";
-import './InscricoesCandidato.css';
 
 const InscricoesCandidato = () => {
     const [loading, setLoading] = useState(false);
@@ -58,11 +57,11 @@ const InscricoesCandidato = () => {
         <>
             <HeaderCandidato />
             <Container fluid style={{ backgroundColor: '#f9f9f9f9', minHeight: "100vh" }}>
-                <Row className="row-inscricoes-candidato mt-4">
+                <Row className="m-md-2 mt-2">
                     <Col>
                         <h1>Minhas Inscrições</h1>
                     </Col>
-                    <Col xs={12} md={12} className="coluna-vagas mt-2">
+                    <Col xs={12} md={12} className="mt-2">
                         <Row className="align-items-center">
                             <InputGroup style={{ maxWidth: '800px' }}>
                                 <Form.Control

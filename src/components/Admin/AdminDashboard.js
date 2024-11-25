@@ -407,71 +407,76 @@ const AdminDashboard = () => {
                     </InputGroup>
                 </Col>
             </Row>
-            {loading ? (
-                <div className="d-flex justify-content-center" >
-                    <Spinner animation='border' variant='primary' />
-                </div>
-            ) : empresas.length > 0 ? (
-                <>
-                    <Table striped hover className="shadow mt-3 rounded">
-                        <thead>
-                            <tr>
-                                <th onClick={() => handleSort('nome')}>
-                                    Nome
-                                    {sortColumn === 'nome' && (
-                                        <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
-                                    )}
-                                </th>
-                                <th onClick={() => handleSort('cnpj')}>
-                                    CNPJ
-                                    {sortColumn === 'cnpj' && (
-                                        <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
-                                    )}
-                                </th>
-                                <th onClick={() => handleSort('setor')}>
-                                    Setor
-                                    {sortColumn === 'setor' && (
-                                        <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
-                                    )}
-                                </th>
-                                <th onClick={() => handleSort('email')}>
-                                    Email
-                                    {sortColumn === 'email' && (
-                                        <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
-                                    )}
-                                </th>
-                                <th onClick={() => handleSort('status')}>
-                                    Status
-                                    {sortColumn === 'status' && (
-                                        <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
-                                    )}
-                                </th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {empresas.map((empresa) => (
-                                <tr key={empresa._id}>
-                                    <td>{empresa.nome}</td>
-                                    <td>{formatCNPJ(empresa.cnpj)}</td>
-                                    <td>{empresa.setor}</td>
-                                    <td>{empresa.email}</td>
-                                    <td>{empresa.status ? 'Ativa' : 'Inativa'}</td>
-                                    <td>
-                                        <div className="btn-group">
-                                            <FontAwesomeIcon icon={faEye} className="icon-btn" onClick={() => fetchJobsByCompany(empresa._id)} title="Visualizar vagas" />
-                                            <FontAwesomeIcon icon={faEdit} className="icon-btn" onClick={() => handleShowModal(empresa)} title="Editar" />
-                                            <FontAwesomeIcon icon={empresa.status ? faToggleOn : faToggleOff} className="icon-btn" onClick={() => handleShowDisableModal(empresa)} title={empresa.status ? 'Desabilitar' : 'Habilitar'} />
-                                        </div>
-                                    </td>
+            <Row>
+                {loading ? (
+                    <div className="d-flex justify-content-center align-items-center" >
+                        <Spinner animation='border' variant='primary' />
+                    </div>
+                ) : empresas.length > 0 ? (
+                    <>
+                        <Table striped hover responsive className="table-admin shadow-sm mt-2 rounded text-wrap">
+                            <thead>
+                                <tr>
+                                    <th onClick={() => handleSort('nome')}>
+                                        Nome
+                                        {sortColumn === 'nome' && (
+                                            <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
+                                        )}
+                                    </th>
+                                    <th onClick={() => handleSort('cnpj')}>
+                                        CNPJ
+                                        {sortColumn === 'cnpj' && (
+                                            <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
+                                        )}
+                                    </th>
+                                    <th onClick={() => handleSort('setor')}>
+                                        Setor
+                                        {sortColumn === 'setor' && (
+                                            <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
+                                        )}
+                                    </th>
+                                    <th onClick={() => handleSort('email')}>
+                                        Email
+                                        {sortColumn === 'email' && (
+                                            <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
+                                        )}
+                                    </th>
+                                    <th onClick={() => handleSort('status')}>
+                                        Ativa
+                                        {sortColumn === 'status' && (
+                                            <FontAwesomeIcon icon={sortDirection === 'asc' ? faSortUp : faSortDown} className="sort-icon" />
+                                        )}
+                                    </th>
+                                    <th>Ações</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                </>
-            ) : (
-                <p className='text-center mt-4'>Nenhuma empresa cadastrada...</p>
-            )}
+                            </thead>
+                            <tbody>
+                                {empresas.map((empresa) => (
+                                    <tr key={empresa._id}>
+                                        <td>{empresa.nome}</td>
+                                        <td>{formatCNPJ(empresa.cnpj)}</td>
+                                        <td>{empresa.setor}</td>
+                                        <td>{empresa.email}</td>
+                                        <td>
+                                            <span className={`status-indicator ${empresa.status ? 'active' : 'inactive'}`} />
+                                            {empresa.status ? 'Sim' : 'Não'}
+                                        </td>
+                                        <td>
+                                            <div className="btn-group">
+                                                <FontAwesomeIcon icon={faEye} className="icon-btn" onClick={() => fetchJobsByCompany(empresa._id)} title="Visualizar vagas" />
+                                                <FontAwesomeIcon icon={faEdit} className="icon-btn" onClick={() => handleShowModal(empresa)} title="Editar" />
+                                                <FontAwesomeIcon icon={empresa.status ? faToggleOn : faToggleOff} className="icon-btn" onClick={() => handleShowDisableModal(empresa)} title={empresa.status ? 'Desabilitar' : 'Habilitar'} />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </Table>
+                    </>
+                ) : (
+                    <p className='text-center mt-4'>Nenhuma empresa cadastrada...</p>
+                )}
+            </Row>
         </>
     );
 
@@ -610,8 +615,8 @@ const AdminDashboard = () => {
                         <tbody>
                             {candidatosVaga.map((candidato) => (
                                 <tr key={candidato._id}>
-                                    <td>{candidato.user.nome}</td>
-                                    <td>{candidato.user.email}</td>
+                                    <td>{candidato.user && candidato.user.nome ? candidato.user.nome : 'Nome não disponível'}</td>
+                                    <td>{candidato.user && candidato.user.email ? candidato.user.email : 'Email não disponível'}</td>
                                     <td>
                                         <Button variant="primary" onClick={() => handleViewCurriculo(candidato.user._id)}>
                                             Currículo

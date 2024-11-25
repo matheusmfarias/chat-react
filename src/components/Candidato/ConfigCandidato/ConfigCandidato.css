@@ -2,7 +2,7 @@
     display: flex;
     min-height: calc(100vh - 210px);
     justify-content: center;
-    padding: 20px;
+    padding: 10px;
     background-color: #f9f9f9f9;
 }
 
@@ -149,10 +149,6 @@
 }
 
 @media (max-width: 768px) {
-    .config-content-usuario {
-        padding: 20px;
-    }
-
     .config-container-usuario {
         padding: 10px;
     }

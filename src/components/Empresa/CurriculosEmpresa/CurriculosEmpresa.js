@@ -137,7 +137,7 @@ const CurriculosEmpresa = () => {
     <>
       <HeaderEmpresa />
       <Container fluid style={{ backgroundColor: '#f9f9f9f9' }}>
-        <Row className="row-buscar-vagas mt-4">
+        <Row className="m-md-2 mt-2">
           <Col md={2}>
             <Button variant="primary" className="mb-3" onClick={() => navigate('/vagas-empresa')}>
               Voltar para vagas
@@ -145,8 +145,8 @@ const CurriculosEmpresa = () => {
             <h1>Recrutamento</h1>
           </Col>
         </Row>
-        <Row className="row-buscar-vagas mt-2">
-          <Col xs={12} md={12} className='coluna-vagas mt-2'>
+        <Row className="m-md-2 mt-2">
+          <Col xs={12} md={12} className='mt-2'>
             <Row className='busca-coluna-vagas align-items-center'>
               <InputGroup style={{ maxWidth: '800px' }}>
                 <Form.Control
@@ -218,7 +218,7 @@ const CurriculosEmpresa = () => {
                             <ul className="list-unstyled">
                               {experiences.map((experience, index) => (
                                 <li key={`${experience.empresa}-${index}`}>
-                                  <small>{experience.empresa} - {experience.funcao}</small>
+                                  {experience.empresa} - {experience.funcao}
                                 </li>
                               ))}
                             </ul>
@@ -233,13 +233,11 @@ const CurriculosEmpresa = () => {
                             <ul className="list-unstyled">
                               {formacao.map((formacaoItem, index) => (
                                 <li key={`${formacaoItem.escolaridade}-${index}`}>
-                                  <small>
                                     {formacaoItem.escolaridade}
                                     {['Superior', 'Técnico'].includes(formacaoItem.escolaridade) && formacaoItem.curso ? (
                                       <> - {formacaoItem.curso}</>
                                     ) : null}
                                     {" - "}{formacaoItem.situacao}
-                                  </small>
                                 </li>
                               ))}
                             </ul>

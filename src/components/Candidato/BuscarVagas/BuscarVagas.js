@@ -7,12 +7,14 @@ import { faBriefcase, faBuilding, faChevronLeft, faChevronRight, faHome, faLapto
 import './BuscarVagas.css';
 import axios from "axios";
 import api from "../../../services/axiosConfig";
+import Swal from "sweetalert2";
 
 const BuscarVagas = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadingSubmit, setLoadingSubmit] = useState(false);
     const [loadingDetails, setLoadingDetails] = useState(false);
     const keyword = location.state?.keyword || '';
     const [selectedJob, setSelectedJob] = useState(null);
@@ -168,6 +170,47 @@ const BuscarVagas = () => {
         navigate('/detalhes-vaga', { state: { job: selectedJob } });
     };
 
+    const handleSubmeterCurriculo = async () => {
+        setLoadingSubmit(true);
+        try {
+            const token = localStorage.getItem('token');
+            await api.post(`${process.env.REACT_APP_API_URL}/api/jobs/${selectedJob._id}/submit-curriculum`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Sucesso!',
+                text: 'Inscrição realizada!',
+                showCancelButton: true,
+                confirmButtonText: 'Minhas inscrições',
+                cancelButtonText: 'OK',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    navigate('/inscricoes-candidato'); // Redireciona para /inscrições
+                }
+            });
+
+        } catch (error) {
+            console.error('Ocorreu um erro ao submeter o currículo. Por favor, tente novamente mais tarde.');
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Você já está inscrito nesta vaga!',
+                showCancelButton: true,
+                confirmButtonText: 'Outras vagas',
+                cancelButtonText: 'OK',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    navigate('/buscar-vagas'); // Redireciona para /buscar-vagas
+                }
+            });
+        } finally {
+            setLoadingSubmit(false);
+        }
+    };
+
     useEffect(() => {
         if (jobs.length > 0) {
             const fetchFirstJobDetails = async () => {
@@ -236,7 +279,7 @@ const BuscarVagas = () => {
         <>
             <HeaderCandidato />
             <Container fluid style={{ backgroundColor: '#f9f9f9f9' }}>
-                <Row className="row-buscar-vagas mt-4">
+                <Row className="m-md-2 mt-2">
                     <h1>Oportunidades</h1>
                     <Col className='coluna-filtros mt-2 mb-4' style={{ position: 'sticky', top: '10px', height: '120vh', overflowY: 'hidden', zIndex: '1000' }}>
                         <Row className="mb-2">
@@ -845,8 +888,14 @@ const BuscarVagas = () => {
                                                                         </Col>
                                                                     </Row>
                                                                     <Col md={4} className="justify-content-center">
-                                                                        <Button onClick={handleCandidatarClick}>
-                                                                            Candidatar-se <FontAwesomeIcon icon={faUpRightFromSquare} title="Link" />
+                                                                        <Button onClick={handleSubmeterCurriculo}>
+                                                                            {loadingSubmit ? (
+                                                                                <div className="d-flex justify-content-center align-items-center">
+                                                                                    <Spinner animation="border" variant="primary" />
+                                                                                </div>
+                                                                            ) : (
+                                                                                <span>Enviar currículo</span>
+                                                                            )}
                                                                         </Button>
                                                                     </Col>
                                                                 </Card.Body>
