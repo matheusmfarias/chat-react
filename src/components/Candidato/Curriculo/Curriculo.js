@@ -7,20 +7,22 @@ import Informacoes from './Informacoes';
 import CurriculoTemplate from './CurriculoTemplate';
 import api from '../../../services/axiosConfig';
 import { createRoot } from 'react-dom/client';
-import { Button, Container } from 'react-bootstrap';
+import { Button, Container, Spinner } from 'react-bootstrap';
 
 const Curriculo = () => {
     const [activeTab, setActiveTab] = useState('experiencia');
     const [experiencias, setExperiencias] = useState([]);
     const [formacoes, setFormacoes] = useState([]);
     const [informacoes, setInformacoes] = useState({});
+    const [loading, setLoading] = useState(true); // Estado de carregamento
 
     useEffect(() => {
         document.title = "ACI Empregos | Currículo";
-      }, []);
+    }, []);
 
     const fetchUserInfo = useCallback(async () => {
         try {
+            setLoading(true); // Inicia o carregamento
             const token = localStorage.getItem('token');
             const response = await api.get(`${process.env.REACT_APP_API_URL}/api/user/candidato`, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -47,6 +49,8 @@ const Curriculo = () => {
             setFormacoes(user.formacao || []);
         } catch (error) {
             console.error('Erro ao buscar informações do usuário', error);
+        } finally {
+            setLoading(false); // Finaliza o carregamento
         }
     }, []);
 
@@ -54,40 +58,49 @@ const Curriculo = () => {
         fetchUserInfo();
     }, [fetchUserInfo]);
 
-    const injectStyles = (newWindow) => {
-        const bootstrapLink = newWindow.document.createElement('link');
-        bootstrapLink.rel = 'stylesheet';
-        bootstrapLink.href = 'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css';
-        newWindow.document.head.appendChild(bootstrapLink);
+    const handleViewCurriculo = () => {
+        if (loading) {
+            return; // Se os dados estiverem carregando, não abrir a nova janela
+        }
 
-        const customLink = newWindow.document.createElement('link');
-        customLink.rel = 'stylesheet';
-        customLink.href = `${window.location.origin}/CurriculoTemplate.css`;
-        newWindow.document.head.appendChild(customLink);
+        // Abre uma nova janela para renderizar o currículo
+        const newWindow = window.open('', '_blank', 'width=1024,height=768');
+        if (!newWindow) {
+            console.error("Não foi possível abrir a nova janela. Verifique se pop-ups estão bloqueados.");
+            return;
+        }
 
-        return { bootstrapLink, customLink };
-    };
-
-    const handleViewCurriculo = useCallback(() => {
-        const newWindow = window.open('', '', 'width=1024,height=768');
-        newWindow.document.write('<html><head><title>Currículo</title></head><body><div id="curriculo-template-root"></div></body></html>');
-
-        const { bootstrapLink, customLink } = injectStyles(newWindow);
-
-        const renderCurriculo = () => {
-            const root = createRoot(newWindow.document.getElementById('curriculo-template-root'));
-            root.render(
-                <CurriculoTemplate
-                    experiencias={experiencias}
-                    formacoes={formacoes}
-                    informacoes={informacoes}
-                />
-            );
-        };
-
-        bootstrapLink.onload = () => customLink.onload = renderCurriculo;
+        newWindow.document.write(`
+            <html>
+                <head>
+                    <title>Currículo</title>
+                    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+                    <link rel="stylesheet" href="${window.location.origin}/CurriculoTemplate.css">
+                </head>
+                <body>
+                    <div id="curriculo-template-root"></div>
+                </body>
+            </html>
+        `);
         newWindow.document.close();
-    }, [experiencias, formacoes, informacoes]);
+
+        // Espera a janela estar pronta para manipular o conteúdo
+        newWindow.onload = () => {
+            const rootElement = newWindow.document.getElementById('curriculo-template-root');
+            if (rootElement) {
+                const root = createRoot(rootElement);
+                root.render(
+                    <CurriculoTemplate
+                        experiencias={experiencias}
+                        formacoes={formacoes}
+                        informacoes={informacoes}
+                    />
+                );
+            } else {
+                console.error("Elemento root não encontrado na nova janela.");
+            }
+        };
+    };
 
     return (
         <>
@@ -107,7 +120,11 @@ const Curriculo = () => {
                     </Container>
 
                     <Container className='d-flex justify-content-center align-items-center'>
-                        <Button className="btn-adicionar-curriculo" variant='secondary' onClick={handleViewCurriculo}>Visualizar Currículo</Button>
+                        {loading ? (
+                            <Spinner animation="border" variant="primary" />
+                        ) : (
+                            <Button className="btn-adicionar-curriculo" variant='secondary' onClick={handleViewCurriculo}>Visualizar Currículo</Button>
+                        )}
                     </Container>
                 </div>
             </main>

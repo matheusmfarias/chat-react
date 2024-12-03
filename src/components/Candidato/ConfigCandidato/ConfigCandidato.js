@@ -188,6 +188,11 @@ const Config = () => {
     const handleFileChange = (event) => {
         const selectedFile = event.target.files[0];
         if (selectedFile) {
+            if (!selectedFile.type.startsWith('image/')) {
+                alert('Por favor, selecione um arquivo de imagem.');
+                return;
+            }
+                        
             setUserData(prevState => ({
                 ...prevState,
                 profilePicture: selectedFile
@@ -348,7 +353,7 @@ const Config = () => {
                                 ) : (
                                     <FontAwesomeIcon icon={faCircleUser} className='profile-avatar' />
                                 )}
-                                <input type="file" id="profilePicture" onChange={handleFileChange} style={{ display: 'none' }} />
+                                <input type="file" id="profilePicture" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
                                 <label htmlFor="profilePicture" className="save-btn">Alterar foto</label>
                             </div>
                             <form className='profile-form' onSubmit={handleSubmit}>

@@ -3,11 +3,14 @@ import api from '../../services/axiosConfig';
 import logo from '../../assets/images/logo-aci-transparente.png';
 import SenhaInput from "../SenhaInput/SenhaInput";
 import './Login.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import InputVerificado from "../Inputs/InputVerificado";
 import { Spinner } from "react-bootstrap";
 
 const Login = () => {
+    const location = useLocation();
+    const params = new URLSearchParams(location.search);
+    const verified = params.get('verified');
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [erroLogin, setErroLogin] = useState('');
@@ -16,7 +19,7 @@ const Login = () => {
 
     useEffect(() => {
         document.title = "ACI Empregos | Login";
-      }, []);
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -54,6 +57,7 @@ const Login = () => {
                 <div className='logo-container-login'>
                     <a href='/' rel='noreferrer'><img src={logo} alt="Logo" loading="lazy" /></a>
                 </div>
+                {verified === 'success' && <div className="alert alert-success">Seu e-mail foi verificado com sucesso!</div>}
                 <h2>Entre na sua conta</h2>
                 <form onSubmit={handleSubmit} className="credencial-login">
                     <InputVerificado

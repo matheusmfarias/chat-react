@@ -52,7 +52,7 @@ const CurriculosEmpresa = () => {
   };
 
   const handlePageChange = useCallback((pageNumber) => setCurrentPage(pageNumber), []);
-
+  
   const handleNextPage = useCallback(() => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
@@ -65,27 +65,31 @@ const CurriculosEmpresa = () => {
     }
   }, [currentPage]);
 
-  const injectStyles = (newWindow) => {
-    const bootstrapLink = newWindow.document.createElement('link');
-    bootstrapLink.rel = 'stylesheet';
-    bootstrapLink.href = 'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css';
-    newWindow.document.head.appendChild(bootstrapLink);
-
-    const customLink = newWindow.document.createElement('link');
-    customLink.rel = 'stylesheet';
-    customLink.href = `${window.location.origin}/CurriculoTemplate.css`;
-    newWindow.document.head.appendChild(customLink);
-
-    return { bootstrapLink, customLink };
-  };
-
   const viewCurriculum = async (userId) => {
-    const newWindow = window.open('', '', 'width=1024,height=768');
-    newWindow.document.write('<html><head><title>Currículo</title></head><body><div id="curriculo-template-root"></div></body></html>');
+    // Abre a nova janela para renderizar o currículo
+    const newWindow = window.open('', '_blank', 'width=1024,height=768');
+    if (!newWindow) {
+      console.error("Não foi possível abrir a nova janela. Verifique se pop-ups estão bloqueados.");
+      return;
+    }
 
-    const { bootstrapLink, customLink } = injectStyles(newWindow);
+    // Cria o layout básico da nova janela
+    newWindow.document.write(`
+      <html>
+        <head>
+          <title>Currículo</title>
+          <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+          <link rel="stylesheet" href="${window.location.origin}/CurriculoTemplate.css">
+        </head>
+        <body>
+          <div id="curriculo-template-root"></div>
+        </body>
+      </html>
+    `);
+    newWindow.document.close();
 
-    const renderCurriculo = async () => {
+    // Carregar os dados do candidato e renderizar o currículo
+    newWindow.onload = async () => {
       try {
         const token = localStorage.getItem('token');
         const response = await api.get(`${process.env.REACT_APP_API_URL}/api/user/candidato/${userId}`, {
@@ -115,22 +119,23 @@ const CurriculosEmpresa = () => {
         const experiencias = user.experiences || [];
         const formacoes = user.formacao || [];
 
-        const root = createRoot(newWindow.document.getElementById('curriculo-template-root'));
-        root.render(
-          <CurriculoTemplate
-            experiencias={experiencias}
-            formacoes={formacoes}
-            informacoes={informacoes}
-          />
-        );
+        // Renderiza o currículo usando React
+        const rootElement = newWindow.document.getElementById('curriculo-template-root');
+        if (rootElement) {
+          const root = createRoot(rootElement);
+          root.render(
+            <CurriculoTemplate
+              experiencias={experiencias}
+              formacoes={formacoes}
+              informacoes={informacoes}
+            />
+          );
+        }
       } catch (error) {
         console.error('Erro ao obter informações do usuário:', error);
         newWindow.close();
       }
     };
-
-    bootstrapLink.onload = () => customLink.onload = renderCurriculo;
-    newWindow.document.close();
   };
 
   return (

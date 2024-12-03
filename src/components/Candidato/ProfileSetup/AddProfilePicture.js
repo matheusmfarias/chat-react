@@ -18,6 +18,12 @@ const AddProfilePicture = ({ onNext }) => {
     const handleFileChange = (event) => {
         const selectedFile = event.target.files[0];
         if (selectedFile) {
+            // Verifica se o arquivo é uma imagem (por extensão MIME)
+            if (!selectedFile.type.startsWith('image/')) {
+                alert('Por favor, selecione um arquivo de imagem.');
+                return;
+            }
+
             setFile(selectedFile);
 
             const reader = new FileReader();
@@ -69,7 +75,8 @@ const AddProfilePicture = ({ onNext }) => {
                 ) : (
                     <FontAwesomeIcon icon={faUserCircle} className="profile-picture-icon" />
                 )}
-                <input type="file" id="profilePicture" onChange={handleFileChange} style={{ display: 'none' }} />
+                {/* O atributo accept permite que apenas arquivos de imagem sejam selecionados */}
+                <input type="file" id="profilePicture" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
                 <label htmlFor="profilePicture" className="change-photo-btn">Escolher foto</label>
             </div>
             <button className="confirm-btn" onClick={handleSubmit} disabled={!preview}>Avançar</button>
