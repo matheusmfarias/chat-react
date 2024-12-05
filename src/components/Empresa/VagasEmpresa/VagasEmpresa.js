@@ -11,11 +11,12 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './VagasEmpresa.css';
 import DetalhesVagas from './DetalhesVagas';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Select from 'react-select';
 
 const VagasEmpresa = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -55,6 +56,7 @@ const VagasEmpresa = () => {
     const handleCloseFilterModal = () => setShowFilterModal(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [editJobId, setEditJobId] = useState(null);
+    const [isRedirectHandled, setIsRedirectHandled] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
@@ -109,6 +111,23 @@ const VagasEmpresa = () => {
             setLoading(false);
         }
     }, [searchTerm, filters, selectedCityFilter, selectedStateFilter]);
+
+    useEffect(() => {
+        if (location.state?.openEditModal && location.state.jobId && !isRedirectHandled) {
+            const jobToEdit = jobs.find((job) => job._id === location.state.jobId);
+            if (jobToEdit) {
+                openModal(jobToEdit); // Abre o modal corretamente
+                setIsRedirectHandled(true); // Marca como redirecionado
+            }
+        }
+    }, [location.state, jobs, isRedirectHandled]);
+
+    useEffect(() => {
+        if (isRedirectHandled) {
+            // Limpa o estado da navegação APÓS o modal ter sido processado
+            navigate('/vagas-empresa', { replace: true });
+        }
+    }, [isRedirectHandled, navigate]);
 
     useEffect(() => {
         handleFilterSearch();
@@ -253,6 +272,9 @@ const VagasEmpresa = () => {
 
     const closeModal = () => {
         setModalIsOpen(false);
+        setIsEditMode(false);
+        setEditJobId(null);
+        setIsRedirectHandled(false);
     };
 
     const viewCandidates = (jobId) => {

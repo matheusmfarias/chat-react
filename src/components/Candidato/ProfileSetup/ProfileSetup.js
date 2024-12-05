@@ -13,6 +13,7 @@ const ProfileSetup = () => {
 
     useEffect(() => {
         localStorage.setItem('profileSetupStep', step);
+        document.title = "ACI Empregos | Configuração de Perfil";
     }, [step]);
 
     const handleNextStep = () => {

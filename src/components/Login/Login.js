@@ -18,6 +18,7 @@ const Login = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        localStorage.clear();
         document.title = "ACI Empregos | Login";
     }, []);
 

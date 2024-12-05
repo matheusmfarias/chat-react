@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { faLocationDot, faPhone } from '@fortawesome/free-solid-svg-icons';
 import logo from '../../../assets/images/logo-footer-aci.png';
+import logoIffar from '../../../assets/images/logo-iffar.png';
 
 const Address = () => (
     <ul>
@@ -29,17 +30,27 @@ const ContactInfo = () => (
 
 function Footer() {
     return (
-        <footer className="footer">
-            <div className='footer-columns'>
-                <div className='logo-footer-container'>
-                    <a href='https://acipanambi.com/' target='_blank' rel='noreferrer'>
-                        <img src={logo} alt="Logo da ACI Panambi" loading="lazy" />
-                    </a>
+        <>
+            <footer className="footer">
+                <div className='footer-columns'>
+                    <div className='logo-footer-container'>
+                        <a href='https://aciempregos.com.br/' target='_blank' rel='noreferrer'>
+                            <img src={logo} alt="Logo da ACI Panambi" loading="lazy" />
+                        </a>
+                    </div>
+                    <Address />
+                    <ContactInfo />
+                    <div className='logo-iffar-footer-container'>
+                        <a href='https://www.iffarroupilha.edu.br/' target='_blank' rel='noreferrer'>
+                            <img src={logoIffar} alt="Logo do IFFAR" loading="lazy" />
+                        </a>
+                    </div>
                 </div>
-                <Address />
-                <ContactInfo />
+            </footer>
+            <div className='assinatura'>
+                <span>Desenvolvido por <a href='https://www.linkedin.com/in/matheus-madaloz-de-farias-5a184022b/' target='_blank' rel='noreferrer'>Matheus Madaloz de Farias</a></span>
             </div>
-        </footer>
+        </>
     );
 }
 

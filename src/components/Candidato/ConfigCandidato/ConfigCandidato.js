@@ -8,6 +8,7 @@ import api from '../../../services/axiosConfig';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import imageCompression from 'browser-image-compression';
 import ReactSelect from 'react-select';
 
 const Config = () => {
@@ -49,6 +50,7 @@ const Config = () => {
     const [activeTab, setActiveTab] = useState('general');
     const [initialUserData, setInitialUserData] = useState({}); // Armazena o estado inicial
     const [isFormChanged, setIsFormChanged] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
 
     const navigate = useNavigate();
 
@@ -185,41 +187,75 @@ const Config = () => {
         });
     };
 
-    const handleFileChange = (event) => {
+    const handleFileChange = async (event) => {
         const selectedFile = event.target.files[0];
         if (selectedFile) {
             if (!selectedFile.type.startsWith('image/')) {
                 alert('Por favor, selecione um arquivo de imagem.');
                 return;
             }
-                        
-            setUserData(prevState => ({
-                ...prevState,
-                profilePicture: selectedFile
-            }));
 
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPreview(reader.result);
-            };
-            reader.readAsDataURL(selectedFile);
+            setIsUploading(true); // Ativa o spinner
+
+            try {
+                // Configuração para compressão da imagem
+                const options = {
+                    maxSizeMB: 1, // Tamanho máximo em MB
+                    maxWidthOrHeight: 1024, // Largura/altura máxima em pixels
+                    useWebWorker: true, // Usa Web Worker para melhorar o desempenho
+                };
+
+                // Comprime a imagem
+                const compressedFile = await imageCompression(selectedFile, options);
+
+                // Converte o arquivo comprimido de volta para um objeto File
+                const compressedFileAsFile = new File([compressedFile], selectedFile.name, { type: selectedFile.type });
+
+                // Atualiza o estado com o arquivo comprimido
+                setUserData((prevState) => ({
+                    ...prevState,
+                    profilePicture: compressedFileAsFile,
+                }));
+
+                // Exibe o preview da imagem comprimida
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setPreview(reader.result);
+                };
+                reader.readAsDataURL(compressedFile);
+
+                // Simula upload (caso precise realizar o upload no backend diretamente aqui)
+                // await api.post('/upload-endpoint', formData);
+            } catch (error) {
+                console.error('Erro ao comprimir a imagem:', error);
+                alert('Erro ao processar a imagem. Tente novamente.');
+            } finally {
+                setIsUploading(false); // Desativa o spinner
+            }
         } else {
-            setUserData(prevState => ({
+            setUserData((prevState) => ({
                 ...prevState,
-                profilePicture: ''
+                profilePicture: '',
             }));
             setPreview(null);
         }
     };
 
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Filtrar valores vazios do array cnhTypes antes da validação
         const validCnhTypes = userData.cnhTypes.filter(type => type.trim() !== '');
 
+        // Validação da CNH
         if (userData.cnh === true && validCnhTypes.length === 0) {
             notify('Selecione pelo menos uma modalidade de CNH.', 'warning');
+            return;
+        }
+
+        // Validação do arquivo de imagem
+        if (userData.profilePicture && !(userData.profilePicture instanceof File)) {
+            notify('A imagem selecionada não é válida. Por favor, selecione outra imagem.', 'error');
             return;
         }
 
@@ -228,16 +264,19 @@ const Config = () => {
             const token = localStorage.getItem('token');
             const formData = new FormData();
 
+            // Adiciona outros campos ao FormData
             Object.keys(userData).forEach(key => {
                 if (key !== 'profilePicture') {
                     formData.append(key, userData[key]);
                 }
             });
 
+            // Adiciona a imagem ao FormData
             if (userData.profilePicture instanceof File) {
                 formData.append('profilePicture', userData.profilePicture);
             }
 
+            // Faz a requisição para atualizar os dados do usuário
             const response = await api.put(`${process.env.REACT_APP_API_URL}/api/user/candidato`, formData, {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -348,7 +387,11 @@ const Config = () => {
                     ) : (
                         <>
                             <div className='profile-header'>
-                                {preview ? (
+                                {isUploading ? (
+                                    <div className="profile-picture-preview d-flex justify-content-center align-items-center bg-light">
+                                        <Spinner animation="border" variant="primary" />
+                                    </div>
+                                ) : preview ? (
                                     <img src={preview} alt="Profile Preview" className="profile-avatar" />
                                 ) : (
                                     <FontAwesomeIcon icon={faCircleUser} className='profile-avatar' />

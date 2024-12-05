@@ -630,11 +630,9 @@ const BuscarVagas = () => {
                                                 <Card.Body>
                                                     <Card.Title>{result.title}</Card.Title>
                                                     <Card.Text>
-                                                        {result.identifyCompany ? (
-                                                            result.company ? result.company.nome : 'Empresa não específicada'
-                                                        ) : (
-                                                            'Empresa confidencial'
-                                                        )}
+                                                        {result.identifyCompany
+                                                            ? 'Empresa confidencial'
+                                                            : (result.company ? result.company.nome : 'Empresa não especificada')}
                                                     </Card.Text>
                                                     <Card.Text className="bg-light rounded text-center text-primary p-2">
                                                         <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
@@ -733,7 +731,9 @@ const BuscarVagas = () => {
                                                 <Card className="vaga-detalhe p-0 border-0">
                                                     <Card.Body className="p-3 shadow-sm" style={{ zIndex: '1000' }}>
                                                         <Card.Title>{selectedJob.title}</Card.Title>
-                                                        <Card.Text>{selectedJob.company ? selectedJob.company.nome : 'Empresa confidencial'}</Card.Text>
+                                                        <Card.Text>
+                                                            {selectedJob.identifyCompany ? 'Empresa confidencial' : (selectedJob.company ? selectedJob.company.nome : 'Empresa não informada')}
+                                                        </Card.Text>
                                                         <Row className="mb-3">
                                                             <Col>
                                                                 <Card.Text>

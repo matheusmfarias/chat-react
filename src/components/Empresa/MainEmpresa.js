@@ -34,7 +34,6 @@ const MainEmpresa = () => {
       <div className="central-container-empresa">
       <FontAwesomeIcon icon={faCircleUser} className='profile-empresa-icon' />
         <h2>Olá, {companyName}</h2>
-        <p>Acompanhe suas vagas cadastradas</p>
       </div>
     </div>
   );

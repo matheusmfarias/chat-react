@@ -86,12 +86,12 @@ const InscricoesCandidato = () => {
                                 <p className="text-center">Você ainda não tem candidaturas.</p>
                             ) : (
                                 applications.map((application) => (
-                                    <Col md={6} lg={4} key={application._id} className="mb-4 d-flex">
+                                    <Col md={6} xl={4} key={application._id} className="mb-4 d-flex">
                                         <Card className={`w-100 border-0 shadow-sm rounded p-2 d-flex flex-column candidate-card ${application.job && !application.job.status ? 'bg-light text-muted' : ''}`}>
                                             <Card.Body>
                                                 {application.job ? (
                                                     <>
-                                                        <Card.Title>{application.job.title}</Card.Title>
+                                                        <Card.Title className="text-truncate">{application.job.title}</Card.Title>
                                                         <Card.Text>
                                                             {/* Verifica se identifyCompany está false para exibir "Empresa confidencial" */}
                                                             {application.job.identifyCompany ? (
@@ -100,13 +100,13 @@ const InscricoesCandidato = () => {
                                                                 'Empresa confidencial'
                                                             )}
                                                         </Card.Text>
-                                                        <Card.Text className="bg-light rounded text-center text-primary p-2">
+                                                        <Card.Text className="bg-light rounded text-center text-primary p-2 text-truncate">
                                                             <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
                                                             {application.job.location}
                                                         </Card.Text>
                                                         <Row className="mb-2">
                                                             <Col>
-                                                                <Card.Text className="bg-light rounded text-center text-primary p-2">
+                                                                <Card.Text className="bg-light rounded text-center text-primary p-2 text-truncate">
                                                                     <FontAwesomeIcon
                                                                         className="me-2"
                                                                         icon={application.job.modality === 'Remoto' ? faHome : application.job.modality === 'Presencial' ? faBuilding : faLaptopHouse}
@@ -116,7 +116,7 @@ const InscricoesCandidato = () => {
                                                                 </Card.Text>
                                                             </Col>
                                                             <Col>
-                                                                <Card.Text className="bg-light rounded text-center text-primary p-2">
+                                                                <Card.Text className="bg-light rounded text-center text-primary p-2 text-truncate">
                                                                     <FontAwesomeIcon className="me-2" icon={faBriefcase} title="Tipo" />
                                                                     {application.job.type}
                                                                 </Card.Text>
@@ -124,7 +124,7 @@ const InscricoesCandidato = () => {
                                                         </Row>
                                                         <Row>
                                                             <Col>
-                                                                <Card.Text className="bg-light rounded text-center text-primary p-2">
+                                                                <Card.Text className="bg-light rounded text-center text-primary p-2 text-truncate">
                                                                     <FontAwesomeIcon className="me-2" icon={faMoneyBillWave} title="Salário" />
                                                                     {application.job.salary ? application.job.salary : 'A combinar'}
                                                                 </Card.Text>
@@ -145,11 +145,11 @@ const InscricoesCandidato = () => {
 
                                                 {/* Linha com data de inscrição e data de encerramento */}
                                                 <div className="d-flex justify-content-between mt-3">
-                                                    <small className="text-muted">
+                                                    <small className="text-muted text-truncate">
                                                         Inscrito em: {new Date(application.submissionDate).toLocaleDateString()}
                                                     </small>
                                                     {application.job && !application.job.status && application.job.closingDate && (
-                                                        <small className="text-muted">
+                                                        <small className="text-muted text-truncate">
                                                             Encerrada em: {new Date(application.job.closingDate).toLocaleDateString()}
                                                         </small>
                                                     )}
