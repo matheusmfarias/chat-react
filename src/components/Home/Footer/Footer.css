@@ -68,6 +68,7 @@
     .footer {
         flex-direction: column;
         text-align: center;
+        padding-bottom: 20px;
     }
 
     .footer-columns {
@@ -88,4 +89,5 @@
     .logo-footer-container img {
         width: 80%;
     }
+
 }
