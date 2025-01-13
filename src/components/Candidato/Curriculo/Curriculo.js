@@ -16,10 +16,6 @@ const Curriculo = () => {
     const [informacoes, setInformacoes] = useState({});
     const [loading, setLoading] = useState(true); // Estado de carregamento
 
-    useEffect(() => {
-        document.title = "ACI Empregos | Currículo";
-    }, []);
-
     const fetchUserInfo = useCallback(async () => {
         try {
             setLoading(true); // Inicia o carregamento
@@ -55,6 +51,7 @@ const Curriculo = () => {
     }, []);
 
     useEffect(() => {
+        document.title = "ACI Empregos | Currículo";
         fetchUserInfo();
     }, [fetchUserInfo]);
 

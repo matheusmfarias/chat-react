@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBriefcase, faBuilding, faHome, faLaptopHouse, faLocationDot, faMoneyBillWave, faSearch, faWheelchair } from "@fortawesome/free-solid-svg-icons";
 
 const InscricoesCandidato = () => {
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [applications, setApplications] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -16,14 +16,13 @@ const InscricoesCandidato = () => {
     useEffect(() => {
         document.title = "ACI Empregos | Inscrições";
         const fetchUserApplications = async () => {
-            setLoading(true);
             try {
                 const token = localStorage.getItem("token");
                 const response = await api.get(`${process.env.REACT_APP_API_URL}/api/user/applications`, {
                     headers: { Authorization: `Bearer ${token}` },
                     params: {
                         page: currentPage,
-                        limit: itemsPerPage, // Envia o número de itens por página
+                        limit: itemsPerPage,
                         searchTerm
                     }
                 });
@@ -67,7 +66,7 @@ const InscricoesCandidato = () => {
                                 <Form.Control
                                     type="text"
                                     className='input-buscar-vagas shadow border-primary'
-                                    placeholder="Buscar por cargo..."
+                                    placeholder="Buscar por cargo ou empresa"
                                     aria-label="Pesquisar"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -95,9 +94,9 @@ const InscricoesCandidato = () => {
                                                         <Card.Text>
                                                             {/* Verifica se identifyCompany está false para exibir "Empresa confidencial" */}
                                                             {application.job.identifyCompany ? (
-                                                                application.job.company ? application.job.company.nome : 'Empresa não especificada'
-                                                            ) : (
                                                                 'Empresa confidencial'
+                                                            ) : (
+                                                                application.job.company ? application.job.company.nome : 'Empresa não especificada'
                                                             )}
                                                         </Card.Text>
                                                         <Card.Text className="bg-light rounded text-center text-primary p-2 text-truncate">

@@ -10,6 +10,7 @@ import UserProtectedRoutes from './routes/UserProtectedRoutes';
 import CompanyProtectedRoutes from './routes/CompanyProtectedRoutes';
 import AdminProtectedRoutes from './routes/AdminProtectedRoutes';
 import NotFound from './components/NotFound/NotFound';
+import ToastNotification from './components/ToastNotification';
 
 const App = () => {
   const { isLoading } = useContext(LoadingContext);
@@ -67,6 +68,7 @@ const App = () => {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
+      <ToastNotification />
     </div>
   );
 };

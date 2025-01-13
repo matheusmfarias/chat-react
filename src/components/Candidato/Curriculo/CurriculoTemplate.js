@@ -24,7 +24,7 @@ const CurriculoTemplate = ({ experiencias = [], formacoes = [], informacoes = {}
     return (
         <Container className="curriculo-template">
             <Row className="mb-3">
-                <Col xs={3}>
+                <Col md={5} lg={4}>
                     {fotoPerfil && fotoPerfil !== "undefined" && fotoPerfil !== "" && fotoPerfil !== `${process.env.REACT_APP_API_URL}` ? (
                         <Image src={fotoPerfil} roundedCircle className="profile-avatar" />
                     ) : (
@@ -36,7 +36,7 @@ const CurriculoTemplate = ({ experiencias = [], formacoes = [], informacoes = {}
                         />
                     )}
                 </Col>
-                <Col xs={9}>
+                <Col className="mt-md-2">
                     <h2>{nome} {sobrenome}</h2>
                     <p><strong>Data de Nascimento:</strong> {formatarData(dataNascimento)}</p>
                     <p><strong>Email:</strong> {email}</p>

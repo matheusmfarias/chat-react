@@ -1,17 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import api from '../../services/axiosConfig';
-import { Button, Form, Table, Navbar, Nav, Container, Row, Col, InputGroup, Pagination, Breadcrumb, Spinner } from 'react-bootstrap';
+import { Button, Form, Table, Container, Row, Col, InputGroup, Pagination, Breadcrumb, Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faToggleOn, faToggleOff, faPlus, faSearch, faSortDown, faSortUp, faSignOutAlt, faEye } from '@fortawesome/free-solid-svg-icons';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { faEdit, faToggleOn, faToggleOff, faPlus, faSearch, faSortDown, faSortUp, faEye } from '@fortawesome/free-solid-svg-icons';
+import { showToast } from '../ToastNotification';
 import useFormattedCNPJ, { formatCNPJ } from '../../hooks/useFormattedCNPJ';
 import ModalComponent from './ModalComponent';
 import CurriculoTemplate from '../Candidato/Curriculo/CurriculoTemplate';
 import { createRoot } from 'react-dom/client'; // Importar createRoot do react-dom/client
 import useFormattedDate from '../../hooks/useFormattedDate';
 import './AdminDashboard.css';
+import HeaderAdmin from './HeaderAdmin';
 
 const AdminDashboard = () => {
     const [empresas, setEmpresas] = useState([]);
@@ -39,8 +38,6 @@ const AdminDashboard = () => {
     const [currentPageVagas, setCurrentPageVagas] = useState(1); // Página das vagas
     const [currentPageCandidatosVaga, setCurrentPageCandidatosVaga] = useState(1); // Página dos candidatos de uma vaga
     const [currentPageCandidatos, setCurrentPageCandidatos] = useState(1); // Página dos candidatos gerais (aba)
-
-    const navigate = useNavigate();
 
     //Breadcrumb
     const [currentView, setCurrentView] = useState('empresas');
@@ -203,25 +200,25 @@ const AdminDashboard = () => {
             }
 
             if (!empresaData.nome || !empresaData.cnpj || !empresaData.setor || !empresaData.email) {
-                notify('Por favor, preencha todos os campos obrigatórios!', 'error');
+                showToast('Por favor, preencha todos os campos obrigatórios!', 'error');
                 setLoading(false);
                 return;
             }
 
             if (empresaData.nome.length > 100) {
-                notify('O nome deve ter no máximo 100 caracteres!', 'error');
+                showToast('O nome deve ter no máximo 100 caracteres!', 'error');
                 setLoading(false);
                 return;
             }
 
             if (empresaData.setor.length > 50) {
-                notify('O setor deve ter no máximo 50 caracteres!', 'error');
+                showToast('O setor deve ter no máximo 50 caracteres!', 'error');
                 setLoading(false);
                 return;
             }
 
             if (empresaData.email.length > 50) {
-                notify('O email deve ter no máximo 50 caracteres!', 'error');
+                showToast('O email deve ter no máximo 50 caracteres!', 'error');
                 setLoading(false);
                 return;
             }
@@ -234,15 +231,15 @@ const AdminDashboard = () => {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
             }
-            notify(editMode ? 'Empresa atualizada com sucesso!' : 'Empresa adicionada com sucesso!', 'success');
+            showToast(editMode ? 'Empresa atualizada com sucesso!' : 'Empresa adicionada com sucesso!', 'success');
             fetchEmpresas(currentPage, searchTerm);
             handleCloseModal();
         } catch (error) {
             console.error('Erro ao salvar empresa:', error);
             if (error.response && error.response.data && error.response.data.error) {
-                notify(error.response.data.error, 'error');
+                showToast(error.response.data.error, 'error');
             } else {
-                notify('Erro ao salvar empresa!', 'error');
+                showToast('Erro ao salvar empresa!', 'error');
             }
         } finally {
             setLoading(false);
@@ -266,10 +263,10 @@ const AdminDashboard = () => {
             }
 
             handleCloseDeleteModal();
-            notify('Empresa deletada com sucesso!', 'success');
+            showToast('Empresa deletada com sucesso!', 'success');
         } catch (error) {
             console.error('Erro ao deletar empresa:', error);
-            notify('Erro ao deletar empresa!', 'error');
+            showToast('Erro ao deletar empresa!', 'error');
         } finally {
             setLoading(false);
         }
@@ -284,19 +281,12 @@ const AdminDashboard = () => {
             });
             fetchEmpresas(currentPage, searchTerm);
             handleCloseDisableModal();
-            notify(`Empresa ${updatedEmpresa.status ? 'habilitada' : 'desabilitada'} com sucesso!`, 'success');
+            showToast(`Empresa ${updatedEmpresa.status ? 'habilitada' : 'desabilitada'} com sucesso!`, 'success');
         } catch (error) {
-            console.error('Erro ao desabilitar/habilitar empresa:', error);
-            notify('Erro ao desabilitar/habilitar empresa!', 'error');
+            showToast('Erro ao desabilitar/habilitar empresa!', 'error');
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('role');
-        navigate('/');
     };
 
     const handleSort = (column) => {
@@ -305,79 +295,39 @@ const AdminDashboard = () => {
         setSortDirection(newDirection);
     };
 
-    const notify = (message, type) => {
-        toast[type](message, {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            closeButton: false
-        });
+    const renderPagination = (currentPage, totalPages, onPageChange) => (
+        totalPages > 1 && (
+            <Pagination>
+                <Pagination.Prev
+                    onClick={() => onPageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                />
+                {[...Array(totalPages).keys()].map(number => (
+                    <Pagination.Item
+                        key={number + 1}
+                        onClick={() => onPageChange(number + 1)}
+                        active={number + 1 === currentPage}
+                    >
+                        {number + 1}
+                    </Pagination.Item>
+                ))}
+                <Pagination.Next
+                    onClick={() => onPageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                />
+            </Pagination>
+        )
+    );
+
+    const handleTabChange = (tab) => {
+        setActiveTab(tab);
+
+        if (tab === 'empresas') {
+            setCurrentPageEmpresas(1); // Reseta para página 1 ao alternar
+        } else if (tab === 'candidatos') {
+            setCurrentPageCandidatos(1); // Reseta para página 1 ao alternar
+        }
     };
-
-    const renderPaginationEmpresas = () => (
-        <Pagination>
-            <Pagination.Prev
-                onClick={() => paginateEmpresas(currentPageEmpresas - 1)}
-                disabled={currentPageEmpresas === 1}
-            />
-            {[...Array(totalPages).keys()].map(number => (
-                <Pagination.Item
-                    key={number + 1}
-                    onClick={() => paginateEmpresas(number + 1)}
-                    active={number + 1 === currentPageEmpresas}
-                >
-                    {number + 1}
-                </Pagination.Item>
-            ))}
-            <Pagination.Next
-                onClick={() => paginateEmpresas(currentPageEmpresas + 1)}
-                disabled={currentPageEmpresas === totalPages}
-            />
-        </Pagination>
-    );
-
-    const renderPaginationCandidatos = () => (
-        <Pagination>
-            <Pagination.Prev
-                onClick={() => paginateCandidatos(currentPageCandidatos - 1)}
-                disabled={currentPageCandidatos === 1}
-            />
-            {[...Array(totalPages).keys()].map(number => (
-                <Pagination.Item
-                    key={number + 1}
-                    onClick={() => paginateCandidatos(number + 1)}
-                    active={number + 1 === currentPageCandidatos}
-                >
-                    {number + 1}
-                </Pagination.Item>
-            ))}
-            <Pagination.Next
-                onClick={() => paginateCandidatos(currentPageCandidatos + 1)}
-                disabled={currentPageCandidatos === totalPages}
-            />
-        </Pagination>
-    );
-
-
-    const renderPagination = (paginateFunction) => (
-        <Pagination>
-            <Pagination.Prev onClick={() => paginateFunction(currentPage - 1)} disabled={currentPage === 1} />
-            {[...Array(totalPages).keys()].map(number => (
-                <Pagination.Item
-                    key={number + 1}
-                    onClick={() => paginateFunction(number + 1)}
-                    active={number + 1 === currentPage}
-                >
-                    {number + 1}
-                </Pagination.Item>
-            ))}
-            <Pagination.Next onClick={() => paginateFunction(currentPage + 1)} disabled={currentPage === totalPages} />
-        </Pagination>
-    );
 
     const paginateEmpresas = (pageNumber) => {
         setCurrentPageEmpresas(pageNumber); // Atualiza a página atual de empresas
@@ -505,7 +455,7 @@ const AdminDashboard = () => {
                 </Col>
             </Row>
             {loading ? (
-                <div className="d-flex justify-content-center" >
+                <div className="d-flex justify-content-center align-items-center" >
                     <Spinner animation='border' variant='primary' />
                 </div>
             ) : candidatos.length > 0 ? (
@@ -581,7 +531,7 @@ const AdminDashboard = () => {
                         </tbody>
                     </Table>
                     {/* Renderizar paginação */}
-                    {renderPagination(paginateJobs)}
+                    {renderPagination(currentPage, totalPages, paginateJobs)}
                 </>
             ) : (
                 <p className="text-center mt-4">Nenhuma vaga cadastrada...</p>
@@ -627,7 +577,7 @@ const AdminDashboard = () => {
                         </tbody>
                     </Table>
                     {/* Renderizar paginação */}
-                    {renderPagination(paginateCandidates)}
+                    {renderPagination(currentPage, totalPages, paginateCandidates)}
                 </>
             ) : (
                 <p className="text-center mt-4">Nenhum candidato cadastrado...</p>
@@ -710,22 +660,14 @@ const AdminDashboard = () => {
 
     return (
         <div>
-            <Navbar bg="dark" variant="dark" expand="lg">
-                <Container>
-                    <Navbar.Brand href="#">Painel administrativo</Navbar.Brand>
-                    <Nav className="ms-auto">
-                        <Button variant="outline-danger" className="ml-auto" onClick={handleLogout} style={{ maxWidth: '100px' }}>
-                            <FontAwesomeIcon icon={faSignOutAlt} /> Sair
-                        </Button>
-                    </Nav>
-                </Container>
-            </Navbar>
+            <HeaderAdmin />
             <Container className="mt-3">
                 <Row className="mb-3">
                     <Col md={6} xs={12}>
                         <Button
                             variant={activeTab === 'empresas' ? 'primary' : 'secondary'}
                             onClick={() => {
+                                handleTabChange('empresas')
                                 setActiveTab('empresas');
                                 setCurrentView('empresas'); // Resetando para empresas quando clicado
                                 setBreadcrumb(['Empresas']); // Atualizando o breadcrumb para Empresas
@@ -739,6 +681,7 @@ const AdminDashboard = () => {
                         <Button
                             variant={activeTab === 'candidatos' ? 'primary' : 'secondary'}
                             onClick={() => {
+                                handleTabChange('candidatos')
                                 setActiveTab('candidatos');
                                 setCurrentView(''); // Não precisa de currentView para candidatos diretos
                             }}
@@ -780,7 +723,7 @@ const AdminDashboard = () => {
                 {activeTab === 'empresas' && currentView === 'empresas' && (
                     <>
                         {renderEmpresasTable()}
-                        {renderPaginationEmpresas()}
+                        {renderPagination(currentPageEmpresas, totalPages, paginateEmpresas)}
                     </>
                 )}
                 {activeTab === 'empresas' && currentView === 'vagas' && renderJobsTable()}
@@ -788,7 +731,7 @@ const AdminDashboard = () => {
                 {activeTab === 'candidatos' && (
                     <>
                         {renderCandidatosTable()}
-                        {renderPaginationCandidatos()}
+                        {renderPagination(currentPageCandidatos, totalPages, paginateCandidatos)}
                     </>
                 )}
             </Container>
@@ -932,7 +875,6 @@ const AdminDashboard = () => {
                     </Button>
                 }
             />
-            <ToastContainer />
         </div>
     );
 };

@@ -16,8 +16,8 @@ const UserProtectedRoutes = [
   { path: '/alterar-email', element: <Layout><ChangeEmail /></Layout>, requiredRole: 'user' },
   { path: '/verify-email', element: <Layout><VerifyEmail /></Layout>, requiredRole: 'user' },
   { path: '/curriculo', element: <Layout><Curriculo /></Layout>, requiredRole: 'user' },
-  { path: '/buscar-vagas', element: <Layout><BuscarVagas /></Layout>, requiredRole: 'user' },
-  { path: '/detalhes-vaga', element: <Layout><DetalhesVaga /></Layout>, requiredRole: 'user' },
+  { path: '/buscar-vagas', element: <BuscarVagas />, requiredRole: 'user' },
+  { path: '/detalhes-vaga/:id', element: <DetalhesVaga />, requiredRole: 'user' },
   { path: '/inscricoes-candidato', element: <Layout><InscricoesCandidato /></Layout>, requiredRole: 'user' },
 ];
 
