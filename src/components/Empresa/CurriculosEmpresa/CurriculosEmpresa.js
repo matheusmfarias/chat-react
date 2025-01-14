@@ -52,7 +52,7 @@ const CurriculosEmpresa = () => {
   };
 
   const handlePageChange = useCallback((pageNumber) => setCurrentPage(pageNumber), []);
-  
+
   const handleNextPage = useCallback(() => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
@@ -238,11 +238,11 @@ const CurriculosEmpresa = () => {
                             <ul className="list-unstyled">
                               {formacao.map((formacaoItem, index) => (
                                 <li key={`${formacaoItem.escolaridade}-${index}`}>
-                                    {formacaoItem.escolaridade}
-                                    {['Superior', 'Técnico'].includes(formacaoItem.escolaridade) && formacaoItem.curso ? (
-                                      <> - {formacaoItem.curso}</>
-                                    ) : null}
-                                    {" - "}{formacaoItem.situacao}
+                                  {formacaoItem.escolaridade}
+                                  {['Superior', 'Técnico'].includes(formacaoItem.escolaridade) && formacaoItem.curso ? (
+                                    null
+                                  ) : <> - {formacaoItem.curso}</>}
+                                  {" - "}{formacaoItem.situacao}
                                 </li>
                               ))}
                             </ul>

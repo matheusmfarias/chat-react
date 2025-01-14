@@ -901,7 +901,7 @@ const BuscarVagas = () => {
                                                             ) : (
                                                                 selectedJob && (
                                                                     <>
-                                                                        <div className="d-flex align-items-center">
+                                                                        <div className="d-flex flex-row align-items-center">
                                                                             <Card.Title className="mb-0 me-2">{selectedJob.title}</Card.Title>
                                                                             {selectedJob.pcd && (
                                                                                 <FontAwesomeIcon icon={faWheelchair} title="PcD" className="text-primary" />
@@ -910,7 +910,7 @@ const BuscarVagas = () => {
                                                                         <Card.Text className='mt-2'>
                                                                             {selectedJob.identifyCompany ? 'Empresa confidencial' : (selectedJob.company ? selectedJob.company.nome : 'Empresa não informada')}
                                                                         </Card.Text>
-                                                                        <Row className="mt-2">
+                                                                        <Row>
                                                                             <Card.Text>
                                                                                 <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
                                                                                 {selectedJob.location}
@@ -918,7 +918,7 @@ const BuscarVagas = () => {
                                                                         </Row>
                                                                         <Row>
                                                                             <Col>
-                                                                                <div className="d-flex mt-2">
+                                                                                <div className="d-flex flex-row mt-2">
                                                                                     <Card.Text className="me-4">
                                                                                         <FontAwesomeIcon
                                                                                             className="me-2"
@@ -938,7 +938,7 @@ const BuscarVagas = () => {
                                                                                 </div>
                                                                             </Col>
                                                                         </Row>
-                                                                        <Col className='mt-2'>
+                                                                        <Col className='mt-1'>
                                                                             <Button onClick={handleSubmeterCurriculo} style={{ minWidth: '166px' }}>
                                                                                 {loadingSubmit ? (
                                                                                     <div className="d-flex justify-content-center align-items-center">
