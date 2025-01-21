@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
 import Skeleton from 'react-loading-skeleton';
-import { toast, ToastContainer } from 'react-toastify';
 import Select from 'react-select';
 import HeaderCandidato from "../HeaderCandidato/HeaderCandidato";
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -8,7 +7,6 @@ import { Modal, Row, Col, Card, Container, Button, Form, InputGroup, Spinner } f
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBriefcase, faBuilding, faChevronLeft, faChevronRight, faHome, faLaptopHouse, faLocationDot, faMoneyBillWave, faUpRightFromSquare, faWheelchair, faSearch, faTimesCircle, faFilter, faFilterCircleXmark } from "@fortawesome/free-solid-svg-icons";
 import './BuscarVagas.css';
-import axios from "axios";
 import api from "../../../services/axiosConfig";
 import Swal from "sweetalert2";
 
@@ -26,19 +24,6 @@ const BuscarVagas = () => {
     const [totalJobs, setTotalJobs] = useState(0);
     const itemsPerPage = 10;
 
-    const notify = (message, type) => {
-        toast[type](message, {
-            position: "top-right",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            closeButton: false
-        });
-    };
-
     // Estados para busca e filtros
     const [showFilterModal, setShowFilterModal] = useState(false);
     const handleOpenFilterModal = () => setShowFilterModal(true);
@@ -48,44 +33,92 @@ const BuscarVagas = () => {
     const [selectedStateFilter, setSelectedStateFilter] = useState('');
     const [selectedCityFilter, setSelectedCityFilter] = useState('');
     const [filters, setFilters] = useState({
-        modality: '',
-        type: '',
+        modality: [],
+        type: [],
         pcd: '',
+        state: '',
+        city: '',
     });
     const [states, setStates] = useState([]);
     const [cities, setCities] = useState([]);
     const [showJobModal, setShowJobModal] = useState(false);
 
-    // Função para buscar estados via API do IBGE
-    const fetchStates = useCallback(async () => {
+    const SkeletonCard = () => (
+        <Row className="mt-lg-4 mt-1">
+            {Array.from({ length: 10 }).map((_, index) => (
+                <>
+                    <Col lg={5} xxl={4} key={index}>
+                        <Card className="p-3 mb-4 border-0 shadow-sm rounded">
+                            <Card.Body>
+                                <Skeleton height={30} width="60%" className="mb-3" />
+                                <Skeleton height={20} width="40%" className="mb-4" />
+                                <Skeleton height={20} width="50%" className="mb-3" />
+                                <Skeleton height={20} width="80%" className="mb-3" />
+                                <Skeleton height={20} width="80%" className="mb-4" />
+                                <Skeleton height={20} width="30%" />
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                    <Col lg={7} xxl={8} />
+                </>
+            ))}
+        </Row>
+    );
+
+    const fetchLocations = useCallback(async (stateCode = null) => {
         try {
-            const response = await axios.get('https://servicodados.ibge.gov.br/api/v1/localidades/estados');
-            setStates(response.data);
+            if (!stateCode) {
+                // Buscar estados
+                const response = await api.get('https://servicodados.ibge.gov.br/api/v1/localidades/estados');
+                setStates(response.data);
+            } else {
+                // Buscar cidades de um estado
+                const response = await api.get(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${stateCode}/municipios`);
+                setCities(response.data);
+            }
         } catch (error) {
-            console.error('Erro ao buscar estados:', error);
+            console.error('Erro ao buscar locais:', error);
         }
     }, []);
 
     useEffect(() => {
         document.title = "ACI Empregos | Oportunidades";
-        fetchStates();
-    }, [fetchStates]);
+        fetchLocations();
+    }, [fetchLocations]);
 
-    // Função para buscar vagas com base nos filtros de cargo e filtros aplicados
-    const handleSearchByJob = useCallback(async () => {
+    useEffect(() => {
+        if (selectedStateFilter) {
+            fetchLocations(selectedStateFilter); // Busca as cidades do estado selecionado
+        } else {
+            setCities([]); // Limpa as cidades se nenhum estado estiver selecionado
+        }
+    }, [selectedStateFilter, fetchLocations]);
+
+    const buildFilters = (filters, selectedStateFilter, selectedCityFilter, searchTerm) => {
         const params = new URLSearchParams();
 
-        // Adiciona filtros
         if (searchTerm.trim()) params.append('keyword', searchTerm);
-        if (filters.modality) params.append('modality', filters.modality);
-        if (filters.type) params.append('type', filters.type);
+
+        if (filters.modality.length > 0) {
+            filters.modality.forEach((modality) => params.append('modality', modality));
+        }
+
+        if (filters.type.length > 0) {
+            filters.type.forEach((type) => params.append('type', type));
+        }
+
         if (filters.pcd) params.append('pcd', filters.pcd);
         if (selectedStateFilter) params.append('state', selectedStateFilter);
         if (selectedCityFilter) params.append('city', selectedCityFilter);
 
-        // Parâmetros de paginação
-        params.append('page', currentPage || 1); // Garante uma página padrão
-        params.append('limit', itemsPerPage || 10); // Garante um limite padrão
+        return params;
+    };
+
+    const handleSearchByJob = useCallback(async () => {
+        const params = buildFilters(filters, selectedStateFilter, selectedCityFilter, searchTerm);
+
+        params.append('page', currentPage || 1);
+        params.append('limit', itemsPerPage || 10);
 
         try {
             const token = localStorage.getItem('token');
@@ -93,14 +126,11 @@ const BuscarVagas = () => {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
-            // Atualiza vagas e informações de paginação
             setJobs(response.data.jobs);
             setTotalPages(response.data.totalPages);
             setTotalJobs(response.data.totalJobs);
 
-            // Busca os detalhes da primeira vaga, se existirem vagas
             if (response.data.totalJobs > 0) {
-
                 const firstJob = response.data.jobs[0];
                 setVisuallySelectedJob(firstJob);
 
@@ -126,25 +156,6 @@ const BuscarVagas = () => {
     useEffect(() => {
         setCurrentPage(1);
     }, [keyword, searchTerm, selectedStateFilter, selectedCityFilter, filters]);
-
-    // Função para buscar cidades baseado no estado selecionado
-    const fetchCities = useCallback(async (state) => {
-        try {
-            const response = await axios.get(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${state}/municipios`);
-            setCities(response.data);
-        } catch (error) {
-            console.error('Erro ao buscar cidades:', error);
-        }
-    }, []);
-
-    // Buscar cidades quando o estado for selecionado
-    useEffect(() => {
-        if (selectedStateFilter) {
-            fetchCities(selectedStateFilter);
-        } else {
-            setCities([]);
-        }
-    }, [selectedStateFilter, fetchCities]);
 
     // Função para abrir o modal ao clicar em uma vaga no mobile
     const handleCardClickMobile = async (job) => {
@@ -178,7 +189,7 @@ const BuscarVagas = () => {
         return () => clearTimeout(timeoutId);
     }, [searchTerm, handleSearchByJob]);
 
-    // Função para resetar a busca
+    // Função para resetar o filtro
     const handleResetFilter = () => {
         setLoading(true);
         setSelectedStateFilter('');
@@ -256,13 +267,19 @@ const BuscarVagas = () => {
     };
 
     const handleClearSearch = () => {
-        if (searchTerm.trim() !== '') {
-            setLoading(true);
-            setSearchTerm("");
-            setCurrentPage(1);
-        } else {
-            notify('Nenhum termo inserido na busca!', 'error');
-        }
+        setLoading(true);
+        setSearchTerm("");
+        setCurrentPage(1);
+    };
+
+    const hasFiltersApplied = (filters, selectedStateFilter, selectedCityFilter) => {
+        return (
+            filters.modality.length > 0 ||
+            filters.type.length > 0 ||
+            filters.pcd === "true" ||
+            !!selectedStateFilter ||
+            !!selectedCityFilter
+        );
     };
 
     return (
@@ -277,7 +294,7 @@ const BuscarVagas = () => {
                                 <Form.Group className="mb-2">
                                     <div className="d-flex flex-row justify-content-between">
                                         <h5>Tipo</h5>
-                                        {(filters.modality || filters.type || filters.pcd || selectedStateFilter || selectedCityFilter) && (
+                                        {(hasFiltersApplied(filters, selectedStateFilter, selectedCityFilter)) && (
                                             <FontAwesomeIcon
                                                 icon={faFilterCircleXmark}
                                                 title="Limpar filtros"
@@ -374,7 +391,7 @@ const BuscarVagas = () => {
                                         checked={filters.pcd === "true"}
                                         onChange={(e) => {
                                             setLoading(true);
-                                            setFilters({ ...filters, pcd: e.target.checked ? "true" : "false" });
+                                            setFilters({ ...filters, pcd: e.target.checked ? "true" : "" });
                                         }}
                                     />
                                 </Form.Group>
@@ -388,12 +405,11 @@ const BuscarVagas = () => {
                                     <Form.Control
                                         type="text"
                                         className="border-primary"
-                                        placeholder="Pesquisar por cargos, cidade, modelo..."
+                                        placeholder="Pesquisar por oportunidades, cidade, modelo..."
                                         aria-label="Pesquisar"
                                         value={searchTerm}
                                         onChange={e => setSearchTerm(e.target.value)}
                                     />
-                                    {/* Ícone de remoção dentro do input */}
                                     {searchTerm && (
                                         <FontAwesomeIcon
                                             icon={faTimesCircle}
@@ -413,7 +429,7 @@ const BuscarVagas = () => {
                             </Col>
                             <Col lg={4} className="d-flex align-items-center">
                                 {searchTerm && (
-                                    <span className="p-2">
+                                    <span className="p-2 mt-2">
                                         A busca "{searchTerm}" retornou {totalJobs} resultado(s).
                                     </span>
                                 )}
@@ -612,418 +628,387 @@ const BuscarVagas = () => {
                                 </Button>
                             </Modal.Footer>
                         </Modal>
-                        <Row className="mt-lg-4 mt-1">
-                            {loading ? (
-                                <>
-                                    {window.innerWidth > 991 ? (
-                                        <>
-                                            <Skeleton height={30} width="30%" className="mb-2" />
-                                            <Skeleton height={20} width="20%" className="mb-4" />
-                                            <Skeleton height={40} width="40%" className="mb-3" />
-                                            <Skeleton height={40} width="40%" className="mb-2" />
-                                            <Skeleton height={40} width="40%" className="mb-5" />
-                                            <Skeleton height={30} width="30%" className="mb-2" />
-                                            <Skeleton height={20} width="20%" className="mb-4" />
-                                            <Skeleton height={40} width="40%" className="mb-3" />
-                                            <Skeleton height={40} width="40%" className="mb-2" />
-                                            <Skeleton height={40} width="40%" className="mb-5" />
-                                            <Skeleton height={30} width="30%" className="mb-2" />
-                                            <Skeleton height={20} width="20%" className="mb-4" />
-                                            <Skeleton height={40} width="40%" className="mb-3" />
-                                            <Skeleton height={40} width="40%" className="mb-2" />
-                                            <Skeleton height={40} width="40%" className="mb-5" />
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Skeleton height={20} width="80%" className="mb-2" />
-                                            <Skeleton height={15} width="60%" className="mb-4" />
-                                            <Skeleton height={25} width="100%" className="mb-3" />
-                                            <Skeleton height={25} width="100%" className="mb-2" />
-                                            <Skeleton height={25} width="100%" className="mb-5" />
-                                            <Skeleton height={20} width="80%" className="mb-2" />
-                                            <Skeleton height={15} width="60%" className="mb-4" />
-                                            <Skeleton height={25} width="100%" className="mb-3" />
-                                            <Skeleton height={25} width="100%" className="mb-2" />
-                                            <Skeleton height={25} width="100%" className="mb-3" />
-                                            <Skeleton height={20} width="80%" className="mb-2" />
-                                        </>
-                                    )}
-                                </>
-                            ) : jobs.length > 0 ? (
-                                <>
-                                    <Col lg={5} xxl={4} style={{ position: 'relative' }}>
-                                        {jobs.map(result => (
-                                            <Card
-                                                key={result._id}
-                                                className={`vaga-card p-2 mb-4 border-0 shadow-sm rounded ${visuallySelectedJob && visuallySelectedJob._id === result._id ? 'vaga-card-selecionada shadow' : ''}`}
-                                                onClick={() => {
-                                                    if (window.innerWidth <= 991) {
-                                                        handleCardClickMobile(result);
-                                                    } else {
-                                                        handleCardClick(result);
-                                                    }
-                                                }}
-                                                style={{
-                                                    cursor: 'pointer',
-                                                }}
-                                            >
-                                                <Card.Body>
-                                                    <Card.Title>{result.title}</Card.Title>
-                                                    <Card.Text>
-                                                        {result.identifyCompany
-                                                            ? 'Empresa confidencial'
-                                                            : (result.company ? result.company.nome : 'Empresa não especificada')}
-                                                    </Card.Text>
-                                                    <Card.Text className="bg-light rounded text-center text-primary p-2">
-                                                        <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
-                                                        {result.location}
-                                                    </Card.Text>
-                                                    <Row className="mb-2 align-items-stretch">
-                                                        <Col>
+                        {loading ? (
+                            <SkeletonCard />
+                        ) : jobs.length > 0 ? (
+                            <Row className="mt-lg-4 mt-1">
+                                <Col lg={5} xxl={4} style={{ position: 'relative' }}>
+                                    {jobs.map(result => (
+                                        <Card
+                                            key={result._id}
+                                            className={`vaga-card p-2 mb-4 border-0 shadow-sm rounded ${visuallySelectedJob && visuallySelectedJob._id === result._id ? 'vaga-card-selecionada shadow' : ''}`}
+                                            onClick={() => {
+                                                if (window.innerWidth <= 991) {
+                                                    handleCardClickMobile(result);
+                                                } else {
+                                                    handleCardClick(result);
+                                                }
+                                            }}
+                                            style={{
+                                                cursor: 'pointer',
+                                            }}
+                                        >
+                                            <Card.Body>
+                                                <Card.Title>{result.title}</Card.Title>
+                                                <Card.Text>
+                                                    {result.identifyCompany
+                                                        ? 'Empresa confidencial'
+                                                        : (result.company ? result.company.nome : 'Empresa não especificada')}
+                                                </Card.Text>
+                                                <Card.Text className="bg-light rounded text-center text-primary p-2">
+                                                    <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
+                                                    {result.location}
+                                                </Card.Text>
+                                                <Row className="mb-2 align-items-stretch">
+                                                    <Col>
+                                                        <Card.Text className="bg-light rounded text-center text-primary p-2 h-100 d-flex flex-column justify-content-center">
+                                                            <FontAwesomeIcon
+                                                                className="me-2"
+                                                                icon={result.modality === 'Remoto' ? faHome : result.modality === 'Presencial' ? faBuilding : faLaptopHouse}
+                                                                title="Modelo"
+                                                            />
+                                                            {result.modality}
+                                                        </Card.Text>
+                                                    </Col>
+                                                    <Col>
+                                                        <Card.Text className="bg-light rounded text-center text-primary p-2 h-100 d-flex flex-column justify-content-center">
+                                                            <FontAwesomeIcon className="me-2" icon={faBriefcase} title="Tipo" />
+                                                            {result.type}
+                                                        </Card.Text>
+                                                    </Col>
+                                                </Row>
+                                                <Row className="align-items-stretch">
+                                                    <Col>
+                                                        <Card.Text className="bg-light rounded text-center text-primary p-2 h-100 d-flex flex-column justify-content-center">
+                                                            <FontAwesomeIcon className="me-2" icon={faMoneyBillWave} title="Salário" />
+                                                            {result.salary ? result.salary : 'A combinar'}
+                                                        </Card.Text>
+                                                    </Col>
+                                                    <Col>
+                                                        {result.pcd && (
                                                             <Card.Text className="bg-light rounded text-center text-primary p-2 h-100 d-flex flex-column justify-content-center">
-                                                                <FontAwesomeIcon
-                                                                    className="me-2"
-                                                                    icon={result.modality === 'Remoto' ? faHome : result.modality === 'Presencial' ? faBuilding : faLaptopHouse}
-                                                                    title="Modelo"
-                                                                />
-                                                                {result.modality}
+                                                                <FontAwesomeIcon className="me-2" icon={faWheelchair} title="PcD" />
+                                                                PcD
                                                             </Card.Text>
-                                                        </Col>
-                                                        <Col>
-                                                            <Card.Text className="bg-light rounded text-center text-primary p-2 h-100 d-flex flex-column justify-content-center">
-                                                                <FontAwesomeIcon className="me-2" icon={faBriefcase} title="Tipo" />
-                                                                {result.type}
-                                                            </Card.Text>
-                                                        </Col>
-                                                    </Row>
-                                                    <Row className="align-items-stretch">
-                                                        <Col>
-                                                            <Card.Text className="bg-light rounded text-center text-primary p-2 h-100 d-flex flex-column justify-content-center">
-                                                                <FontAwesomeIcon className="me-2" icon={faMoneyBillWave} title="Salário" />
-                                                                {result.salary ? result.salary : 'A combinar'}
-                                                            </Card.Text>
-                                                        </Col>
-                                                        <Col>
-                                                            {result.pcd && (
-                                                                <Card.Text className="bg-light rounded text-center text-primary p-2 h-100 d-flex flex-column justify-content-center">
-                                                                    <FontAwesomeIcon className="me-2" icon={faWheelchair} title="PcD" />
-                                                                    PcD
-                                                                </Card.Text>
-                                                            )}
-                                                        </Col>
-                                                    </Row>
-                                                    <hr className="my-3 rounded justify-content-center" />
-                                                    <Card.Text className="text-muted">
-                                                        Publicado em: {new Date(result.publicationDate).toLocaleDateString()}
-                                                    </Card.Text>
-                                                </Card.Body>
-                                            </Card>
-                                        ))}
+                                                        )}
+                                                    </Col>
+                                                </Row>
+                                                <hr className="my-3 rounded justify-content-center" />
+                                                <Card.Text className="text-muted">
+                                                    Publicado em: {new Date(result.publicationDate).toLocaleDateString()}
+                                                </Card.Text>
+                                            </Card.Body>
+                                        </Card>
+                                    ))}
 
-                                        {/* Paginação */}
-                                        {totalPages > 1 && (
-                                            <div className="d-flex flex-row p-2" style={{ marginLeft: '6px' }}>
+                                    {/* Paginação */}
+                                    {totalPages > 1 && (
+                                        <div className="d-flex flex-row p-2" style={{ marginLeft: '6px' }}>
+                                            <Button
+                                                className="btn-sm me-2 mb-2"
+                                                onClick={() => handlePageChange('prev')}
+                                                disabled={currentPage === 1}
+                                                variant="outline-primary"
+                                                aria-label="Página anterior"
+                                            >
+                                                <FontAwesomeIcon icon={faChevronLeft} />
+                                            </Button>
+                                            {currentPage > 1 && (
                                                 <Button
                                                     className="btn-sm me-2 mb-2"
                                                     onClick={() => handlePageChange('prev')}
-                                                    disabled={currentPage === 1}
                                                     variant="outline-primary"
                                                 >
-                                                    <FontAwesomeIcon icon={faChevronLeft} />
+                                                    {currentPage - 1}
                                                 </Button>
-                                                {currentPage > 1 && (
-                                                    <Button
-                                                        className="btn-sm me-2 mb-2"
-                                                        onClick={() => handlePageChange('prev')}
-                                                        variant="outline-primary"
-                                                    >
-                                                        {currentPage - 1}
-                                                    </Button>
-                                                )}
-                                                <Button className="btn-sm me-2 mb-2" variant="outline-primary" disabled>
-                                                    {currentPage}
-                                                </Button>
-                                                {currentPage < totalPages && (
-                                                    <Button
-                                                        className="btn-sm me-2 mb-2"
-                                                        onClick={() => handlePageChange('next')}
-                                                        variant="outline-primary"
-                                                    >
-                                                        {currentPage + 1}
-                                                    </Button>
-                                                )}
+                                            )}
+                                            <Button className="btn-sm me-2 mb-2" variant="outline-primary" disabled>
+                                                {currentPage}
+                                            </Button>
+                                            {currentPage < totalPages && (
                                                 <Button
                                                     className="btn-sm me-2 mb-2"
                                                     onClick={() => handlePageChange('next')}
-                                                    disabled={currentPage === totalPages}
                                                     variant="outline-primary"
                                                 >
-                                                    <FontAwesomeIcon icon={faChevronRight} />
+                                                    {currentPage + 1}
                                                 </Button>
-                                            </div>
-                                        )}
-                                    </Col>
-
-                                    {/* Detalhes da vaga à direita */}
-                                    <Col lg={7} xxl={8} className="coluna-detalhes-vagas">
-                                        <div style={{ position: 'sticky', top: '70px', overflowY: 'hidden' }}>
-                                            <Card className="border-0 mb-3">
-                                                <Card.Body className="shadow-sm rounded">
-                                                    {loadingDetails ? (
-                                                        <>
-                                                            <Skeleton height={30} width="60%" className="mb-2" />
-                                                            <Skeleton height={20} width="40%" className="mb-3" />
-                                                            <Skeleton height={20} width="50%" className="mb-3" />
-                                                            <Skeleton height={20} width="80%" className="mb-2" />
-                                                        </>
-                                                    ) : (
-                                                        selectedJob && (
-                                                            <>
-                                                                <div className="d-flex align-items-center">
-                                                                    <Card.Title className="mb-0 me-2">{selectedJob.title}</Card.Title>
-                                                                    {selectedJob.pcd && (
-                                                                        <FontAwesomeIcon icon={faWheelchair} title="PcD" className="text-primary" />
-                                                                    )}
-                                                                </div>
-                                                                <Card.Text>
-                                                                    {selectedJob.identifyCompany ? 'Empresa confidencial' : (selectedJob.company ? selectedJob.company.nome : 'Empresa não informada')}
-                                                                </Card.Text>
-                                                                <Row className="mb-3">
-                                                                    <Card.Text>
-                                                                        <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
-                                                                        {selectedJob.location}
-                                                                    </Card.Text>
-                                                                </Row>
-                                                                <Row>
-                                                                    <Col>
-                                                                        <div className="d-flex">
-                                                                            <Card.Text className="me-4">
-                                                                                <FontAwesomeIcon
-                                                                                    className="me-2"
-                                                                                    icon={selectedJob.modality === 'Remoto' ? faHome : selectedJob.modality === 'Presencial' ? faBuilding : faLaptopHouse}
-                                                                                    title="Modelo"
-                                                                                />
-                                                                                {selectedJob.modality}
-                                                                            </Card.Text>
-                                                                            <Card.Text className="me-4">
-                                                                                <FontAwesomeIcon className="me-2" icon={faBriefcase} title="Tipo" />
-                                                                                {selectedJob.type}
-                                                                            </Card.Text>
-                                                                            <Card.Text>
-                                                                                <FontAwesomeIcon className="me-2" icon={faMoneyBillWave} title="Salário" />
-                                                                                {selectedJob.salary ? selectedJob.salary : 'A combinar'}
-                                                                            </Card.Text>
-                                                                        </div>
-                                                                    </Col>
-                                                                </Row>
-                                                                <Col lg={4}>
-                                                                    <Button onClick={handleCandidatarClick} style={{ minWidth: '166px' }}>
-                                                                        Candidatar-se <FontAwesomeIcon icon={faUpRightFromSquare} title="Link" />
-                                                                    </Button>
-                                                                </Col>
-                                                            </>
-                                                        ))}
-                                                </Card.Body>
-
-                                                <Card.Body style={{ maxHeight: '45vh', overflowY: 'auto' }} className="shadow-sm rounded">
-                                                    {loadingDetails ? (
-                                                        <>
-                                                            <Skeleton height={20} width="60%" className="mb-3" />
-                                                            <Skeleton height={20} width="40%" className="mb-3" />
-                                                            <Skeleton height={20} width="80%" className="mb-3" />
-                                                            <Skeleton height={20} width="40%" className="mb-3" />
-                                                            <Skeleton height={20} width="60%" className="mb-3" />
-                                                            <Skeleton height={20} width="80%" />
-                                                        </>
-                                                    ) : selectedJob ? (
-                                                        <>
-                                                            {selectedJob.offers && (
-                                                                <>
-                                                                    <Card.Title>Benefícios</Card.Title>
-                                                                    <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.offers }} />
-                                                                </>
-                                                            )}
-                                                            {selectedJob.description && (
-                                                                <>
-                                                                    <Card.Title>Descrição</Card.Title>
-                                                                    <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.description }} />
-                                                                </>
-                                                            )}
-                                                            {selectedJob.responsibilities && (
-                                                                <>
-                                                                    <Card.Title>Responsabilidades e atribuições</Card.Title>
-                                                                    <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.responsibilities }} />
-                                                                </>
-                                                            )}
-                                                            {selectedJob.qualifications && (
-                                                                <>
-                                                                    <Card.Title>Requisitos e qualificações</Card.Title>
-                                                                    <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.qualifications }} />
-                                                                </>
-                                                            )}
-                                                            {selectedJob.requiriments && (
-                                                                <>
-                                                                    <Card.Title>Será um diferencial</Card.Title>
-                                                                    <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.requiriments }} />
-                                                                </>
-                                                            )}
-                                                            {selectedJob.additionalInfo && (
-                                                                <>
-                                                                    <Card.Title>Informações adicionais</Card.Title>
-                                                                    <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.additionalInfo }} />
-                                                                </>
-                                                            )}
-                                                        </>
-                                                    ) : (
-                                                        <Card.Text>Nenhuma informação adicional informada.</Card.Text>
-                                                    )}
-                                                </Card.Body>
-                                            </Card>
-                                        </div>
-                                    </Col>
-                                    {/* Modal para os detalhes da vaga no mobile */}
-                                    <Modal show={showJobModal} onHide={handleCloseJobModal} centered dialogClassName="modal-dialog-scrollable">
-                                        <Modal.Header closeButton>
-                                            <Modal.Title>Detalhes da vaga</Modal.Title>
-                                        </Modal.Header>
-                                        <Modal.Body className="p-0">
-                                            {selectedJob ? (
-                                                <>
-                                                    <Card className="border-0">
-                                                        <Card.Body>
-                                                            {loadingDetails ? (
-                                                                <>
-                                                                    <Skeleton height={30} width="60%" className="mb-2" />
-                                                                    <Skeleton height={20} width="40%" className="mb-3" />
-                                                                    <Skeleton height={20} width="50%" className="mb-3" />
-                                                                    <Skeleton height={20} width="80%" className="mb-2" />
-                                                                </>
-                                                            ) : (
-                                                                selectedJob && (
-                                                                    <>
-                                                                        <div className="d-flex flex-row align-items-center">
-                                                                            <Card.Title className="mb-0 me-2">{selectedJob.title}</Card.Title>
-                                                                            {selectedJob.pcd && (
-                                                                                <FontAwesomeIcon icon={faWheelchair} title="PcD" className="text-primary" />
-                                                                            )}
-                                                                        </div>
-                                                                        <Card.Text className='mt-2'>
-                                                                            {selectedJob.identifyCompany ? 'Empresa confidencial' : (selectedJob.company ? selectedJob.company.nome : 'Empresa não informada')}
-                                                                        </Card.Text>
-                                                                        <Row>
-                                                                            <Card.Text>
-                                                                                <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
-                                                                                {selectedJob.location}
-                                                                            </Card.Text>
-                                                                        </Row>
-                                                                        <Row>
-                                                                            <Col>
-                                                                                <div className="d-flex flex-row mt-2">
-                                                                                    <Card.Text className="me-4">
-                                                                                        <FontAwesomeIcon
-                                                                                            className="me-2"
-                                                                                            icon={selectedJob.modality === 'Remoto' ? faHome : selectedJob.modality === 'Presencial' ? faBuilding : faLaptopHouse}
-                                                                                            title="Modelo"
-                                                                                        />
-                                                                                        {selectedJob.modality}
-                                                                                    </Card.Text>
-                                                                                    <Card.Text className="me-4">
-                                                                                        <FontAwesomeIcon className="me-2" icon={faBriefcase} title="Tipo" />
-                                                                                        {selectedJob.type}
-                                                                                    </Card.Text>
-                                                                                    <Card.Text>
-                                                                                        <FontAwesomeIcon className="me-2" icon={faMoneyBillWave} title="Salário" />
-                                                                                        {selectedJob.salary ? selectedJob.salary : 'A combinar'}
-                                                                                    </Card.Text>
-                                                                                </div>
-                                                                            </Col>
-                                                                        </Row>
-                                                                        <Col className='mt-1'>
-                                                                            <Button onClick={handleSubmeterCurriculo} style={{ minWidth: '166px' }}>
-                                                                                {loadingSubmit ? (
-                                                                                    <div className="d-flex justify-content-center align-items-center">
-                                                                                        <Spinner animation="border" />
-                                                                                    </div>
-                                                                                ) : (
-                                                                                    <span>Enviar currículo</span>
-                                                                                )}
-                                                                            </Button>
-                                                                        </Col>
-                                                                    </>
-                                                                ))}
-                                                            {loadingDetails ? (
-                                                                <>
-                                                                    <Skeleton height={20} width="60%" className="mb-3" />
-                                                                    <Skeleton height={20} width="40%" className="mb-3" />
-                                                                    <Skeleton height={20} width="80%" className="mb-3" />
-                                                                    <Skeleton height={20} width="40%" className="mb-3" />
-                                                                    <Skeleton height={20} width="60%" className="mb-3" />
-                                                                    <Skeleton height={20} width="80%" />
-                                                                </>
-                                                            ) : selectedJob ? (
-                                                                <>
-                                                                    {selectedJob.offers && (
-                                                                        <>
-                                                                            <Card.Title>Benefícios</Card.Title>
-                                                                            <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.offers }} />
-                                                                        </>
-                                                                    )}
-                                                                    {selectedJob.description && (
-                                                                        <>
-                                                                            <Card.Title>Descrição</Card.Title>
-                                                                            <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.description }} />
-                                                                        </>
-                                                                    )}
-                                                                    {selectedJob.responsibilities && (
-                                                                        <>
-                                                                            <Card.Title>Responsabilidades e atribuições</Card.Title>
-                                                                            <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.responsibilities }} />
-                                                                        </>
-                                                                    )}
-                                                                    {selectedJob.qualifications && (
-                                                                        <>
-                                                                            <Card.Title>Requisitos e qualificações</Card.Title>
-                                                                            <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.qualifications }} />
-                                                                        </>
-                                                                    )}
-                                                                    {selectedJob.requiriments && (
-                                                                        <>
-                                                                            <Card.Title>Será um diferencial</Card.Title>
-                                                                            <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.requiriments }} />
-                                                                        </>
-                                                                    )}
-                                                                    {selectedJob.additionalInfo && (
-                                                                        <>
-                                                                            <Card.Title>Informações adicionais</Card.Title>
-                                                                            <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.additionalInfo }} />
-                                                                        </>
-                                                                    )}
-                                                                </>
-                                                            ) : (
-                                                                <Card.Text>Nenhuma informação adicional informada.</Card.Text>
-                                                            )}
-                                                        </Card.Body>
-                                                    </Card>
-                                                </>
-                                            ) : (
-                                                <p>Carregando detalhes...</p>
                                             )}
-                                        </Modal.Body>
-                                        <Modal.Footer>
-                                            <Button variant="secondary" onClick={handleCloseJobModal}>
-                                                Fechar
+                                            <Button
+                                                className="btn-sm me-2 mb-2"
+                                                onClick={() => handlePageChange('next')}
+                                                disabled={currentPage === totalPages}
+                                                variant="outline-primary"
+                                                aria-label="Próxima página"
+                                            >
+                                                <FontAwesomeIcon icon={faChevronRight} />
                                             </Button>
-                                        </Modal.Footer>
-                                    </Modal>
-                                </>
-                            ) : (
-                                <p className="text-muted text-center">Nenhuma vaga encontrada.</p>
-                            )}
-                        </Row>
+                                        </div>
+                                    )}
+                                </Col>
+
+                                {/* Detalhes da vaga à direita */}
+                                <Col lg={7} xxl={8} className="coluna-detalhes-vagas">
+                                    <div style={{ position: 'sticky', top: '70px', overflowY: 'hidden' }}>
+                                        <Card className="border-0 mb-3">
+                                            <Card.Body className="shadow-sm rounded">
+                                                {loadingDetails ? (
+                                                    <>
+                                                        <Skeleton height={25} width="60%" className="mb-3" />
+                                                        <Skeleton height={20} width="40%" className="mb-4" />
+                                                        <Skeleton height={20} width="50%" className="mb-4" />
+                                                        <Skeleton height={20} width="80%" className="mb-5" />
+                                                    </>
+                                                ) : (
+                                                    selectedJob && (
+                                                        <>
+                                                            <div className="d-flex align-items-center">
+                                                                <Card.Title className="mb-0 me-2">{selectedJob.title}</Card.Title>
+                                                                {selectedJob.pcd && (
+                                                                    <FontAwesomeIcon icon={faWheelchair} title="PcD" className="text-primary" />
+                                                                )}
+                                                            </div>
+                                                            <Card.Text className="mb-2">
+                                                                {selectedJob.identifyCompany ? 'Empresa confidencial' : (selectedJob.company ? selectedJob.company.nome : 'Empresa não informada')}
+                                                            </Card.Text>
+                                                            <Row className="mb-2">
+                                                                <Card.Text>
+                                                                    <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
+                                                                    {selectedJob.location}
+                                                                </Card.Text>
+                                                            </Row>
+                                                            <Row className="mb-2">
+                                                                <Col>
+                                                                    <div className="d-flex">
+                                                                        <Card.Text className="me-4">
+                                                                            <FontAwesomeIcon
+                                                                                className="me-2"
+                                                                                icon={selectedJob.modality === 'Remoto' ? faHome : selectedJob.modality === 'Presencial' ? faBuilding : faLaptopHouse}
+                                                                                title="Modelo"
+                                                                            />
+                                                                            {selectedJob.modality}
+                                                                        </Card.Text>
+                                                                        <Card.Text className="me-4">
+                                                                            <FontAwesomeIcon className="me-2" icon={faBriefcase} title="Tipo" />
+                                                                            {selectedJob.type}
+                                                                        </Card.Text>
+                                                                        <Card.Text>
+                                                                            <FontAwesomeIcon className="me-2" icon={faMoneyBillWave} title="Salário" />
+                                                                            {selectedJob.salary ? selectedJob.salary : 'A combinar'}
+                                                                        </Card.Text>
+                                                                    </div>
+                                                                </Col>
+                                                            </Row>
+                                                            <Col lg={4}>
+                                                                <Button onClick={handleCandidatarClick} style={{ minWidth: '166px' }}>
+                                                                    Candidatar-se <FontAwesomeIcon icon={faUpRightFromSquare} title="Link" />
+                                                                </Button>
+                                                            </Col>
+                                                        </>
+                                                    ))}
+                                            </Card.Body>
+
+                                            <Card.Body style={{ maxHeight: '45vh', overflowY: 'auto' }} className="shadow-sm rounded">
+                                                {loadingDetails ? (
+                                                    <>
+                                                        <Skeleton height={20} width="80%" className="mb-3" />
+                                                        <Skeleton height={20} width="60%" className="mb-4" />
+                                                        <Skeleton height={20} width="80%" className="mb-3" />
+                                                        <Skeleton height={20} width="60%" className="mb-4" />
+                                                        <Skeleton height={20} width="80%" className="mb-3" />
+                                                        <Skeleton height={20} width="60%" className="mb-4" />
+                                                        <Skeleton height={20} width="80%" className="mb-3" />
+                                                        <Skeleton height={20} width="60%" className="mb-4" />
+                                                    </>
+                                                ) : selectedJob ? (
+                                                    <>
+                                                        {selectedJob.offers && (
+                                                            <>
+                                                                <Card.Title>Benefícios</Card.Title>
+                                                                <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.offers }} />
+                                                            </>
+                                                        )}
+                                                        {selectedJob.description && (
+                                                            <>
+                                                                <Card.Title>Descrição</Card.Title>
+                                                                <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.description }} />
+                                                            </>
+                                                        )}
+                                                        {selectedJob.responsibilities && (
+                                                            <>
+                                                                <Card.Title>Responsabilidades e atribuições</Card.Title>
+                                                                <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.responsibilities }} />
+                                                            </>
+                                                        )}
+                                                        {selectedJob.qualifications && (
+                                                            <>
+                                                                <Card.Title>Requisitos e qualificações</Card.Title>
+                                                                <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.qualifications }} />
+                                                            </>
+                                                        )}
+                                                        {selectedJob.requiriments && (
+                                                            <>
+                                                                <Card.Title>Será um diferencial</Card.Title>
+                                                                <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.requiriments }} />
+                                                            </>
+                                                        )}
+                                                        {selectedJob.additionalInfo && (
+                                                            <>
+                                                                <Card.Title>Informações adicionais</Card.Title>
+                                                                <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.additionalInfo }} />
+                                                            </>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    <Card.Text>Nenhuma informação adicional informada.</Card.Text>
+                                                )}
+                                            </Card.Body>
+                                        </Card>
+                                    </div>
+                                </Col>
+                                {/* Modal para os detalhes da vaga no mobile */}
+                                <Modal show={showJobModal} onHide={handleCloseJobModal} centered dialogClassName="modal-dialog-scrollable">
+                                    <Modal.Header closeButton>
+                                        <Modal.Title>Detalhes da vaga</Modal.Title>
+                                    </Modal.Header>
+                                    <Modal.Body className="p-0">
+                                        {selectedJob ? (
+                                            <>
+                                                <Card className="border-0">
+                                                    <Card.Body>
+                                                        {loadingDetails ? (
+                                                            <>
+                                                                <Skeleton height={30} width="60%" className="mb-2" />
+                                                                <Skeleton height={20} width="40%" className="mb-4" />
+                                                                <Skeleton height={20} width="50%" className="mb-3" />
+                                                                <Skeleton height={20} width="80%" className="mb-5" />
+                                                            </>
+                                                        ) : (
+                                                            selectedJob && (
+                                                                <>
+                                                                    <div className="d-flex flex-row align-items-center">
+                                                                        <Card.Title className="mb-0 me-2">{selectedJob.title}</Card.Title>
+                                                                        {selectedJob.pcd && (
+                                                                            <FontAwesomeIcon icon={faWheelchair} title="PcD" className="text-primary" />
+                                                                        )}
+                                                                    </div>
+                                                                    <Card.Text className='mt-2'>
+                                                                        {selectedJob.identifyCompany ? 'Empresa confidencial' : (selectedJob.company ? selectedJob.company.nome : 'Empresa não informada')}
+                                                                    </Card.Text>
+                                                                    <Row>
+                                                                        <Card.Text>
+                                                                            <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
+                                                                            {selectedJob.location}
+                                                                        </Card.Text>
+                                                                    </Row>
+                                                                    <Row>
+                                                                        <Col>
+                                                                            <div className="d-flex flex-row mt-2">
+                                                                                <Card.Text className="me-4">
+                                                                                    <FontAwesomeIcon
+                                                                                        className="me-2"
+                                                                                        icon={selectedJob.modality === 'Remoto' ? faHome : selectedJob.modality === 'Presencial' ? faBuilding : faLaptopHouse}
+                                                                                        title="Modelo"
+                                                                                    />
+                                                                                    {selectedJob.modality}
+                                                                                </Card.Text>
+                                                                                <Card.Text className="me-4">
+                                                                                    <FontAwesomeIcon className="me-2" icon={faBriefcase} title="Tipo" />
+                                                                                    {selectedJob.type}
+                                                                                </Card.Text>
+                                                                                <Card.Text>
+                                                                                    <FontAwesomeIcon className="me-2" icon={faMoneyBillWave} title="Salário" />
+                                                                                    {selectedJob.salary ? selectedJob.salary : 'A combinar'}
+                                                                                </Card.Text>
+                                                                            </div>
+                                                                        </Col>
+                                                                    </Row>
+                                                                    <Col className='mt-1'>
+                                                                        <Button onClick={handleSubmeterCurriculo} style={{ minWidth: '166px' }}>
+                                                                            {loadingSubmit ? (
+                                                                                <div className="d-flex justify-content-center align-items-center">
+                                                                                    <Spinner animation="border" />
+                                                                                </div>
+                                                                            ) : (
+                                                                                <span>Enviar currículo</span>
+                                                                            )}
+                                                                        </Button>
+                                                                    </Col>
+                                                                </>
+                                                            ))}
+                                                        {loadingDetails ? (
+                                                            <>
+                                                                <Skeleton height={20} width="80%" className="mb-3" />
+                                                                <Skeleton height={20} width="60%" className="mb-4" />
+                                                                <Skeleton height={20} width="80%" className="mb-3" />
+                                                                <Skeleton height={20} width="60%" className="mb-4" />
+                                                                <Skeleton height={20} width="80%" className="mb-3" />
+                                                                <Skeleton height={20} width="60%" className="mb-4" />
+                                                                <Skeleton height={20} width="80%" className="mb-3" />
+                                                                <Skeleton height={20} width="60%" className="mb-4" />
+                                                            </>
+                                                        ) : selectedJob ? (
+                                                            <>
+                                                                {selectedJob.offers && (
+                                                                    <>
+                                                                        <Card.Title>Benefícios</Card.Title>
+                                                                        <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.offers }} />
+                                                                    </>
+                                                                )}
+                                                                {selectedJob.description && (
+                                                                    <>
+                                                                        <Card.Title>Descrição</Card.Title>
+                                                                        <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.description }} />
+                                                                    </>
+                                                                )}
+                                                                {selectedJob.responsibilities && (
+                                                                    <>
+                                                                        <Card.Title>Responsabilidades e atribuições</Card.Title>
+                                                                        <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.responsibilities }} />
+                                                                    </>
+                                                                )}
+                                                                {selectedJob.qualifications && (
+                                                                    <>
+                                                                        <Card.Title>Requisitos e qualificações</Card.Title>
+                                                                        <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.qualifications }} />
+                                                                    </>
+                                                                )}
+                                                                {selectedJob.requiriments && (
+                                                                    <>
+                                                                        <Card.Title>Será um diferencial</Card.Title>
+                                                                        <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.requiriments }} />
+                                                                    </>
+                                                                )}
+                                                                {selectedJob.additionalInfo && (
+                                                                    <>
+                                                                        <Card.Title>Informações adicionais</Card.Title>
+                                                                        <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.additionalInfo }} />
+                                                                    </>
+                                                                )}
+                                                            </>
+                                                        ) : (
+                                                            <Card.Text>Nenhuma informação adicional informada.</Card.Text>
+                                                        )}
+                                                    </Card.Body>
+                                                </Card>
+                                            </>
+                                        ) : (
+                                            <p>Carregando detalhes...</p>
+                                        )}
+                                    </Modal.Body>
+                                    <Modal.Footer>
+                                        <Button variant="secondary" onClick={handleCloseJobModal}>
+                                            Fechar
+                                        </Button>
+                                    </Modal.Footer>
+                                </Modal>
+                            </Row>
+                        ) : (
+                            <p className="text-muted text-center mt-2 mt-md-4">Nenhuma vaga encontrada.</p>
+                        )}
                     </Col>
                 </Row >
             </Container >
-            <ToastContainer />
         </>
     );
 }

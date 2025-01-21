@@ -52,9 +52,26 @@ const CurriculoTemplate = ({ experiencias = [], formacoes = [], informacoes = {}
                             <Card.Title>Histórico de trabalho</Card.Title>
                             {experiencias.length > 0 ? (
                                 <ul>
-                                    {experiencias.map((trabalho, index) => (
-                                        <li key={index}>{trabalho.empresa} - {trabalho.funcao} ({trabalho.mesInicial}/{trabalho.anoInicial} - {trabalho.trabalhoAtualmente ? 'Atualmente' : `${trabalho.mesFinal}/${trabalho.anoFinal}`}) - {trabalho.atividades}</li>
-                                    ))}
+                                    {experiencias
+                                        .filter(
+                                            (trabalho) =>
+                                                trabalho.empresa &&
+                                                trabalho.funcao &&
+                                                trabalho.mesInicial &&
+                                                trabalho.anoInicial &&
+                                                (trabalho.trabalhoAtualmente || (trabalho.mesFinal && trabalho.anoFinal)) &&
+                                                trabalho.atividades
+                                        )
+                                        .map((trabalho, index) => (
+                                            <li key={index}>
+                                                {trabalho.empresa} - {trabalho.funcao} (
+                                                {trabalho.mesInicial}/{trabalho.anoInicial} -{' '}
+                                                {trabalho.trabalhoAtualmente
+                                                    ? 'Atualmente'
+                                                    : `${trabalho.mesFinal}/${trabalho.anoFinal}`}
+                                                ) - {trabalho.atividades}
+                                            </li>
+                                        ))}
                                 </ul>
                             ) : (
                                 <p>Nenhuma informação inserida</p>

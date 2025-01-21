@@ -60,7 +60,7 @@ const Main = () => {
                             {/* Campo de pesquisa de cargos */}
                             <Form.Control
                                 type="text"
-                                placeholder="Pesquisar por cargos..."
+                                placeholder="Pesquisar por oportunidades..."
                                 aria-label="Pesquisar"
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}

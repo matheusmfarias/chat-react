@@ -121,7 +121,7 @@ const DetalhesVaga = () => {
                     <Col lg={6} xxl={5} className="curriculo-container">
                         {loadingCurriculo ? (
                             <>
-                                <Row>
+                                <Row className='p-3'>
                                     <Col md={5} lg={4} xl={3}>
                                         <Skeleton height={150} width={150} className="mb-4" style={{ borderRadius: "50%" }} />
                                     </Col>
@@ -224,11 +224,11 @@ const DetalhesVaga = () => {
                                 {loading ? (
                                     <>
                                         <Skeleton height={20} width="80%" className="mb-3" />
-                                        <Skeleton height={20} width="60%" className="mb-3" />
+                                        <Skeleton height={20} width="60%" className="mb-5" />
                                         <Skeleton height={20} width="40%" className="mb-3" />
-                                        <Skeleton height={20} width="80%" className="mb-3" />
+                                        <Skeleton height={20} width="80%" className="mb-5" />
                                         <Skeleton height={20} width="40%" className="mb-3" />
-                                        <Skeleton height={20} width="60%" className="mb-3" />
+                                        <Skeleton height={20} width="60%" className="mb-5" />
                                         <Skeleton height={20} width="80%" />
                                     </>
                                 ) : job ? (
