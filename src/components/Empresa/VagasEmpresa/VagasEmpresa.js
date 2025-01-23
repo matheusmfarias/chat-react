@@ -1,9 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import api from '../../../services/axiosConfig';
-import axios from 'axios';
-import { Table, Row, Col, Button, InputGroup, Form, Spinner, Pagination, Container, Modal } from 'react-bootstrap';
+import { Row, Col, Button, InputGroup, Form, Container, Modal, Card, Dropdown } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faToggleOn, faToggleOff, faEye, faPlus, faSearch, faTimesCircle, faUserTie, faFilter, faFilterCircleXmark } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faSearch, faTimesCircle, faFilter, faFilterCircleXmark, faChevronRight, faChevronLeft, faLocationDot, faHome, faBuilding, faLaptopHouse, faBriefcase, faMoneyBillWave, faWheelchair, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 import HeaderEmpresa from '../HeaderEmpresa';
 import ModalVagas from './ModalVagas';
 import Swal from 'sweetalert2';
@@ -13,10 +12,12 @@ import './VagasEmpresa.css';
 import DetalhesVagas from './DetalhesVagas';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Select from 'react-select';
+import Skeleton from 'react-loading-skeleton';
 
 const VagasEmpresa = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const [activeTab, setActiveTab] = useState('andamento');
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -30,7 +31,8 @@ const VagasEmpresa = () => {
     const [viewingJob, setViewingJob] = useState(false);
     const [newJob, setNewJob] = useState({
         title: '',
-        location: '',
+        state: '',
+        city: '',
         modality: 'Presencial',
         type: 'Efetivo',
         status: true,
@@ -58,14 +60,16 @@ const VagasEmpresa = () => {
     const [editJobId, setEditJobId] = useState(null);
     const [isRedirectHandled, setIsRedirectHandled] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [totalPages, setTotalPages] = useState(1);
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
+    const [totalJobs, setTotalJobs] = useState(0);
+    const itemsPerPage = 9;
     const [filters, setFilters] = useState({
-        modality: '',
-        type: '',
-        status: '',
+        modality: [],
+        type: [],
         pcd: '',
-        keyword: ''
+        state: '',
+        city: '',
     });
 
     const notify = (message, type) => {
@@ -81,36 +85,142 @@ const VagasEmpresa = () => {
         });
     };
 
-    const handleFilterSearch = useCallback(async () => {
+    const SkeletonCard = () => (
+        <Row className="mt-2">
+            {Array.from({ length: 9 }).map((_, index) => (
+                <Col key={index} className="mb-4 d-flex" md={6} xxl={4}>
+                    <Card className="w-100 border-0 shadow-sm rounded p-2 d-flex flex-column">
+                        <Card.Body>
+                            <Skeleton height={30} width="60%" className="mb-3" />
+                            <Skeleton height={20} width="40%" className="mb-4" />
+                            <Skeleton height={20} width="50%" className="mb-3" />
+                            <Skeleton height={20} width="80%" className="mb-3" />
+                            <Skeleton height={20} width="80%" className="mb-3" />
+                            <Skeleton height={30} width="30%" />
+                        </Card.Body>
+                    </Card>
+                </Col>
+            ))}
+        </Row>
+    );
+
+    const fetchLocations = useCallback(async (stateCode = null) => {
+        try {
+            if (!stateCode) {
+                // Buscar estados
+                const response = await api.get('https://servicodados.ibge.gov.br/api/v1/localidades/estados');
+                setStates(response.data);
+            } else {
+                // Buscar cidades de um estado
+                const response = await api.get(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${stateCode}/municipios`);
+                setCities(response.data);
+            }
+        } catch (error) {
+            console.error('Erro ao buscar locais:', error);
+        }
+    }, []);
+
+    useEffect(() => {
+        document.title = "ACI Empregos | Vagas";
+        fetchLocations();
+    }, [fetchLocations]);
+
+    useEffect(() => {
+        if (selectedStateFilter) {
+            fetchLocations(selectedStateFilter); // Busca as cidades do estado selecionado
+        } else {
+            setCities([]); // Limpa as cidades se nenhum estado estiver selecionado
+        }
+    }, [selectedStateFilter, fetchLocations]);
+
+    const buildFilters = (filters, selectedStateFilter, selectedCityFilter, searchTerm) => {
         const params = new URLSearchParams();
 
-        if (searchTerm) params.append('keyword', searchTerm);
-        if (filters.modality.length > 0) filters.modality.forEach(m => params.append('modality', m));
-        if (filters.type.length > 0) filters.type.forEach(t => params.append('type', t));
-        if (filters.status) params.append('status', filters.status);
+        if (searchTerm.trim()) params.append('keyword', searchTerm);
+
+        if (filters.modality.length > 0) {
+            filters.modality.forEach((modality) => params.append('modality', modality));
+        }
+
+        if (filters.type.length > 0) {
+            filters.type.forEach((type) => params.append('type', type));
+        }
+
         if (filters.pcd) params.append('pcd', filters.pcd);
-        if (selectedStateFilter && selectedCityFilter) {
-            params.append('location', `${selectedCityFilter}, ${selectedStateFilter}`);
-        } else if (selectedStateFilter) {
-            params.append('location', selectedStateFilter);
+        if (selectedStateFilter) params.append('state', selectedStateFilter);
+        if (selectedCityFilter) params.append('city', selectedCityFilter);
+
+        return params;
+    };
+
+    const handleSearchByJob = useCallback(async () => {
+        const params = buildFilters(filters, selectedStateFilter, selectedCityFilter, searchTerm);
+
+        params.append('page', currentPage || 1);
+        params.append('limit', itemsPerPage || 9);
+
+        if (activeTab === 'andamento') {
+            params.append('status', 'true');
+        } else if (activeTab === 'encerrada') {
+            params.append('status', 'false');
         }
 
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
             const response = await api.get(`${process.env.REACT_APP_API_URL}/api/jobs?${params.toString()}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
+                headers: { Authorization: `Bearer ${token}` }
             });
-            setJobs(response.data);
+
+            setJobs(response.data.jobs);
+            setTotalPages(response.data.totalPages);
+            setTotalJobs(response.data.totalJobs);
         } catch (error) {
             console.error('Erro ao buscar vagas:', error);
-            notify('Erro ao buscar vagas. Tente novamente mais tarde.', 'error');
         } finally {
             setLoading(false);
         }
-    }, [searchTerm, filters, selectedCityFilter, selectedStateFilter]);
+    }, [activeTab, searchTerm, selectedStateFilter, selectedCityFilter, filters, currentPage, itemsPerPage]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, selectedStateFilter, selectedCityFilter, filters]);
+
+    useEffect(() => {
+        setLoading(true);
+        const timeoutId = setTimeout(() => {
+            handleSearchByJob();
+        }, 500);
+
+        return () => clearTimeout(timeoutId);
+    }, [searchTerm, handleSearchByJob]);
+
+    const handleResetFilter = () => {
+        setLoading(true);
+        setSelectedStateFilter('');
+        setSelectedCityFilter('');
+        setFilters({ modality: '', type: '', pcd: '' });
+        setJobs([]);
+    };
+
+    const handlePageChange = (direction) => {
+        setLoading(true);
+        if (direction === 'next' && currentPage < totalPages) {
+            setCurrentPage(currentPage + 1);
+        } else if (direction === 'prev' && currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
+
+    const hasFiltersApplied = (filters, selectedStateFilter, selectedCityFilter) => {
+        return (
+            filters.modality.length > 0 ||
+            filters.type.length > 0 ||
+            filters.pcd === "true" ||
+            !!selectedStateFilter ||
+            !!selectedCityFilter
+        );
+    };
 
     useEffect(() => {
         if (location.state?.openEditModal && location.state.jobId && !isRedirectHandled) {
@@ -129,89 +239,6 @@ const VagasEmpresa = () => {
         }
     }, [isRedirectHandled, navigate]);
 
-    useEffect(() => {
-        handleFilterSearch();
-    }, [filters, selectedStateFilter, selectedCityFilter, handleFilterSearch]);
-
-    useEffect(() => {
-        document.title = "ACI Empregos | Vagas";
-        const fetchJobs = async () => {
-            const token = localStorage.getItem('token');
-            if (token) {
-                try {
-                    const response = await api.get(`${process.env.REACT_APP_API_URL}/api/jobs`, {
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    });
-                    setJobs(response.data);
-                } catch (error) {
-                    console.error('Error fetching jobs:', error);
-                    notify('Erro ao buscar vagas. Tente novamente mais tarde.', 'error');
-                } finally {
-                    setLoading(false);
-                }
-            }
-        };
-
-        fetchJobs();
-    }, []);
-
-    useEffect(() => {
-        const fetchStates = async () => {
-            try {
-                const statesResponse = await axios.get('https://servicodados.ibge.gov.br/api/v1/localidades/estados');
-                setStates(statesResponse.data);
-            } catch (error) {
-                console.error('Error fetching states:', error);
-                notify('Erro ao buscar estados.', 'error');
-            }
-        };
-
-        fetchStates();
-    }, []);
-
-    useEffect(() => {
-        if (selectedStateFilter) {
-            const fetchCities = async () => {
-                try {
-                    const citiesResponse = await axios.get(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedStateFilter}/municipios`);
-                    setCities(citiesResponse.data);
-                } catch (error) {
-                    console.error('Error fetching cities:', error);
-                    notify('Erro ao buscar cidades.', 'error');
-                }
-            };
-
-            fetchCities();
-        } else {
-            setCities([]);
-        }
-    }, [selectedStateFilter]);
-
-    useEffect(() => {
-        if (selectedStateModal) {
-            const fetchCities = async () => {
-                try {
-                    const citiesResponse = await axios.get(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedStateModal}/municipios`);
-                    setCities(citiesResponse.data);
-                } catch (error) {
-                    console.error('Error fetching cities:', error);
-                    notify('Erro ao buscar cidades.', 'error');
-                }
-            };
-
-            fetchCities();
-        } else {
-            setCities([]);
-        }
-    }, [selectedStateModal]);
-
-    const openViewJob = (job) => {
-        setSelectedJob(job);
-        setViewingJob(true);
-    };
-
     const closeViewJob = () => {
         setViewingJob(false);
         setSelectedJob(null);
@@ -219,7 +246,8 @@ const VagasEmpresa = () => {
 
     const openModal = (job = null) => {
         if (job) {
-            const [city, state] = job.location.split(', ');
+            const state = job.state;
+            const city = job.city;
             setSelectedStateModal(state);
             setSelectedCityModal(city);
             setNewJob({
@@ -241,7 +269,8 @@ const VagasEmpresa = () => {
         } else {
             setNewJob({
                 title: '',
-                location: '',
+                state: '',
+                city: '',
                 modality: 'Presencial',
                 type: 'Efetivo',
                 status: true,
@@ -284,32 +313,30 @@ const VagasEmpresa = () => {
     const handleJobSubmit = async (jobData) => {
         const token = localStorage.getItem('token');
         if (token) {
-            setLoading(true);
             try {
-                jobData.location = `${selectedCityModal}, ${selectedStateModal}`;
+                jobData.state = `${selectedStateModal}`;
+                jobData.city = `${selectedCityModal}`;
                 if (isEditMode) {
                     await api.put(`${process.env.REACT_APP_API_URL}/api/jobs/${editJobId}`, jobData, {
                         headers: {
                             Authorization: `Bearer ${token}`
                         }
                     });
-                    setJobs(prevJobs => prevJobs.map(job => job._id === editJobId ? jobData : job));
                     notify('Vaga atualizada com sucesso!', 'success');
+                    handleSearchByJob();
                 } else {
-                    const response = await api.post(`${process.env.REACT_APP_API_URL}/api/jobs`, jobData, {
+                    await api.post(`${process.env.REACT_APP_API_URL}/api/jobs`, jobData, {
                         headers: {
                             Authorization: `Bearer ${token}`
                         }
                     });
-                    setJobs(prevJobs => [...prevJobs, response.data]);
                     notify('Vaga adicionada com sucesso!', 'success');
+                    handleSearchByJob();
                 }
                 closeModal();
             } catch (error) {
                 console.error('Error saving job:', error);
                 notify('Erro ao salvar a vaga.', 'error');
-            } finally {
-                setLoading(false);
             }
         }
     };
@@ -359,7 +386,6 @@ const VagasEmpresa = () => {
                 cancelButtonText: 'Cancelar'
             }).then(async (result) => {
                 if (result.isConfirmed) {
-                    setLoading(true);
                     try {
                         const updatedJob = { ...job, status: !job.status };
 
@@ -368,16 +394,11 @@ const VagasEmpresa = () => {
                                 Authorization: `Bearer ${token}`
                             }
                         });
-
-                        setJobs(prevJobs => prevJobs.map(j =>
-                            j._id === job._id ? { ...j, status: updatedJob.status } : j
-                        ));
                         notify(`Vaga ${updatedJob.status ? 'ativada' : 'inativada'} com sucesso!`, 'success');
+                        handleSearchByJob();
                     } catch (error) {
                         console.error('Error toggling status:', error);
                         notify('Erro ao alterar o status.', 'error');
-                    } finally {
-                        setLoading(false);
                     }
                 }
             });
@@ -408,43 +429,6 @@ const VagasEmpresa = () => {
         setCurrentPage(1);
     };
 
-    // Paginação
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentJobs = jobs.slice(indexOfFirstItem, indexOfLastItem);
-
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-    const nextPage = () => {
-        if (currentPage < Math.ceil(jobs.length / itemsPerPage)) {
-            setCurrentPage(currentPage + 1);
-        }
-    };
-
-    const prevPage = () => {
-        if (currentPage > 1) {
-            setCurrentPage(currentPage - 1);
-        }
-    };
-
-    const handleResetFilter = () => {
-        setLoading(true);
-        setSelectedStateFilter('');
-        setSelectedCityFilter('');
-        setFilters({ modality: '', type: '', pcd: '' });
-        setJobs([]);
-    };
-
-    const hasFiltersApplied = (filters, selectedStateFilter, selectedCityFilter) => {
-        return (
-            filters.modality.length > 0 ||
-            filters.type.length > 0 ||
-            filters.pcd === "true" ||
-            !!selectedStateFilter ||
-            !!selectedCityFilter
-        );
-    };
-
     return (
         <>
             <ToastContainer />
@@ -453,7 +437,7 @@ const VagasEmpresa = () => {
                 <DetalhesVagas job={selectedJob} onBack={closeViewJob} />
             ) : (
                 <Container fluid>
-                    <Row className="mt-lg-3 mt-2">
+                    <Row className="mt-3">
                         <h1>Gestão de vagas</h1>
                         <Col lg={2} className='coluna-filtros mt-2'>
                             <Row>
@@ -509,7 +493,6 @@ const VagasEmpresa = () => {
                                     </Form.Group>
                                     <Form.Group className="mb-2">
                                         <h5>Localização</h5>
-                                        <span>Estado</span>
                                         <Select
                                             options={states.map((state) => ({
                                                 value: state.sigla,
@@ -525,12 +508,11 @@ const VagasEmpresa = () => {
                                                 setSelectedStateFilter(selectedOption?.value || '');
                                                 setCities([]);
                                             }}
-                                            placeholder="Selecione"
+                                            placeholder="Estado"
                                             menuPortalTarget={document.body}
                                         />
                                     </Form.Group>
                                     <Form.Group className="mb-2">
-                                        <span>Cidade</span>
                                         <Select
                                             options={cities.map((city) => ({
                                                 value: city.nome,
@@ -545,7 +527,7 @@ const VagasEmpresa = () => {
                                                 setLoading(true);
                                                 setSelectedCityFilter(selectedOption?.value || '')
                                             }}
-                                            placeholder="Selecione"
+                                            placeholder="Cidade"
                                             menuPortalTarget={document.body}
                                         />
                                     </Form.Group>
@@ -567,12 +549,13 @@ const VagasEmpresa = () => {
                         </Col>
                         <Col xs={12} lg={10} className='mt-2'>
                             <Row>
-                                <Col lg={1}>
+                                <Col lg={1} xl={2}>
                                     <Button title="Adicionar vaga" onClick={() => openModal()}>
-                                        <FontAwesomeIcon icon={faPlus} /> Vaga
+                                        <FontAwesomeIcon icon={faPlus} />
+                                        <span className='txt-vaga mx-2'>Vaga</span>
                                     </Button>
                                 </Col>
-                                <Col lg={8}>
+                                <Col lg={6} xl={5}>
                                     <InputGroup className="position-relative">
                                         <Form.Control
                                             type="text"
@@ -599,7 +582,7 @@ const VagasEmpresa = () => {
                                         </Button>
                                     </InputGroup>
                                 </Col>
-                                <Col lg={4} className="d-flex align-items-center">
+                                <Col lg={5} xl={5} className="d-flex align-items-center">
                                     {searchTerm && (
                                         <span className="p-2 mt-2">
                                             A busca "{searchTerm}" retornou {totalJobs} resultado(s).
@@ -690,31 +673,41 @@ const VagasEmpresa = () => {
                                     </div>
                                 )}
                             </div>
+                            <Col>
+                                <div className='tabs-curriculo'>
+                                    <button
+                                        className={activeTab === 'andamento' ? 'active' : ''}
+                                        style={{ width: '100%' }}
+                                        onClick={() => {
+                                            setActiveTab('andamento');
+                                            setCurrentPage(1); // Reiniciar para a primeira página
+                                        }}
+                                    >
+                                        Em andamento
+                                    </button>
+                                    <button
+                                        className={activeTab === 'encerrada' ? 'active' : ''}
+                                        style={{ width: '100%' }}
+                                        onClick={() => {
+                                            setActiveTab('encerrada');
+                                            setCurrentPage(1); // Reiniciar para a primeira página
+                                        }}
+                                    >
+                                        Encerradas
+                                    </button>
+                                </div>
+                            </Col>
                             {/* Modal para os filtros */}
                             <Modal show={showFilterModal} onHide={handleCloseFilterModal} centered>
                                 <Modal.Header closeButton>
                                     <Modal.Title>Filtros</Modal.Title>
                                 </Modal.Header>
                                 <Modal.Body>
-                                    <Row className='mb-4 align-items-center'>
-                                        <h5>Ativa</h5>
-                                        <Col xs={12}>
-                                            <Form.Control
-                                                as="select"
-                                                value={filters.status}
-                                                style={{ width: '100%' }}
-                                                onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                                            >
-                                                <option value="">Selecione</option>
-                                                <option value="true">Sim</option>
-                                                <option value="false">Não</option>
-                                            </Form.Control>
-                                        </Col>
-                                    </Row>
-                                    <Row className="mb-4 align-items-center">
-                                        <h5>Tipo</h5>
-                                        <Col xs={12}>
-                                            <Form.Group>
+                                    {/* Conteúdo dos filtros */}
+                                    <Row>
+                                        <Col>
+                                            <Form.Group className="mb-2">
+                                                <h5>Tipo</h5>
                                                 {['Efetivo', 'Aprendiz', 'Estágio', 'Pessoa Jurídica', 'Trainee', 'Temporário', 'Freelancer', 'Terceiro'].map((type) => (
                                                     <Form.Check
                                                         type="checkbox"
@@ -731,12 +724,8 @@ const VagasEmpresa = () => {
                                                     />
                                                 ))}
                                             </Form.Group>
-                                        </Col>
-                                    </Row>
-                                    <Row className="mb-4 align-items-center">
-                                        <h5>Modalidade</h5>
-                                        <Col xs={12}>
-                                            <Form.Group>
+                                            <Form.Group className="mb-2">
+                                                <h5>Modalidade</h5>
                                                 {['Presencial', 'Híbrido', 'Remoto'].map((modality) => (
                                                     <Form.Check
                                                         type="checkbox"
@@ -753,59 +742,57 @@ const VagasEmpresa = () => {
                                                     />
                                                 ))}
                                             </Form.Group>
-                                        </Col>
-                                    </Row>
-
-                                    <Row className='mb-2 align-items-center'>
-                                        <h5>Localização</h5>
-                                        <span className='text-muted'>Estado</span>
-                                        <Col xs={12} md={10}>
-                                            <Form.Control
-                                                as="select"
-                                                style={{ width: '100%' }}
-                                                value={selectedStateFilter}
-                                                onChange={(e) => setSelectedStateFilter(e.target.value)}
-                                            >
-                                                <option value="">Selecione</option>
-                                                {states.map((state) => (
-                                                    <option key={state.id} value={state.sigla}>
-                                                        {state.nome}
-                                                    </option>
-                                                ))}
-                                            </Form.Control>
-                                        </Col>
-                                    </Row>
-                                    <Row className='mb-4 align-items-center'>
-                                        <span className='text-muted'>Cidade</span>
-                                        <Col xs={12} md={10}>
-                                            <Form.Control
-                                                as="select"
-                                                style={{ width: '100%' }}
-                                                value={selectedCityFilter}
-                                                onChange={(e) => setSelectedCityFilter(e.target.value)}
-                                            >
-                                                <option value="">Selecione</option>
-                                                {cities.map((city) => (
-                                                    <option key={city.id} value={city.nome}>
-                                                        {city.nome}
-                                                    </option>
-                                                ))}
-                                            </Form.Control>
-                                        </Col>
-                                    </Row>
-                                    <Row className='mb-4 align-items-center'>
-                                        <h5>PCD</h5>
-                                        <Col xs={12} md={10}>
-                                            <Form.Control
-                                                as="select"
-                                                style={{ width: '100%' }}
-                                                value={filters.pcd}
-                                                onChange={(e) => setFilters({ ...filters, pcd: e.target.value })}
-                                            >
-                                                <option value="">Selecione</option>
-                                                <option value="true">Sim</option>
-                                                <option value="false">Não</option>
-                                            </Form.Control>
+                                            <Form.Group className="mb-2">
+                                                <h5>Localização</h5>
+                                                <Select
+                                                    options={states.map((state) => ({
+                                                        value: state.sigla,
+                                                        label: state.nome,
+                                                    }))}
+                                                    value={
+                                                        states
+                                                            .map((state) => ({ value: state.sigla, label: state.nome }))
+                                                            .find((option) => option.value === selectedStateFilter) || null
+                                                    }
+                                                    onChange={(selectedOption) => {
+                                                        setLoading(true);
+                                                        setSelectedStateFilter(selectedOption?.value || '');
+                                                        setCities([]);
+                                                    }}
+                                                    placeholder="Estado"
+                                                />
+                                            </Form.Group>
+                                            <Form.Group className="mb-2">
+                                                <Select
+                                                    options={cities.map((city) => ({
+                                                        value: city.nome,
+                                                        label: city.nome,
+                                                    }))}
+                                                    value={
+                                                        cities
+                                                            .map((city) => ({ value: city.nome, label: city.nome }))
+                                                            .find((option) => option.value === selectedCityFilter) || null
+                                                    }
+                                                    onChange={(selectedOption) => {
+                                                        setLoading(true);
+                                                        setSelectedCityFilter(selectedOption?.value || '')
+                                                    }}
+                                                    placeholder="Cidade"
+                                                />
+                                            </Form.Group>
+                                            <Form.Group className="d-flex flex-row justify-content-between">
+                                                <h5>PcD</h5>
+                                                <Form.Check
+                                                    type="switch"
+                                                    id="pcd-toggle"
+                                                    label=""
+                                                    checked={filters.pcd === "true"}
+                                                    onChange={(e) => {
+                                                        setLoading(true);
+                                                        setFilters({ ...filters, pcd: e.target.checked ? "true" : "false" });
+                                                    }}
+                                                />
+                                            </Form.Group>
                                         </Col>
                                     </Row>
                                 </Modal.Body>
@@ -818,73 +805,146 @@ const VagasEmpresa = () => {
                                     </Button>
                                 </Modal.Footer>
                             </Modal>
-                            <Row>
-                                {loading ? (
-                                    <div className="d-flex justify-content-center align-items-center">
-                                        <Spinner animation="border" variant="primary" />
-                                    </div>
-                                ) : jobs.length > 0 ? (
-                                    <>
-                                        <Table striped hover responsive className="table-vagas-empresa shadow-sm mt-2 rounded text-wrap">
-                                            <thead>
-                                                <tr>
-                                                    <th>Cargo</th>
-                                                    <th>Localidade</th>
-                                                    <th>Modelo</th>
-                                                    <th>Tipo</th>
-                                                    <th>Ativa</th>
-                                                    <th>PCD</th>
-                                                    <th>Salário</th>
-                                                    <th>Ações</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {currentJobs.map((job, index) => (
-                                                    <tr key={index}>
-                                                        <td>{job.title}</td>
-                                                        <td>{job.location}</td>
-                                                        <td>{job.modality}</td>
-                                                        <td>{job.type}</td>
-                                                        <td>
-                                                            <span className={`status-indicator ${job.status ? 'active' : 'inactive'}`} />
-                                                            {job.status ? 'Sim' : 'Não'}
-                                                        </td>
-                                                        <td>{job.pcd ? 'Sim' : 'Não'}</td>
-                                                        <td>{job.salary ? job.salary : 'Não informado'}</td>
-                                                        <td>
-                                                            <div className='btn-group'>
-                                                                <FontAwesomeIcon icon={faUserTie} className="icon-btn" onClick={() => viewCandidates(job._id)} title="Candidatos" />
-                                                                <FontAwesomeIcon icon={faEye} className="icon-btn" onClick={() => openViewJob(job)} title="Visualizar detalhes" />
-                                                                <FontAwesomeIcon icon={faEdit} className="icon-btn" onClick={() => openModal(job)} title="Editar" />
-                                                                <FontAwesomeIcon
-                                                                    icon={job.status ? faToggleOn : faToggleOff}
-                                                                    className="icon-btn"
-                                                                    onClick={() => handleToggleStatus(job)}
-                                                                    title={job.status ? 'Desabilitar' : 'Habilitar'}
-                                                                />
+                            {loading ? (
+                                <SkeletonCard />
+                            ) : jobs.length > 0 ? (
+                                <Row className="mt-3">
+                                    {jobs.map((job) => (
+                                        <Col md={6} xxl={4} key={job._id} className="mb-4 d-flex">
+                                            <Card
+                                                key={job._id}
+                                                className={`w-100 border-0 shadow-sm rounded p-2 d-flex flex-column card-hover ${job && !job.status ? 'bg-light text-muted' : ''}`}>
+                                                <Card.Body>
+                                                    {job ? (
+                                                        <>
+                                                            <div className="d-flex flex-row align-items-center justify-content-between">
+                                                                <div className="d-flex flex-row align-items-center" style={{ maxWidth: '85%' }}>
+                                                                    <Card.Title className="mb-0 me-2"
+                                                                        style={{
+                                                                            whiteSpace: 'nowrap',
+                                                                            overflow: 'hidden',
+                                                                            textOverflow: 'ellipsis'
+                                                                        }}>{job.title}</Card.Title>
+                                                                    {job.pcd && (
+                                                                        <FontAwesomeIcon icon={faWheelchair} title="PcD" className="text-primary" />
+                                                                    )}
+                                                                </div>
+                                                                <Dropdown align="end">
+                                                                    <Dropdown.Toggle
+                                                                        className="border-0 p-0 m-0 bg-transparent"
+                                                                        id={`dropdown-${job._id}`}
+                                                                        style={{ cursor: 'pointer', height: '32px' }}
+                                                                    >
+                                                                        <div className='opcoes-vaga d-flex align-items-center justify-content-center'>
+                                                                            <FontAwesomeIcon icon={faEllipsisV} className="text-primary" size='lg' />
+                                                                        </div>
+                                                                    </Dropdown.Toggle>
+                                                                    <Dropdown.Menu>
+                                                                        <Dropdown.Item onClick={() => viewCandidates(job._id)}>Candidatos</Dropdown.Item>
+                                                                        <Dropdown.Item onClick={() => openModal(job)}>Editar</Dropdown.Item>
+                                                                        <Dropdown.Item onClick={() => handleToggleStatus(job)}>
+                                                                            {job && job.status ? 'Desabilitar' : 'Habilitar'}
+                                                                        </Dropdown.Item>
+                                                                    </Dropdown.Menu>
+                                                                </Dropdown>
                                                             </div>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </Table>
-                                        {/* Paginação */}
-                                        {jobs.length > itemsPerPage && (
-                                            <Pagination className='mt-4'>
-                                                <Pagination.Prev onClick={prevPage} disabled={currentPage === 1} />
-                                                {Array.from({ length: Math.ceil(jobs.length / itemsPerPage) }, (_, i) => (
-                                                    <Pagination.Item key={i + 1} active={i + 1 === currentPage} onClick={() => paginate(i + 1)}>
-                                                        {i + 1}
-                                                    </Pagination.Item>
-                                                ))}
-                                                <Pagination.Next onClick={nextPage} disabled={currentPage === Math.ceil(jobs.length / itemsPerPage)} />
-                                            </Pagination>
-                                        )}
-                                    </>
-                                ) : (
-                                    <p className="text-center mt-4">Nenhuma vaga encontrada...</p>
-                                )}
-                            </Row>
+                                                            <Card.Text className="bg-light rounded text-center text-primary p-2 text-truncate mt-3">
+                                                                <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
+                                                                {job.city}, {job.state}
+                                                            </Card.Text>
+                                                            <Row className="mb-2">
+                                                                <Col>
+                                                                    <Card.Text className="bg-light rounded text-center text-primary p-2 text-truncate">
+                                                                        <FontAwesomeIcon
+                                                                            className="me-2"
+                                                                            icon={job.modality === 'Remoto' ? faHome : job.modality === 'Presencial' ? faBuilding : faLaptopHouse}
+                                                                            title="Modelo"
+                                                                        />
+                                                                        {job.modality}
+                                                                    </Card.Text>
+                                                                </Col>
+                                                                <Col>
+                                                                    <Card.Text className="bg-light rounded text-center text-primary p-2 text-truncate">
+                                                                        <FontAwesomeIcon className="me-2" icon={faBriefcase} title="Tipo" />
+                                                                        {job.type}
+                                                                    </Card.Text>
+                                                                </Col>
+                                                            </Row>
+                                                            <Row>
+                                                                <Col>
+                                                                    <Card.Text className="bg-light rounded text-center text-primary p-2 text-truncate">
+                                                                        <FontAwesomeIcon className="me-2" icon={faMoneyBillWave} title="Salário" />
+                                                                        {job.salary ? job.salary : 'A combinar'}
+                                                                    </Card.Text>
+                                                                </Col>
+                                                            </Row>
+                                                            <hr className="my-3 rounded justify-content-center" />
+                                                            <div className="d-flex flex-wrap justify-content-between mt-3">
+                                                                <small className="text-muted text-truncate">
+                                                                    Publicada em: {new Date(job.publicationDate).toLocaleDateString()}
+                                                                </small>
+                                                                {activeTab === 'encerrada' && job && job.closingDate && (
+                                                                    <small className="text-muted text-truncate">
+                                                                        Encerrada em: {new Date(job.closingDate).toLocaleDateString()}
+                                                                    </small>
+                                                                )}
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <Card.Text>Informações da vaga não disponíveis</Card.Text>
+                                                    )}
+                                                </Card.Body>
+                                            </Card>
+                                        </Col>
+                                    ))}
+                                    {/* Paginação */}
+                                    {totalPages > 1 && (
+                                        <div className="d-flex flex-row p-2 justify-content-center" style={{ marginLeft: '6px' }}>
+                                            <Button
+                                                className="btn-sm me-2 mb-2"
+                                                onClick={() => handlePageChange('prev')}
+                                                disabled={currentPage === 1}
+                                                variant="outline-primary"
+                                                aria-label="Página anterior"
+                                            >
+                                                <FontAwesomeIcon icon={faChevronLeft} />
+                                            </Button>
+                                            {currentPage > 1 && (
+                                                <Button
+                                                    className="btn-sm me-2 mb-2"
+                                                    onClick={() => handlePageChange('prev')}
+                                                    variant="outline-primary"
+                                                >
+                                                    {currentPage - 1}
+                                                </Button>
+                                            )}
+                                            <Button className="btn-sm me-2 mb-2" variant="outline-primary" disabled>
+                                                {currentPage}
+                                            </Button>
+                                            {currentPage < totalPages && (
+                                                <Button
+                                                    className="btn-sm me-2 mb-2"
+                                                    onClick={() => handlePageChange('next')}
+                                                    variant="outline-primary"
+                                                >
+                                                    {currentPage + 1}
+                                                </Button>
+                                            )}
+                                            <Button
+                                                className="btn-sm me-2 mb-2"
+                                                onClick={() => handlePageChange('next')}
+                                                disabled={currentPage === totalPages}
+                                                variant="outline-primary"
+                                                aria-label="Próxima página"
+                                            >
+                                                <FontAwesomeIcon icon={faChevronRight} />
+                                            </Button>
+                                        </div>
+                                    )}
+                                </Row>
+                            ) : (
+                                <p className="text-center mt-4">Nenhuma vaga encontrada...</p>
+                            )}
                         </Col>
                     </Row >
                 </Container>
@@ -898,11 +958,13 @@ const VagasEmpresa = () => {
                 isEditMode={isEditMode}
                 states={states}
                 cities={cities}
+                fetchCities={(stateCode) => fetchLocations(stateCode)}
                 setSelectedState={setSelectedStateModal}
                 setSelectedCity={setSelectedCityModal}
                 selectedState={selectedStateModal}
                 selectedCity={selectedCityModal}
             />
+
         </>
     );
 };

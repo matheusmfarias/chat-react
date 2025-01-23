@@ -44,7 +44,7 @@ const BuscarVagas = () => {
     const [showJobModal, setShowJobModal] = useState(false);
 
     const SkeletonCard = () => (
-        <Row className="mt-lg-4 mt-1">
+        <Row className="mt-3">
             {Array.from({ length: 10 }).map((_, index) => (
                 <>
                     <Col lg={5} xxl={4} key={index}>
@@ -286,7 +286,7 @@ const BuscarVagas = () => {
         <>
             <HeaderCandidato />
             <Container fluid>
-                <Row className="mt-lg-3 mt-2">
+                <Row className="mt-3">
                     <h1>Oportunidades</h1>
                     <Col lg={2} className='coluna-filtros mt-2' style={{ position: 'sticky', top: '10px', height: '100%', overflowY: 'hidden' }}>
                         <Row>
@@ -342,7 +342,6 @@ const BuscarVagas = () => {
                                 </Form.Group>
                                 <Form.Group className="mb-2">
                                     <h5>Localização</h5>
-                                    <span>Estado</span>
                                     <Select
                                         options={states.map((state) => ({
                                             value: state.sigla,
@@ -358,12 +357,11 @@ const BuscarVagas = () => {
                                             setSelectedStateFilter(selectedOption?.value || '');
                                             setCities([]);
                                         }}
-                                        placeholder="Selecione"
+                                        placeholder="Estado"
                                         menuPortalTarget={document.body}
                                     />
                                 </Form.Group>
                                 <Form.Group className="mb-2">
-                                    <span>Cidade</span>
                                     <Select
                                         options={cities.map((city) => ({
                                             value: city.nome,
@@ -378,7 +376,7 @@ const BuscarVagas = () => {
                                             setLoading(true);
                                             setSelectedCityFilter(selectedOption?.value || '')
                                         }}
-                                        placeholder="Selecione"
+                                        placeholder="Cidade"
                                         menuPortalTarget={document.body}
                                     />
                                 </Form.Group>
@@ -565,7 +563,6 @@ const BuscarVagas = () => {
                                         </Form.Group>
                                         <Form.Group className="mb-2">
                                             <h5>Localização</h5>
-                                            <span>Estado</span>
                                             <Select
                                                 options={states.map((state) => ({
                                                     value: state.sigla,
@@ -581,11 +578,10 @@ const BuscarVagas = () => {
                                                     setSelectedStateFilter(selectedOption?.value || '');
                                                     setCities([]);
                                                 }}
-                                                placeholder="Selecione"
+                                                placeholder="Estado"
                                             />
                                         </Form.Group>
                                         <Form.Group className="mb-2">
-                                            <span>Cidade</span>
                                             <Select
                                                 options={cities.map((city) => ({
                                                     value: city.nome,
@@ -600,7 +596,7 @@ const BuscarVagas = () => {
                                                     setLoading(true);
                                                     setSelectedCityFilter(selectedOption?.value || '')
                                                 }}
-                                                placeholder="Selecione"
+                                                placeholder="Cidade"
                                             />
                                         </Form.Group>
                                         <Form.Group className="d-flex flex-row justify-content-between">
@@ -631,7 +627,7 @@ const BuscarVagas = () => {
                         {loading ? (
                             <SkeletonCard />
                         ) : jobs.length > 0 ? (
-                            <Row className="mt-lg-4 mt-1">
+                            <Row className="mt-3">
                                 <Col lg={5} xxl={4} style={{ position: 'relative' }}>
                                     {jobs.map(result => (
                                         <Card
@@ -657,7 +653,7 @@ const BuscarVagas = () => {
                                                 </Card.Text>
                                                 <Card.Text className="bg-light rounded text-center text-primary p-2">
                                                     <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
-                                                    {result.location}
+                                                    {result.city}, {result.state}
                                                 </Card.Text>
                                                 <Row className="mb-2 align-items-stretch">
                                                     <Col>
@@ -774,7 +770,7 @@ const BuscarVagas = () => {
                                                             <Row className="mb-2">
                                                                 <Card.Text>
                                                                     <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
-                                                                    {selectedJob.location}
+                                                                    {selectedJob.city}, {selectedJob.state}
                                                                 </Card.Text>
                                                             </Row>
                                                             <Row className="mb-2">
@@ -820,7 +816,7 @@ const BuscarVagas = () => {
                                                         <Skeleton height={20} width="80%" className="mb-3" />
                                                         <Skeleton height={20} width="60%" className="mb-4" />
                                                     </>
-                                                ) : selectedJob ? (
+                                                ) : selectedJob && (
                                                     <>
                                                         {selectedJob.offers && (
                                                             <>
@@ -858,9 +854,16 @@ const BuscarVagas = () => {
                                                                 <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.additionalInfo }} />
                                                             </>
                                                         )}
+
+                                                        {!selectedJob.offers &&
+                                                            !selectedJob.description &&
+                                                            !selectedJob.responsibilities &&
+                                                            !selectedJob.qualifications &&
+                                                            !selectedJob.requiriments &&
+                                                            !selectedJob.additionalInfo && (
+                                                                <Card.Text>Nenhuma informação adicional informada.</Card.Text>
+                                                            )}
                                                     </>
-                                                ) : (
-                                                    <Card.Text>Nenhuma informação adicional informada.</Card.Text>
                                                 )}
                                             </Card.Body>
                                         </Card>
@@ -898,7 +901,7 @@ const BuscarVagas = () => {
                                                                     <Row>
                                                                         <Card.Text>
                                                                             <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
-                                                                            {selectedJob.location}
+                                                                            {selectedJob.city}, {selectedJob.state}
                                                                         </Card.Text>
                                                                     </Row>
                                                                     <Row>
@@ -947,7 +950,7 @@ const BuscarVagas = () => {
                                                                 <Skeleton height={20} width="80%" className="mb-3" />
                                                                 <Skeleton height={20} width="60%" className="mb-4" />
                                                             </>
-                                                        ) : selectedJob ? (
+                                                        ) : selectedJob && (
                                                             <>
                                                                 {selectedJob.offers && (
                                                                     <>
@@ -985,9 +988,16 @@ const BuscarVagas = () => {
                                                                         <Card.Text dangerouslySetInnerHTML={{ __html: selectedJob.additionalInfo }} />
                                                                     </>
                                                                 )}
+
+                                                                {!selectedJob.offers &&
+                                                                    !selectedJob.description &&
+                                                                    !selectedJob.responsibilities &&
+                                                                    !selectedJob.qualifications &&
+                                                                    !selectedJob.requiriments &&
+                                                                    !selectedJob.additionalInfo && (
+                                                                        <Card.Text>Nenhuma informação adicional informada.</Card.Text>
+                                                                    )}
                                                             </>
-                                                        ) : (
-                                                            <Card.Text>Nenhuma informação adicional informada.</Card.Text>
                                                         )}
                                                     </Card.Body>
                                                 </Card>

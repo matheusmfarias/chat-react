@@ -1,69 +1,111 @@
 import React, { useState, useEffect, useCallback } from "react";
 import api from "../../../services/axiosConfig";
 import HeaderEmpresa from "../HeaderEmpresa";
-import { Spinner, Pagination, Row, Col, Card, Button, Form, InputGroup, Container } from "react-bootstrap";
-import { useParams, useNavigate } from "react-router-dom";
+import { Row, Col, Card, Button, Form, InputGroup, Container } from "react-bootstrap";
+import { useParams } from "react-router-dom";
 import './CurriculosEmpresa.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleUser, faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faChevronLeft, faChevronRight, faCircleUser, faSearch, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { createRoot } from "react-dom/client";
 import CurriculoTemplate from "../../Candidato/Curriculo/CurriculoTemplate";
+import Skeleton from "react-loading-skeleton";
 
 const CurriculosEmpresa = () => {
   const { jobId } = useParams();
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [applications, setApplications] = useState([]);
+  const [totalApplications, setTotalApplications] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const itemsPerPage = 9; // Define o número de itens por página
+  const itemsPerPage = 9;
+
+  const SkeletonCard = () => (
+    <Row className="mt-2">
+      {Array.from({ length: 9 }).map((_, index) => (
+        <Col key={index} className="mb-4 d-flex" md={6} xl={4}>
+          <Card className="w-100 border-0 shadow-sm rounded d-flex flex-column">
+            <Card.Body>
+              <Row>
+                <Col md={5} lg={4} xl={2}>
+                  <Skeleton height={80} width={80} className="mb-3" style={{ borderRadius: "50%" }} />
+                </Col>
+                <Col className="mt-md-2">
+                  <Skeleton height={25} width="50%" className="mb-2" />
+                  <Skeleton height={20} width="60%" />
+                </Col>
+              </Row>
+              <Row className="mb-4">
+                <Col>
+                  <Skeleton height={25} width="40%" className="mb-2" />
+                  <Skeleton height={20} width="60%" className="mb-4" />
+                  <Skeleton height={30} width="40%" className="mb-2" />
+                  <Skeleton height={25} width="60%" className="mb-5" />
+                </Col>
+              </Row>
+              <Row>
+                <Skeleton height={20} width="35%" />
+              </Row>
+            </Card.Body>
+          </Card>
+        </Col>
+      ))}
+    </Row>
+  );
 
   useEffect(() => {
     document.title = "ACI Empregos | Candidatos";
-    const fetchCandidates = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem("token");
-        const response = await api.get(`${process.env.REACT_APP_API_URL}/api/jobs/applications/${jobId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-          params: {
-            page: currentPage,
-            limit: itemsPerPage,
-            searchTerm
-          }
-        });
+  });
 
-        setApplications(response.data.candidates || []);
-        setTotalPages(response.data.totalPages || 1);
-      } catch (error) {
-        console.error("Erro ao obter os candidatos:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchCandidates = useCallback(async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await api.get(`${process.env.REACT_APP_API_URL}/api/jobs/applications/${jobId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: {
+          page: currentPage,
+          limit: itemsPerPage,
+          searchTerm,
+        }
+      });
 
-    fetchCandidates();
+      setApplications(response.data.applications); // Atualiza a lista de candidatos
+      setTotalPages(response.data.totalPages); // Atualiza o número total de páginas
+      setTotalApplications(response.data.totalApplications); // Total geral de candidatos
+    } catch (error) {
+      console.error("Erro ao obter os candidatos:", error);
+    } finally {
+      setLoading(false);
+    }
   }, [jobId, currentPage, searchTerm]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    setLoading(true);
+    const timeoutId = setTimeout(() => {
+      fetchCandidates();
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, fetchCandidates]);
+
+  const handlePageChange = (direction) => {
+    setLoading(true);
+    if (direction === 'next' && currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    } else if (direction === 'prev' && currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   const handleClearSearch = () => {
     setSearchTerm("");
     setCurrentPage(1);
   };
-
-  const handlePageChange = useCallback((pageNumber) => setCurrentPage(pageNumber), []);
-
-  const handleNextPage = useCallback(() => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  }, [currentPage, totalPages]);
-
-  const handlePreviousPage = useCallback(() => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  }, [currentPage]);
 
   const viewCurriculum = async (userId) => {
     // Abre a nova janela para renderizar o currículo
@@ -75,17 +117,17 @@ const CurriculosEmpresa = () => {
 
     // Cria o layout básico da nova janela
     newWindow.document.write(`
-      <html>
-        <head>
-          <title>Currículo</title>
-          <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-          <link rel="stylesheet" href="${window.location.origin}/CurriculoTemplate.css">
-        </head>
-        <body>
-          <div id="curriculo-template-root"></div>
-        </body>
-      </html>
-    `);
+        <html>
+          <head>
+            <title>Currículo</title>
+            <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+            <link rel="stylesheet" href="${window.location.origin}/CurriculoTemplate.css">
+          </head>
+          <body>
+            <div id="curriculo-template-root"></div>
+          </body>
+        </html>
+      `);
     newWindow.document.close();
 
     // Carregar os dados do candidato e renderizar o currículo
@@ -141,154 +183,186 @@ const CurriculosEmpresa = () => {
   return (
     <>
       <HeaderEmpresa />
-      <Container fluid style={{ backgroundColor: '#f9f9f9f9' }}>
-        <Row className="m-md-2 mt-2">
-          <Col md={2}>
-            <Button variant="primary" className="mb-3" onClick={() => navigate('/vagas-empresa')}>
-              Voltar para vagas
-            </Button>
-            <h1>Recrutamento</h1>
-          </Col>
-        </Row>
-        <Row className="m-md-2 mt-2">
-          <Col xs={12} md={12} className='mt-2'>
-            <Row className='busca-coluna-vagas align-items-center'>
-              <InputGroup style={{ maxWidth: '800px' }}>
-                <Form.Control
-                  type="text"
-                  className='input-buscar-vagas shadow border-primary'
-                  placeholder="Pesquisar por candidato..."
-                  aria-label="Pesquisar"
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                />
-                <Button className="btn-buscar-vagas" variant="outline-primary">
-                  <FontAwesomeIcon icon={faSearch} />
-                </Button>
-              </InputGroup>
-              <Col md={2}>
-                <Button
-                  className="btn-limpar-busca"
-                  variant="outline-secondary"
-                  onClick={() => handleClearSearch()}
-                  title="Limpar busca"
-                >
-                  Limpar busca
-                </Button>
+      <Container fluid>
+        <Row className="mt-3">
+          <h1>Recrutamento</h1>
+          <Col xs={12} className='mt-2'>
+            <Row>
+              <Col xs={12} lg={8}>
+                <InputGroup>
+                  <Form.Control
+                    type="text"
+                    className='border-primary'
+                    placeholder="Pesquisar por nome, experiências, habilidades..."
+                    aria-label="Pesquisar"
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                  />
+                  {searchTerm && (
+                    <FontAwesomeIcon
+                      icon={faTimesCircle}
+                      className="icon-remove-tag position-absolute"
+                      onClick={() => handleClearSearch()}
+                      style={{
+                        right: '110px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                      }}
+                    />
+                  )}
+                  <Button className="btn-buscar-vagas" variant="outline-primary">
+                    <FontAwesomeIcon icon={faSearch} />
+                  </Button>
+                </InputGroup>
+              </Col>
+              <Col lg={4} className="d-flex align-items-center">
+                {searchTerm && (
+                  <span className="p-2 mt-2">
+                    A busca "{searchTerm}" retornou {totalApplications} resultado(s).
+                  </span>
+                )}
               </Col>
             </Row>
-            <Row className="mt-4">
-              {loading ? (
-                <div className="d-flex justify-content-center align-items-center">
-                  <Spinner animation='border' variant='primary' />
-                </div>
-              ) : applications.length === 0 ? (
-                <p className="text-center">Nenhum candidato encontrado para esta vaga.</p>
-              ) : (
-                applications.map((application) => {
-                  const user = application.user || {};
-                  const experiences = user.experiences || [];
-                  const formacao = user.formacao || [];
+            {loading ? (
+              <SkeletonCard />
+            ) : applications.length > 0 ? (
+              <>
+                <Row className="mt-3">
+                  {applications.map((application) => {
+                    const user = application.user || {};
+                    const experiences = user.experiences || [];
+                    const formacao = user.formacao || [];
 
-                  return (
-                    <Col key={application._id} md={6} lg={4} className="mb-4 d-flex">
-                      <Card className="w-100 shadow-sm rounded p-3 d-flex flex-column candidate-card">
-                        <div className="d-flex align-items-center mb-3">
-                          {user.profilePicture ? (
-                            <img
-                              src={`${process.env.REACT_APP_API_URL}${user.profilePicture}`}
-                              width={80}
-                              height={80}
-                              className="rounded-circle"
-                              alt="Foto de perfil"
-                              style={{ objectFit: "cover", border: "2px solid #ddd" }}
-                            />
-                          ) : (
-                            <FontAwesomeIcon
-                              icon={faCircleUser}
-                              className="rounded-circle"
-                              alt="Sem foto"
-                              style={{ width: "80px", height: "80px", objectFit: "cover", border: "2px solid #ddd" }}
-                            />
-                          )}
-                          <div className="m-2">
-                            <h5 className="txt-nome-candidato mb-1">{user.nome} {user.sobrenome}</h5>
-                            <p className="mb-0 text-muted">{user.email}</p>
+                    return (
+                      <Col md={6} xxl={4} key={application._id} className="mb-4 d-flex">
+                        <Card
+                          key={application._id}
+                          className="w-100 border-0 shadow-sm rounded p-3 d-flex flex-column card-hover">
+                          <div className="d-flex align-items-center mb-3">
+                            {user.profilePicture ? (
+                              <img
+                                src={`${process.env.REACT_APP_API_URL}${user.profilePicture}`}
+                                width={80}
+                                height={80}
+                                className="rounded-circle"
+                                alt="Foto de perfil"
+                                style={{ objectFit: "cover", border: "2px solid #ddd" }}
+                              />
+                            ) : (
+                              <FontAwesomeIcon
+                                icon={faCircleUser}
+                                className="rounded-circle"
+                                alt="Sem foto"
+                                style={{ width: "80px", height: "80px", objectFit: "cover", border: "2px solid #ddd" }}
+                              />
+                            )}
+                            <div className="m-2">
+                              <h5 className="txt-nome-candidato mb-1">{user.nome} {user.sobrenome}</h5>
+                              <p className="mb-0 text-muted">{user.email}</p>
+                            </div>
                           </div>
-                        </div>
+                          <div className="mb-2">
+                            <h6>Experiências Profissionais:</h6>
+                            {experiences.length > 0 ? (
+                              <ul className="list-unstyled">
+                                {experiences.map((experience, index) => (
+                                  <p key={`${experience.empresa}-${index}`}>
+                                    {experience.empresa} - {experience.funcao}
+                                  </p>
+                                ))}
+                              </ul>
+                            ) : (
+                              <p className="text-muted">Nenhuma experiência profissional informada.</p>
+                            )}
+                          </div>
+                          <div className="mb-2">
+                            <h6>Experiência Acadêmica:</h6>
+                            {formacao.length > 0 ? (
+                              <ul className="list-unstyled">
+                                {formacao.map((formacaoItem, index) => (
+                                  <p key={`${formacaoItem.escolaridade}-${index}`}>
+                                    {formacaoItem.escolaridade}
+                                    {['Superior', 'Técnico'].includes(formacaoItem.escolaridade) && formacaoItem.curso ? (
+                                      null
+                                    ) : <> - {formacaoItem.curso}</>}
+                                    {" - "}{formacaoItem.situacao}
+                                  </p>
+                                ))}
+                              </ul>
+                            ) : (
+                              <p className="text-muted">Nenhuma experiência acadêmica informada.</p>
+                            )}
+                          </div>
+                          <Button
+                            variant="primary"
+                            onClick={() => viewCurriculum(user._id)}
+                            className="mt-auto"
+                            disabled={!user._id}
+                          >
+                            Ver Currículo
+                          </Button>
+                          <div className="d-flex flex-wrap justify-content-between mt-2">
+                            <span className="text-muted text-truncate">
+                              Inscrito em: {new Date(application.submissionDate).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </Card>
+                      </Col>
+                    );
+                  })}
+                </Row>
 
-                        <div className="mb-3">
-                          <h6>Experiências Profissionais:</h6>
-                          {experiences.length > 0 ? (
-                            <ul className="list-unstyled">
-                              {experiences.map((experience, index) => (
-                                <li key={`${experience.empresa}-${index}`}>
-                                  {experience.empresa} - {experience.funcao}
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p className="text-muted">Nenhuma experiência profissional cadastrada.</p>
-                          )}
-                        </div>
-
-                        <div className="mb-3">
-                          <h6>Experiência Acadêmica:</h6>
-                          {formacao.length > 0 ? (
-                            <ul className="list-unstyled">
-                              {formacao.map((formacaoItem, index) => (
-                                <li key={`${formacaoItem.escolaridade}-${index}`}>
-                                  {formacaoItem.escolaridade}
-                                  {['Superior', 'Técnico'].includes(formacaoItem.escolaridade) && formacaoItem.curso ? (
-                                    null
-                                  ) : <> - {formacaoItem.curso}</>}
-                                  {" - "}{formacaoItem.situacao}
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p className="text-muted">Nenhuma experiência acadêmica cadastrada.</p>
-                          )}
-                        </div>
-                        <Button
-                          variant="primary"
-                          onClick={() => viewCurriculum(user._id)}
-                          className="mt-auto"
-                          style={{ padding: "8px 12px" }}
-                          disabled={!user._id}
-                        >
-                          Ver Currículo
-                        </Button>
-                      </Card>
-                    </Col>
-                  );
-                })
-              )}
-            </Row>
-
-            {/* Paginação com botões de próximo e anterior */}
-            {totalPages > 1 && (
-              <div className="d-flex justify-content-center mt-2">
-                <Pagination>
-                  <Pagination.Prev onClick={handlePreviousPage} disabled={currentPage === 1}>
-                  </Pagination.Prev>
-                  {[...Array(totalPages).keys()].map((pageNumber) => (
-                    <Pagination.Item
-                      key={pageNumber + 1}
-                      active={currentPage === pageNumber + 1}
-                      onClick={() => handlePageChange(pageNumber + 1)}
+                {/* Paginação */}
+                {totalPages > 1 && (
+                  <div className="d-flex flex-row justify-content-center p-2">
+                    <Button
+                      className="btn-sm me-2 mb-2"
+                      onClick={() => handlePageChange('prev')}
+                      disabled={currentPage === 1}
+                      variant="outline-primary"
+                      aria-label="Página anterior"
                     >
-                      {pageNumber + 1}
-                    </Pagination.Item>
-                  ))}
-                  <Pagination.Next onClick={handleNextPage} disabled={currentPage === totalPages}>
-                  </Pagination.Next>
-                </Pagination>
-              </div>
+                      <FontAwesomeIcon icon={faChevronLeft} />
+                    </Button>
+                    {currentPage > 1 && (
+                      <Button
+                        className="btn-sm me-2 mb-2"
+                        onClick={() => handlePageChange('prev')}
+                        variant="outline-primary"
+                      >
+                        {currentPage - 1}
+                      </Button>
+                    )}
+                    <Button className="btn-sm me-2 mb-2" variant="outline-primary" disabled>
+                      {currentPage}
+                    </Button>
+                    {currentPage < totalPages && (
+                      <Button
+                        className="btn-sm me-2 mb-2"
+                        onClick={() => handlePageChange('next')}
+                        variant="outline-primary"
+                      >
+                        {currentPage + 1}
+                      </Button>
+                    )}
+                    <Button
+                      className="btn-sm me-2 mb-2"
+                      onClick={() => handlePageChange('next')}
+                      disabled={currentPage === totalPages}
+                      variant="outline-primary"
+                      aria-label="Próxima página"
+                    >
+                      <FontAwesomeIcon icon={faChevronRight} />
+                    </Button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="text-center text-muted mt-4">Nenhuma inscrição encontrada.</p>
             )}
           </Col>
-        </Row>
-      </Container>
+        </Row >
+      </Container >
     </>
   );
 };

@@ -38,12 +38,12 @@ const InscricoesCandidato = () => {
     const [showApplicationModal, setShowApplicationModal] = useState(false);
 
     const SkeletonCard = () => (
-        <Row className="mt-4">
+        <Row className="mt-2">
             {Array.from({ length: 9 }).map((_, index) => (
                 <Col key={index} className="mb-4 d-flex" md={6} xl={4}>
                     <Card className="w-100 border-0 shadow-sm rounded p-2 d-flex flex-column">
                         <Card.Body>
-                            <Skeleton height={30} width="60%" className="mb-3" />
+                            <Skeleton height={20} width="60%" className="mb-3" />
                             <Skeleton height={20} width="40%" className="mb-4" />
                             <Skeleton height={20} width="50%" className="mb-3" />
                             <Skeleton height={20} width="80%" className="mb-3" />
@@ -184,7 +184,6 @@ const InscricoesCandidato = () => {
 
     const handleCardClick = async (application) => {
         setShowApplicationModal(true);
-
         setLoadingDetails(true);
         try {
             const token = localStorage.getItem('token');
@@ -206,7 +205,7 @@ const InscricoesCandidato = () => {
         <>
             <HeaderCandidato />
             <Container fluid>
-                <Row className="mt-lg-3 mt-2">
+                <Row className="mt-3">
                     <h1>Minhas Inscrições</h1>
                     <Col lg={2} className='coluna-filtros mt-2' style={{ position: 'sticky', top: '10px', height: '100%', overflowY: 'hidden' }}>
                         <Row>
@@ -262,7 +261,6 @@ const InscricoesCandidato = () => {
                                 </Form.Group>
                                 <Form.Group className="mb-2">
                                     <h5>Localização</h5>
-                                    <span>Estado</span>
                                     <Select
                                         options={states.map((state) => ({
                                             value: state.sigla,
@@ -278,12 +276,11 @@ const InscricoesCandidato = () => {
                                             setSelectedStateFilter(selectedOption?.value || '');
                                             setCities([]);
                                         }}
-                                        placeholder="Selecione"
+                                        placeholder="Estado"
                                         menuPortalTarget={document.body}
                                     />
                                 </Form.Group>
                                 <Form.Group className="mb-2">
-                                    <span>Cidade</span>
                                     <Select
                                         options={cities.map((city) => ({
                                             value: city.nome,
@@ -298,7 +295,7 @@ const InscricoesCandidato = () => {
                                             setLoading(true);
                                             setSelectedCityFilter(selectedOption?.value || '')
                                         }}
-                                        placeholder="Selecione"
+                                        placeholder="Cidade"
                                         menuPortalTarget={document.body}
                                     />
                                 </Form.Group>
@@ -438,7 +435,7 @@ const InscricoesCandidato = () => {
                                 </div>
                             ) : null}
                         </div>
-                        <Col md={12} lg={8} className="mt-1">
+                        <Col>
                             <div className='tabs-curriculo'>
                                 <button
                                     className={activeTab === 'andamento' ? 'active' : ''}
@@ -509,7 +506,6 @@ const InscricoesCandidato = () => {
                                         </Form.Group>
                                         <Form.Group className="mb-2">
                                             <h5>Localização</h5>
-                                            <span>Estado</span>
                                             <Select
                                                 options={states.map((state) => ({
                                                     value: state.sigla,
@@ -525,11 +521,10 @@ const InscricoesCandidato = () => {
                                                     setSelectedStateFilter(selectedOption?.value || '');
                                                     setCities([]);
                                                 }}
-                                                placeholder="Selecione"
+                                                placeholder="Estado"
                                             />
                                         </Form.Group>
                                         <Form.Group className="mb-2">
-                                            <span>Cidade</span>
                                             <Select
                                                 options={cities.map((city) => ({
                                                     value: city.nome,
@@ -544,7 +539,7 @@ const InscricoesCandidato = () => {
                                                     setLoading(true);
                                                     setSelectedCityFilter(selectedOption?.value || '')
                                                 }}
-                                                placeholder="Selecione"
+                                                placeholder="Cidade"
                                             />
                                         </Form.Group>
                                         <Form.Group className="d-flex flex-row justify-content-between">
@@ -576,13 +571,13 @@ const InscricoesCandidato = () => {
                             <SkeletonCard />
                         ) : applications.length > 0 ? (
                             <>
-                                <Row className="mt-4">
+                                <Row className="mt-2">
                                     {applications.map((application) => (
                                         <>
                                             <Col md={6} xxl={4} key={application._id} className="mb-4 d-flex">
                                                 <Card
                                                     key={application._id}
-                                                    className={`w-100 border-0 shadow-sm rounded p-2 d-flex flex-column candidate-card ${application.job && !application.job.status ? 'bg-light text-muted' : ''}`}
+                                                    className={`w-100 border-0 shadow-sm rounded p-2 d-flex flex-column candidate-card card-hover ${application.job && !application.job.status ? 'bg-light text-muted' : ''}`}
                                                     onClick={() => handleCardClick(application)}
                                                     style={{ cursor: 'pointer' }}>
                                                     <Card.Body>
@@ -599,7 +594,7 @@ const InscricoesCandidato = () => {
                                                                 </Card.Text>
                                                                 <Card.Text className="bg-light rounded text-center text-primary p-2 text-truncate">
                                                                     <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
-                                                                    {application.job.location}
+                                                                    {application.job.city}, {application.job.state}
                                                                 </Card.Text>
                                                                 <Row className="mb-2">
                                                                     <Col>
@@ -743,7 +738,7 @@ const InscricoesCandidato = () => {
                                             <Row>
                                                 <Card.Text>
                                                     <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
-                                                    {selectedApplication.job.location}
+                                                    {selectedApplication.job.city}, {selectedApplication.job.state}
                                                 </Card.Text>
                                             </Row>
                                             <Row>

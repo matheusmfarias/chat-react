@@ -520,7 +520,7 @@ const AdminDashboard = () => {
                             {jobs.map((job) => (
                                 <tr key={job._id}>
                                     <td>{job.title}</td>
-                                    <td>{job.location}</td>
+                                    <td>{job.state}, {job.city}</td>
                                     <td>
                                         <Button variant="primary" onClick={() => fetchCandidatesByJob(job._id)}>
                                             Candidatos

@@ -27,7 +27,7 @@ const DetalhesVagas = ({ job, onBack }) => {
                 ) : (
                     <h4 className="text-center text-secondary mb-3">Empresa confidencial</h4>
                 )}
-                <h5 className="text-center text-secondary">{job.location} • {job.modality}</h5>
+                <h5 className="text-center text-secondary">{job.city}. {job.state} • {job.modality}</h5>
                 <h4 className='mt-md-0 mt-2'>Dados da vaga</h4>
                 <Card.Text className="text-secondary">
                     <FontAwesomeIcon icon={faCalendarDays} title="Data de publicação" /> {formatDate(job.publicationDate)}

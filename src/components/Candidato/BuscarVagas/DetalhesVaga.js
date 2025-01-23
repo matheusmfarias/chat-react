@@ -116,7 +116,7 @@ const DetalhesVaga = () => {
         <>
             <HeaderCandidato />
             <Container fluid>
-                <Row className="mt-lg-3 mt-2">
+                <Row className="mt-3">
                     <h1>Revisão do currículo</h1>
                     <Col lg={6} xxl={5} className="curriculo-container">
                         {loadingCurriculo ? (
@@ -180,7 +180,7 @@ const DetalhesVaga = () => {
                                             <Row className="mt-2">
                                                 <Card.Text>
                                                     <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
-                                                    {job.location}
+                                                    {job.city}, {job.state}
                                                 </Card.Text>
                                             </Row>
                                             <Row>
@@ -231,7 +231,7 @@ const DetalhesVaga = () => {
                                         <Skeleton height={20} width="60%" className="mb-5" />
                                         <Skeleton height={20} width="80%" />
                                     </>
-                                ) : job ? (
+                                ) : job && (
                                     <>
                                         {job.offers && (
                                             <>
@@ -269,9 +269,16 @@ const DetalhesVaga = () => {
                                                 <Card.Text dangerouslySetInnerHTML={{ __html: job.additionalInfo }} />
                                             </>
                                         )}
+
+                                        {!job.offers &&
+                                            !job.description &&
+                                            !job.responsibilities &&
+                                            !job.qualifications &&
+                                            !job.requiriments &&
+                                            !job.additionalInfo && (
+                                                <Card.Text>Nenhuma informação adicional informada.</Card.Text>
+                                            )}
                                     </>
-                                ) : (
-                                    <Card.Text>Nenhuma informação adicional informada.</Card.Text>
                                 )}
                             </Card.Body>
                         </Card>

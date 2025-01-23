@@ -12,6 +12,7 @@ const ModalVagas = ({
     isEditMode,
     states,
     cities,
+    fetchCities,
     setSelectedState,
     setSelectedCity,
     selectedState,
@@ -105,10 +106,10 @@ const ModalVagas = ({
             </Modal.Header>
             <Modal.Body style={{ maxHeight: '90vh', overflowY: 'auto' }}>
                 <Form onSubmit={handleSubmit}>
-                    <Row>
-                        <Col md={6}>
-                            <Form.Group className="form-group-custom">
-                                <Form.Label className='fb'>Cargo *</Form.Label>
+                    <Row className='mb-3'>
+                        <Col xs={6}>
+                            <Form.Group>
+                                <Form.Label>Cargo *</Form.Label>
                                 <Form.Control
                                     type="text"
                                     name="title"
@@ -118,8 +119,8 @@ const ModalVagas = ({
                                 />
                             </Form.Group>
                         </Col>
-                        <Col md={6}>
-                            <Form.Group className="form-group-custom">
+                        <Col xs={6}>
+                            <Form.Group>
                                 <Form.Label>Modelo *</Form.Label>
                                 <Select
                                     options={[
@@ -135,35 +136,39 @@ const ModalVagas = ({
                             </Form.Group>
                         </Col>
                     </Row>
-                    <Row>
-                        <Col md={6}>
-                            <Form.Group className="form-group-custom">
-                                <Form.Label>Localização *</Form.Label>
+                    <Row className='mb-3'>
+                        <Form.Label>Localização *</Form.Label>
+                        <Col xs={6}>
+                            <Form.Group>
                                 <Select
                                     options={states.map(state => ({ value: state.sigla, label: state.nome }))}
                                     value={selectedState ? { value: selectedState, label: selectedState } : null}
-                                    onChange={(selectedOption) => setSelectedState(selectedOption.value)}
-                                    placeholder="Selecione..."
+                                    onChange={(selectedOption) => {
+                                        setSelectedState(selectedOption.value);
+                                        setSelectedCity(null);
+                                        fetchCities(selectedOption.value);
+                                    }}
+                                    placeholder="Estado"
                                     required
                                 />
                             </Form.Group>
                         </Col>
-                        <Col md={6}>
-                            <Form.Group className="form-group-custom">
-                                <Form.Label>&nbsp;</Form.Label>
+                        <Col xs={6}>
+                            <Form.Group>
                                 <Select
                                     options={cities.map(city => ({ value: city.nome, label: city.nome }))}
                                     value={selectedCity ? { value: selectedCity, label: selectedCity } : null}
                                     onChange={(selectedOption) => setSelectedCity(selectedOption.value)}
-                                    placeholder="Selecione..."
+                                    placeholder="Cidade"
+
                                     required
                                 />
                             </Form.Group>
                         </Col>
                     </Row>
-                    <Row>
-                        <Col md={6}>
-                            <Form.Group className="form-group-custom">
+                    <Row className='mb-3'>
+                        <Col xs={6}>
+                            <Form.Group>
                                 <Form.Label>Tipo *</Form.Label>
                                 <Select
                                     options={[
@@ -183,17 +188,15 @@ const ModalVagas = ({
                                 />
                             </Form.Group>
                         </Col>
-                        <Col md={6}>
-                            <Form.Group className="form-group-custom">
+                        <Col xs={6}>
+                            <Form.Group>
                                 <div className="d-flex justify-content-between">
                                     <Form.Label>Salário</Form.Label>
                                     <Form.Check
                                         type="switch"
                                         id="salary-active-switch"
-                                        label=""
                                         checked={newJob.salaryActive}
                                         onChange={() => handleToggleChange('salaryActive')}
-                                        style={{ marginLeft: 'auto' }}
                                     />
                                 </div>
                                 <Form.Control
@@ -207,202 +210,162 @@ const ModalVagas = ({
                             </Form.Group>
                         </Col>
                     </Row>
-                    <Row>
-                        <Col md={12}>
-                            <Form.Group className="form-group-custom">
-                                <div className="d-flex justify-content-between">
-                                    <Form.Label>Benefícios</Form.Label>
-                                    <Form.Check
-                                        type="switch"
-                                        id="offers-switch"
-                                        label=""
-                                        checked={newJob.offersActive}
-                                        onChange={() => handleToggleChange('offersActive')}
-                                        style={{ marginLeft: 'auto' }}
+                    <Row className='mb-3'>
+                        <Form.Group className='mb-2'>
+                            <div className="d-flex justify-content-between">
+                                <Form.Label>Benefícios</Form.Label>
+                                <Form.Check
+                                    type="switch"
+                                    id="offers-switch"
+                                    label=""
+                                    checked={newJob.offersActive}
+                                    onChange={() => handleToggleChange('offersActive')}
+                                />
+                            </div>
+                            {newJob.offersActive && (
+                                <div className="quill-transition">
+                                    <ReactQuill
+                                        value={newJob.offers}
+                                        onChange={(value) => handleQuillChange('offers', value)}
                                     />
                                 </div>
-                                {newJob.offersActive && (
-                                    <div className="quill-transition">
-                                        <ReactQuill
-                                            value={newJob.offers}
-                                            onChange={(value) => handleQuillChange('offers', value)}
-                                        />
-                                    </div>
-                                )}
-                            </Form.Group>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col md={12}>
-                            <Form.Group className="form-group-custom">
-                                <div className="d-flex justify-content-between">
-                                    <Form.Label>Descrição Completa</Form.Label>
-                                    <Form.Check
-                                        type="switch"
-                                        id="description-switch"
-                                        label=""
-                                        checked={newJob.descriptionActive}
-                                        onChange={() => handleToggleChange('descriptionActive')}
-                                        style={{ marginLeft: 'auto' }}
+                            )}
+                        </Form.Group>
+                        <Form.Group className='mb-2'>
+                            <div className="d-flex justify-content-between">
+                                <Form.Label>Descrição completa</Form.Label>
+                                <Form.Check
+                                    type="switch"
+                                    id="description-switch"
+                                    label=""
+                                    checked={newJob.descriptionActive}
+                                    onChange={() => handleToggleChange('descriptionActive')}
+                                />
+                            </div>
+                            {newJob.descriptionActive && (
+                                <div className="quill-transition">
+                                    <ReactQuill
+                                        value={newJob.description}
+                                        onChange={(value) => handleQuillChange('description', value)}
                                     />
                                 </div>
-                                {newJob.descriptionActive && (
-                                    <div className="quill-transition">
-                                        <ReactQuill
-                                            value={newJob.description}
-                                            onChange={(value) => handleQuillChange('description', value)}
-                                        />
-                                    </div>
-                                )}
-                            </Form.Group>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col md={12}>
-                            <Form.Group className="form-group-custom">
-                                <div className="d-flex justify-content-between">
-                                    <Form.Label>Responsabilidades e Atribuições</Form.Label>
-                                    <Form.Check
-                                        type="switch"
-                                        id="responsibilities-switch"
-                                        label=""
-                                        checked={newJob.responsibilitiesActive}
-                                        onChange={() => handleToggleChange('responsibilitiesActive')}
-                                        style={{ marginLeft: 'auto' }}
+                            )}
+                        </Form.Group>
+                        <Form.Group className='mb-2'>
+                            <div className="d-flex justify-content-between">
+                                <Form.Label>Responsabilidades e atribuições</Form.Label>
+                                <Form.Check
+                                    type="switch"
+                                    id="responsibilities-switch"
+                                    label=""
+                                    checked={newJob.responsibilitiesActive}
+                                    onChange={() => handleToggleChange('responsibilitiesActive')}
+                                />
+                            </div>
+                            {newJob.responsibilitiesActive && (
+                                <div className="quill-transition">
+                                    <ReactQuill
+                                        value={newJob.responsibilities}
+                                        onChange={(value) => handleQuillChange('responsibilities', value)}
                                     />
                                 </div>
-                                {newJob.responsibilitiesActive && (
-                                    <div className="quill-transition">
-                                        <ReactQuill
-                                            value={newJob.responsibilities}
-                                            onChange={(value) => handleQuillChange('responsibilities', value)}
-                                        />
-                                    </div>
-                                )}
-                            </Form.Group>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col md={12}>
-                            <Form.Group className="form-group-custom">
-                                <div className="d-flex justify-content-between">
-                                    <Form.Label>Requisitos e Qualificações</Form.Label>
-                                    <Form.Check
-                                        type="switch"
-                                        id="qualifications-switch"
-                                        label=""
-                                        checked={newJob.qualificationsActive}
-                                        onChange={() => handleToggleChange('qualificationsActive')}
-                                        style={{ marginLeft: 'auto' }}
+                            )}
+                        </Form.Group>
+                        <Form.Group className='mb-2'>
+                            <div className="d-flex justify-content-between">
+                                <Form.Label>Requisitos e qualificações</Form.Label>
+                                <Form.Check
+                                    type="switch"
+                                    id="qualifications-switch"
+                                    label=""
+                                    checked={newJob.qualificationsActive}
+                                    onChange={() => handleToggleChange('qualificationsActive')}
+                                />
+                            </div>
+                            {newJob.qualificationsActive && (
+                                <div className="quill-transition">
+                                    <ReactQuill
+                                        value={newJob.qualifications}
+                                        onChange={(value) => handleQuillChange('qualifications', value)}
                                     />
                                 </div>
-                                {newJob.qualificationsActive && (
-                                    <div className="quill-transition">
-                                        <ReactQuill
-                                            value={newJob.qualifications}
-                                            onChange={(value) => handleQuillChange('qualifications', value)}
-                                        />
-                                    </div>
-                                )}
-                            </Form.Group>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col md={12}>
-                            <Form.Group className="form-group-custom">
-                                <div className="d-flex justify-content-between">
-                                    <Form.Label>Será um diferencial</Form.Label>
-                                    <Form.Check
-                                        type="switch"
-                                        id="requirements-switch"
-                                        label=""
-                                        checked={newJob.requirementsActive}
-                                        onChange={() => handleToggleChange('requirementsActive')}
-                                        style={{ marginLeft: 'auto' }}
+                            )}
+                        </Form.Group>
+                        <Form.Group className='mb-2'>
+                            <div className="d-flex justify-content-between">
+                                <Form.Label>Será um diferencial</Form.Label>
+                                <Form.Check
+                                    type="switch"
+                                    id="requirements-switch"
+                                    label=""
+                                    checked={newJob.requirementsActive}
+                                    onChange={() => handleToggleChange('requirementsActive')}
+                                />
+                            </div>
+                            {newJob.requirementsActive && (
+                                <div className="quill-transition">
+                                    <ReactQuill
+                                        value={newJob.requirements}
+                                        onChange={(value) => handleQuillChange('requirements', value)}
                                     />
                                 </div>
-                                {newJob.requirementsActive && (
-                                    <div className="quill-transition">
-                                        <ReactQuill
-                                            value={newJob.requirements}
-                                            onChange={(value) => handleQuillChange('requirements', value)}
-                                        />
-                                    </div>
-                                )}
-                            </Form.Group>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col md={12}>
-                            <Form.Group className="form-group-custom">
-                                <div className="d-flex justify-content-between">
-                                    <Form.Label>Informações Adicionais</Form.Label>
-                                    <Form.Check
-                                        type="switch"
-                                        id="additional-info-switch"
-                                        label=""
-                                        checked={newJob.additionalInfoActive}
-                                        onChange={() => handleToggleChange('additionalInfoActive')}
-                                        style={{ marginLeft: 'auto' }}
+                            )}
+                        </Form.Group>
+                        <Form.Group className='mb-2'>
+                            <div className="d-flex justify-content-between">
+                                <Form.Label>Informações adicionais</Form.Label>
+                                <Form.Check
+                                    type="switch"
+                                    id="additional-info-switch"
+                                    label=""
+                                    checked={newJob.additionalInfoActive}
+                                    onChange={() => handleToggleChange('additionalInfoActive')}
+                                />
+                            </div>
+                            {newJob.additionalInfoActive && (
+                                <div className="quill-transition">
+                                    <ReactQuill
+                                        value={newJob.additionalInfo}
+                                        onChange={(value) => handleQuillChange('additionalInfo', value)}
                                     />
                                 </div>
-                                {newJob.additionalInfoActive && (
-                                    <div className="quill-transition">
-                                        <ReactQuill
-                                            value={newJob.additionalInfo}
-                                            onChange={(value) => handleQuillChange('additionalInfo', value)}
-                                        />
-                                    </div>
-                                )}
-                            </Form.Group>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col md={12} className="d-flex justify-content-between">
-                            <Row>
-                                <Col xs={4}>
-                                    <Form.Group className="form-group-custom">
-                                        <div className="d-flex justify-content-between">
-                                            <Form.Label className="me-2">Ativa</Form.Label>
-                                            <Form.Check
-                                                type="switch"
-                                                id="status-switch"
-                                                checked={newJob.status}
-                                                onChange={() => handleToggleChange('status')}
-                                            />
-                                        </div>
-                                    </Form.Group>
-                                </Col>
-                                <Col xs={4}>
-                                    <Form.Group className="form-group-custom">
-                                        <div className="d-flex justify-content-between">
-                                            <Form.Label className="me-2">PCD</Form.Label>
-                                            <Form.Check
-                                                type="switch"
-                                                id="pcd-switch"
-                                                checked={newJob.pcd}
-                                                onChange={() => handleToggleChange('pcd')}
-                                            />
+                            )}
+                        </Form.Group>
+                        <Form.Group className='mb-2'>
+                            <div className="d-flex justify-content-between">
+                                <Form.Label className="me-2">Ativa</Form.Label>
+                                <Form.Check
+                                    type="switch"
+                                    id="status-switch"
+                                    checked={newJob.status}
+                                    onChange={() => handleToggleChange('status')}
+                                />
+                            </div>
+                        </Form.Group>
+                        <Form.Group className='mb-2'>
+                            <div className="d-flex justify-content-between">
+                                <Form.Label className="me-2">PCD</Form.Label>
+                                <Form.Check
+                                    type="switch"
+                                    id="pcd-switch"
+                                    checked={newJob.pcd}
+                                    onChange={() => handleToggleChange('pcd')}
+                                />
 
-                                        </div>
-                                    </Form.Group>
-                                </Col>
-                                <Col xs={4}>
-                                    <Form.Group className="form-group-custom">
-                                        <div className="d-flex justify-content-between">
-                                            <Form.Label className="me-2">Confidencial</Form.Label>
-                                            <Form.Check
-                                                type="switch"
-                                                id="identificacao-switch"
-                                                checked={newJob.identifyCompany}
-                                                onChange={() => handleToggleChange('identifyCompany')}
-                                            />
+                            </div>
+                        </Form.Group>
+                        <Form.Group>
+                            <div className="d-flex justify-content-between">
+                                <Form.Label className="me-2">Confidencial</Form.Label>
+                                <Form.Check
+                                    type="switch"
+                                    id="identificacao-switch"
+                                    checked={newJob.identifyCompany}
+                                    onChange={() => handleToggleChange('identifyCompany')}
+                                />
 
-                                        </div>
-                                    </Form.Group>
-                                </Col>
-                            </Row>
-                        </Col>
+                            </div>
+                        </Form.Group>
                     </Row>
                     <Button type="submit" variant="primary" disabled={!isFormValid}>
                         {isEditMode ? 'Salvar' : 'Adicionar'}

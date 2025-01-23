@@ -17,10 +17,6 @@
     opacity: 0;
 }
 
-.form-group-custom {
-    margin-bottom: 20px;
-}
-
 .status-indicator {
     display: inline-block;
     width: 10px;
@@ -41,34 +37,27 @@
     cursor: pointer;
 }
 
-/* Estilos para dispositivos móveis */
-@media (max-width: 768px) {
+.card-hover {
+    transition: all 0.2s ease-in-out;
+}
 
-    .table th,
-    .table td {
-        font-size: 12px;
-        /* Reduz o tamanho do texto para melhor ajuste */
-    }
+.card-hover:hover {
+    transform: scale(1.01);
+}
 
-    /* Opcionalmente ocultar colunas específicas no mobile */
-    .table-vagas-empresa th:nth-child(2),
-    .table-vagas-empresa td:nth-child(2),
-    .table-vagas-empresa th:nth-child(4),
-    .table-vagas-empresa td:nth-child(4),
-    .table-vagas-empresa th:nth-child(6),
-    .table-vagas-empresa td:nth-child(6),
-    .table-vagas-empresa th:nth-child(7),
-    .table-vagas-empresa td:nth-child(7) {
+.opcoes-vaga {
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    transition: all 0.2s ease-in-out;
+}
+
+.opcoes-vaga:hover {
+    background-color: #eceef0;
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+    .txt-vaga {
         display: none;
-    }
-
-    /* Ajustes em outros elementos de layout */
-    .d-flex {
-        flex-direction: column;
-    }
-
-    .ml-2 {
-        margin-left: 0;
-        margin-top: 0.5rem;
     }
 }
