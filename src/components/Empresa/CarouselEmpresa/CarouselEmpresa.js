@@ -3,15 +3,14 @@ import api from '../../../services/axiosConfig';
 import useFormattedDate from '../../../hooks/useFormattedDate';
 import { Card, Row, Col } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBriefcase, faBuilding, faLocationDot, faEdit, faHome, faLaptopHouse, faMoneyBillWave } from '@fortawesome/free-solid-svg-icons';
+import { faBriefcase, faBuilding, faLocationDot, faEdit, faHome, faLaptopHouse, faMoneyBillWave, faWheelchair } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
 import Slider from "react-slick";
 import Skeleton from 'react-loading-skeleton';
+import "./CarouselEmpresa.css";
 
 const CarouselEmpresa = () => {
-    const [slidesToShow, setSlidesToShow] = useState(4);
+    const [slidesToShow, setSlidesToShow] = useState(3);
     const { formatDate } = useFormattedDate();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -70,6 +69,10 @@ const CarouselEmpresa = () => {
         fetchJobs(page);
     }, [page, fetchJobs]);
 
+    const viewCandidates = (jobId) => {
+        navigate(`/curriculos-empresa/${jobId}`);
+    }
+
     const handleEditJob = (jobId) => {
         navigate('/vagas-empresa', { state: { jobId, openEditModal: true } });
     };
@@ -79,9 +82,10 @@ const CarouselEmpresa = () => {
         infinite: false,
         speed: 500,
         slidesToShow: slidesToShow,
-        slidesToScroll: 1,
+        slidesToScroll: slidesToShow,
         afterChange: (currentSlide) => {
-            if (currentSlide >= jobs.length - slidesToShow && hasMore) {
+            if (currentSlide >= jobs.length - slidesToShow * 2 && hasMore) {
+                // Carrega antes de chegar à última página
                 setPage((prevPage) => prevPage + 1);
             }
         },
@@ -135,7 +139,7 @@ const CarouselEmpresa = () => {
     );
 
     return (
-        <div style={{ minHeight: '55vh', padding: '20px' }}>
+        <div style={{ minHeight: '55vh', padding: '20px' }} className='m-2'>
             <h1 className="text-center text-primary">Acompanhe suas vagas ativas</h1>
             {loading && jobs.length === 0 ? (
                 <SkeletonCard />
@@ -148,12 +152,9 @@ const CarouselEmpresa = () => {
                             <Card className={`w-100 border-0 shadow-sm rounded p-2 d-flex flex-column card-hover ${job && !job.status ? 'bg-light text-muted' : ''}`}>
                                 <Card.Body>
                                     <div className="d-flex flex-row align-items-center justify-content-between">
-                                        <Card.Title className="mb-0 me-2"
-                                            style={{
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis'
-                                            }}>{job.title}</Card.Title>
+                                        <Card.Title className="mb-0 me-2 info-card">
+                                            {job.title}
+                                        </Card.Title>
                                         <FontAwesomeIcon
                                             icon={faEdit}
                                             className="text-primary edit-icon"
@@ -162,13 +163,13 @@ const CarouselEmpresa = () => {
                                             style={{ cursor: 'pointer' }}
                                         />
                                     </div>
-                                    <Card.Text className="bg-light rounded text-center text-primary p-2 text-truncate mt-3">
+                                    <Card.Text className="bg-light rounded text-center text-primary p-2 info-card mt-3">
                                         <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
                                         {job.city}, {job.state}
                                     </Card.Text>
                                     <Row className="mb-2">
-                                        <Col>
-                                            <Card.Text className="bg-light rounded text-center text-primary p-2 text-truncate">
+                                        <Col xs={6}>
+                                            <Card.Text className="bg-light rounded text-center text-primary p-2 info-card">
                                                 <FontAwesomeIcon
                                                     className="me-2"
                                                     icon={job.modality === 'Remoto' ? faHome : job.modality === 'Presencial' ? faBuilding : faLaptopHouse}
@@ -177,31 +178,42 @@ const CarouselEmpresa = () => {
                                                 {job.modality}
                                             </Card.Text>
                                         </Col>
-                                        <Col>
-                                            <Card.Text className="bg-light rounded text-center text-primary p-2 text-truncate">
+                                        <Col xs={6}>
+                                            <Card.Text className="bg-light rounded text-center text-primary p-2 info-card">
                                                 <FontAwesomeIcon className="me-2" icon={faBriefcase} title="Tipo" />
                                                 {job.type}
                                             </Card.Text>
                                         </Col>
                                     </Row>
                                     <Row className="mb-2">
-                                        <Col>
-                                            <Card.Text className="bg-light rounded text-center text-primary p-2 text-truncate">
+                                        <Col xs={6}>
+                                            <Card.Text className="bg-light rounded text-center text-primary p-2 info-card">
                                                 <FontAwesomeIcon className="me-2" icon={faMoneyBillWave} title="Salário" />
                                                 {job.salary ? job.salary : 'A combinar'}
                                             </Card.Text>
                                         </Col>
+                                        <Col xs={6}>
+                                            {job.pcd && (
+                                                <Card.Text className="bg-light rounded text-center text-primary p-2 info-card">
+                                                    <FontAwesomeIcon className="me-2" icon={faWheelchair} title="PcD" />
+                                                    PcD
+                                                </Card.Text>
+                                            )}
+                                        </Col>
                                     </Row>
-                                    <Row>
+                                    <Row className="mb-2">
                                         <Col>
-                                            <Card.Text className="bg-light rounded text-center text-secondary p-2 text-truncate">
+                                            <Card.Text
+                                                className="bg-light rounded text-center text-secondary p-2 info-card"
+                                                style={{ cursor: 'pointer' }}
+                                                onClick={() => viewCandidates(job._id)}>
                                                 Total de inscrições: {job.totalApplications}
                                             </Card.Text>
                                         </Col>
                                     </Row>
                                     <hr className="my-3 rounded justify-content-center" />
                                     <div className="d-flex flex-wrap justify-content-between mt-3">
-                                        <small className="text-muted text-truncate">
+                                        <small className="text-muted text-truncated">
                                             Publicada em: {formatDate(job.publicationDate)}
                                         </small>
                                     </div>

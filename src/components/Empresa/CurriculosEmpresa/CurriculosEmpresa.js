@@ -30,7 +30,7 @@ const CurriculosEmpresa = () => {
                 <Col md={5} lg={4} xl={2}>
                   <Skeleton height={80} width={80} className="mb-3" style={{ borderRadius: "50%" }} />
                 </Col>
-                <Col className="mt-md-2">
+                <Col className="mt-md-2 m-2">
                   <Skeleton height={25} width="50%" className="mb-2" />
                   <Skeleton height={20} width="60%" />
                 </Col>
@@ -257,7 +257,7 @@ const CurriculosEmpresa = () => {
                               />
                             )}
                             <div className="m-2">
-                              <h5 className="txt-nome-candidato mb-1">{user.nome} {user.sobrenome}</h5>
+                              <h5 className="mb-1">{user.nome} {user.sobrenome}</h5>
                               <p className="mb-0 text-muted">{user.email}</p>
                             </div>
                           </div>

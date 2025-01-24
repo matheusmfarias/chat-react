@@ -78,13 +78,13 @@ const ModalVagas = ({
         const isValid = newJob.title && newJob.modality && selectedState && selectedCity && newJob.type;
 
         const areToggledFieldsValid = (
-            (!newJob.salaryActive || newJob.salary.trim().length > 0) &&
-            (!newJob.offersActive || newJob.offers.trim().length > 0) &&
-            (!newJob.descriptionActive || newJob.description.trim().length > 0) &&
-            (!newJob.responsibilitiesActive || newJob.responsibilities.trim().length > 0) &&
-            (!newJob.qualificationsActive || newJob.qualifications.trim().length > 0) &&
-            (!newJob.requirementsActive || newJob.requirements.trim().length > 0) &&
-            (!newJob.additionalInfoActive || newJob.additionalInfo.trim().length > 0)
+            (!newJob.salaryActive || (newJob.salary?.trim() || '').length > 0) &&
+            (!newJob.offersActive || (newJob.offers?.trim() || '').length > 0) &&
+            (!newJob.descriptionActive || (newJob.description?.trim() || '').length > 0) &&
+            (!newJob.responsibilitiesActive || (newJob.responsibilities?.trim() || '').length > 0) &&
+            (!newJob.qualificationsActive || (newJob.qualifications?.trim() || '').length > 0) &&
+            (!newJob.requirementsActive || (newJob.requirements?.trim() || '').length > 0) &&
+            (!newJob.additionalInfoActive || (newJob.additionalInfo?.trim() || '').length > 0)
         );
 
         setIsFormValid(isValid && areToggledFieldsValid);

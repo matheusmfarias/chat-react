@@ -1,0 +1,9 @@
+.slick-arrow:before {
+    color: blue !important;
+}
+
+.info-card {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

@@ -347,7 +347,7 @@ const InscricoesCandidato = () => {
                             <Col lg={4} className="d-flex align-items-center">
                                 {searchTerm && (
                                     <span className="p-2 mt-2">
-                                        A busca "{searchTerm}" retornou {totalApplications} resultado(s).
+                                        A busca "{searchTerm}" retornou {totalApplications} application.jobado(s).
                                     </span>
                                 )}
                             </Col>
@@ -583,22 +583,19 @@ const InscricoesCandidato = () => {
                                                     <Card.Body>
                                                         {application.job ? (
                                                             <>
-                                                                <Card.Title className="text-truncate">{application.job.title}</Card.Title>
+                                                                <Card.Title className="mb-0 me-2 info-card">{application.job.title}</Card.Title>
                                                                 <Card.Text>
-                                                                    {/* Verifica se identifyCompany está false para exibir "Empresa confidencial" */}
-                                                                    {application.job.identifyCompany ? (
-                                                                        'Empresa confidencial'
-                                                                    ) : (
-                                                                        application.job.company ? application.job.company.nome : 'Empresa não especificada'
-                                                                    )}
+                                                                    {application.job.identifyCompany
+                                                                        ? 'Empresa confidencial'
+                                                                        : (application.job.company ? application.job.company.nome : 'Empresa não especificada')}
                                                                 </Card.Text>
-                                                                <Card.Text className="bg-light rounded text-center text-primary p-2 text-truncate">
+                                                                <Card.Text className="bg-light rounded text-center text-primary p-2 info-card">
                                                                     <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
                                                                     {application.job.city}, {application.job.state}
                                                                 </Card.Text>
                                                                 <Row className="mb-2">
-                                                                    <Col>
-                                                                        <Card.Text className="bg-light rounded text-center text-primary p-2 text-truncate">
+                                                                    <Col xs={6}>
+                                                                        <Card.Text className="bg-light rounded text-center text-primary p-2 info-card">
                                                                             <FontAwesomeIcon
                                                                                 className="me-2"
                                                                                 icon={application.job.modality === 'Remoto' ? faHome : application.job.modality === 'Presencial' ? faBuilding : faLaptopHouse}
@@ -607,23 +604,23 @@ const InscricoesCandidato = () => {
                                                                             {application.job.modality}
                                                                         </Card.Text>
                                                                     </Col>
-                                                                    <Col>
-                                                                        <Card.Text className="bg-light rounded text-center text-primary p-2 text-truncate">
+                                                                    <Col xs={6}>
+                                                                        <Card.Text className="bg-light rounded text-center text-primary p-2 info-card">
                                                                             <FontAwesomeIcon className="me-2" icon={faBriefcase} title="Tipo" />
                                                                             {application.job.type}
                                                                         </Card.Text>
                                                                     </Col>
                                                                 </Row>
                                                                 <Row>
-                                                                    <Col>
-                                                                        <Card.Text className="bg-light rounded text-center text-primary p-2 text-truncate">
+                                                                    <Col xs={6}>
+                                                                        <Card.Text className="bg-light rounded text-center text-primary p-2 info-card">
                                                                             <FontAwesomeIcon className="me-2" icon={faMoneyBillWave} title="Salário" />
                                                                             {application.job.salary ? application.job.salary : 'A combinar'}
                                                                         </Card.Text>
                                                                     </Col>
-                                                                    <Col>
+                                                                    <Col xs={6}>
                                                                         {application.job.pcd && (
-                                                                            <Card.Text className="bg-light rounded text-center text-primary p-2">
+                                                                            <Card.Text className="bg-light rounded text-center text-primary p-2 info-card">
                                                                                 <FontAwesomeIcon className="me-2" icon={faWheelchair} title="PcD" />
                                                                                 PcD
                                                                             </Card.Text>

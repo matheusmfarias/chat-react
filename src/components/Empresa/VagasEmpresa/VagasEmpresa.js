@@ -6,8 +6,7 @@ import { faPlus, faSearch, faTimesCircle, faFilter, faFilterCircleXmark, faChevr
 import HeaderEmpresa from '../HeaderEmpresa';
 import ModalVagas from './ModalVagas';
 import Swal from 'sweetalert2';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { showToast, TOAST_TYPES } from '../../ToastNotification';
 import './VagasEmpresa.css';
 import DetalhesVagas from './DetalhesVagas';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -71,19 +70,6 @@ const VagasEmpresa = () => {
         state: '',
         city: '',
     });
-
-    const notify = (message, type) => {
-        toast[type](message, {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            closeButton: false
-        });
-    };
 
     const SkeletonCard = () => (
         <Row className="mt-2">
@@ -172,7 +158,26 @@ const VagasEmpresa = () => {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
-            setJobs(response.data.jobs);
+            const jobs = response.data.jobs;
+
+            // Adiciona totalApplications a cada vaga
+            const jobsWithApplications = await Promise.all(
+                jobs.map(async (job) => {
+                    try {
+                        const applicationsResponse = await api.get(`${process.env.REACT_APP_API_URL}/api/jobs/applications/${job._id}`, {
+                            headers: {
+                                Authorization: `Bearer ${token}`
+                            }
+                        });
+                        return { ...job, totalApplications: applicationsResponse.data.totalApplications };
+                    } catch (error) {
+                        console.error(`Erro ao buscar inscrições para a vaga ${job._id}:`, error);
+                        return { ...job, totalApplications: 0 }; // Caso ocorra erro, define totalApplications como 0
+                    }
+                })
+            );
+
+            setJobs(jobsWithApplications);
             setTotalPages(response.data.totalPages);
             setTotalJobs(response.data.totalJobs);
         } catch (error) {
@@ -322,7 +327,7 @@ const VagasEmpresa = () => {
                             Authorization: `Bearer ${token}`
                         }
                     });
-                    notify('Vaga atualizada com sucesso!', 'success');
+                    showToast('Vaga atualizada com sucesso!', TOAST_TYPES.SUCCESS);
                     handleSearchByJob();
                 } else {
                     await api.post(`${process.env.REACT_APP_API_URL}/api/jobs`, jobData, {
@@ -330,13 +335,13 @@ const VagasEmpresa = () => {
                             Authorization: `Bearer ${token}`
                         }
                     });
-                    notify('Vaga adicionada com sucesso!', 'success');
+                    showToast('Vaga adicionada com sucesso!', TOAST_TYPES.SUCCESS);
                     handleSearchByJob();
                 }
                 closeModal();
             } catch (error) {
                 console.error('Error saving job:', error);
-                notify('Erro ao salvar a vaga.', 'error');
+                showToast('Erro ao salvar a vaga.', TOAST_TYPES.ERROR);
             }
         }
     };
@@ -363,10 +368,10 @@ const VagasEmpresa = () => {
                     setCurrentPage(currentPage - 1);  // Retorna para a página anterior
                 }
 
-                notify('Vaga deletada com sucesso!', 'success');
+                showToast('Vaga deletada com sucesso!', 'success');
             } catch (error) {
                 console.error('Error deleting job:', error);
-                notify('Erro ao deletar a vaga.', 'error');
+                showToast('Erro ao deletar a vaga.', 'error');
             } finally {
                 setLoading(false);
             }
@@ -394,11 +399,11 @@ const VagasEmpresa = () => {
                                 Authorization: `Bearer ${token}`
                             }
                         });
-                        notify(`Vaga ${updatedJob.status ? 'ativada' : 'inativada'} com sucesso!`, 'success');
+                        showToast(`Vaga ${updatedJob.status ? 'ativada' : 'inativada'} com sucesso!`, TOAST_TYPES.SUCCESS);
                         handleSearchByJob();
                     } catch (error) {
                         console.error('Error toggling status:', error);
-                        notify('Erro ao alterar o status.', 'error');
+                        showToast('Erro ao alterar o status.', TOAST_TYPES.ERROR);
                     }
                 }
             });
@@ -431,7 +436,6 @@ const VagasEmpresa = () => {
 
     return (
         <>
-            <ToastContainer />
             <HeaderEmpresa />
             {viewingJob && selectedJob ? (
                 <DetalhesVagas job={selectedJob} onBack={closeViewJob} />
@@ -819,15 +823,9 @@ const VagasEmpresa = () => {
                                                         <>
                                                             <div className="d-flex flex-row align-items-center justify-content-between">
                                                                 <div className="d-flex flex-row align-items-center" style={{ maxWidth: '85%' }}>
-                                                                    <Card.Title className="mb-0 me-2"
-                                                                        style={{
-                                                                            whiteSpace: 'nowrap',
-                                                                            overflow: 'hidden',
-                                                                            textOverflow: 'ellipsis'
-                                                                        }}>{job.title}</Card.Title>
-                                                                    {job.pcd && (
-                                                                        <FontAwesomeIcon icon={faWheelchair} title="PcD" className="text-primary" />
-                                                                    )}
+                                                                    <Card.Title className="mb-0 me-2 info-card">
+                                                                        {job.title}
+                                                                    </Card.Title>
                                                                 </div>
                                                                 <Dropdown align="end">
                                                                     <Dropdown.Toggle
@@ -848,13 +846,13 @@ const VagasEmpresa = () => {
                                                                     </Dropdown.Menu>
                                                                 </Dropdown>
                                                             </div>
-                                                            <Card.Text className="bg-light rounded text-center text-primary p-2 text-truncate mt-3">
+                                                            <Card.Text className="bg-light rounded text-center text-primary p-2 info-card mt-3">
                                                                 <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
                                                                 {job.city}, {job.state}
                                                             </Card.Text>
                                                             <Row className="mb-2">
-                                                                <Col>
-                                                                    <Card.Text className="bg-light rounded text-center text-primary p-2 text-truncate">
+                                                                <Col xs={6}>
+                                                                    <Card.Text className="bg-light rounded text-center text-primary p-2 info-card">
                                                                         <FontAwesomeIcon
                                                                             className="me-2"
                                                                             icon={job.modality === 'Remoto' ? faHome : job.modality === 'Presencial' ? faBuilding : faLaptopHouse}
@@ -863,18 +861,36 @@ const VagasEmpresa = () => {
                                                                         {job.modality}
                                                                     </Card.Text>
                                                                 </Col>
-                                                                <Col>
-                                                                    <Card.Text className="bg-light rounded text-center text-primary p-2 text-truncate">
+                                                                <Col xs={6}>
+                                                                    <Card.Text className="bg-light rounded text-center text-primary p-2 info-card">
                                                                         <FontAwesomeIcon className="me-2" icon={faBriefcase} title="Tipo" />
                                                                         {job.type}
                                                                     </Card.Text>
                                                                 </Col>
                                                             </Row>
-                                                            <Row>
-                                                                <Col>
-                                                                    <Card.Text className="bg-light rounded text-center text-primary p-2 text-truncate">
+                                                            <Row className="mb-2">
+                                                                <Col xs={6}>
+                                                                    <Card.Text className="bg-light rounded text-center text-primary p-2 info-card">
                                                                         <FontAwesomeIcon className="me-2" icon={faMoneyBillWave} title="Salário" />
                                                                         {job.salary ? job.salary : 'A combinar'}
+                                                                    </Card.Text>
+                                                                </Col>
+                                                                <Col xs={6}>
+                                                                    {job.pcd && (
+                                                                        <Card.Text className="bg-light rounded text-center text-primary p-2 info-card">
+                                                                            <FontAwesomeIcon className="me-2" icon={faWheelchair} title="PcD" />
+                                                                            PcD
+                                                                        </Card.Text>
+                                                                    )}
+                                                                </Col>
+                                                            </Row>
+                                                            <Row className="mb-2">
+                                                                <Col>
+                                                                    <Card.Text
+                                                                        className="bg-light rounded text-center text-secondary p-2 info-card"
+                                                                        style={{ cursor: 'pointer' }}
+                                                                        onClick={() => viewCandidates(job._id)}>
+                                                                        Total de inscrições: {job.totalApplications}
                                                                     </Card.Text>
                                                                 </Col>
                                                             </Row>

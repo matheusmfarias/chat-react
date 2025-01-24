@@ -645,19 +645,19 @@ const BuscarVagas = () => {
                                             }}
                                         >
                                             <Card.Body>
-                                                <Card.Title>{result.title}</Card.Title>
+                                                <Card.Title className="mb-0 me-2 info-card">{result.title}</Card.Title>
                                                 <Card.Text>
                                                     {result.identifyCompany
                                                         ? 'Empresa confidencial'
                                                         : (result.company ? result.company.nome : 'Empresa não especificada')}
                                                 </Card.Text>
-                                                <Card.Text className="bg-light rounded text-center text-primary p-2">
+                                                <Card.Text className="bg-light rounded text-center text-primary p-2 info-card">
                                                     <FontAwesomeIcon className="me-2" icon={faLocationDot} title="Localização" />
                                                     {result.city}, {result.state}
                                                 </Card.Text>
-                                                <Row className="mb-2 align-items-stretch">
-                                                    <Col>
-                                                        <Card.Text className="bg-light rounded text-center text-primary p-2 h-100 d-flex flex-column justify-content-center">
+                                                <Row className="mb-2">
+                                                    <Col xs={6}>
+                                                        <Card.Text className="bg-light rounded text-center text-primary p-2 info-card">
                                                             <FontAwesomeIcon
                                                                 className="me-2"
                                                                 icon={result.modality === 'Remoto' ? faHome : result.modality === 'Presencial' ? faBuilding : faLaptopHouse}
@@ -666,23 +666,23 @@ const BuscarVagas = () => {
                                                             {result.modality}
                                                         </Card.Text>
                                                     </Col>
-                                                    <Col>
-                                                        <Card.Text className="bg-light rounded text-center text-primary p-2 h-100 d-flex flex-column justify-content-center">
+                                                    <Col xs={6}>
+                                                        <Card.Text className="bg-light rounded text-center text-primary p-2 info-card">
                                                             <FontAwesomeIcon className="me-2" icon={faBriefcase} title="Tipo" />
                                                             {result.type}
                                                         </Card.Text>
                                                     </Col>
                                                 </Row>
-                                                <Row className="align-items-stretch">
-                                                    <Col>
-                                                        <Card.Text className="bg-light rounded text-center text-primary p-2 h-100 d-flex flex-column justify-content-center">
+                                                <Row>
+                                                    <Col xs={6}>
+                                                        <Card.Text className="bg-light rounded text-center text-primary p-2 info-card">
                                                             <FontAwesomeIcon className="me-2" icon={faMoneyBillWave} title="Salário" />
                                                             {result.salary ? result.salary : 'A combinar'}
                                                         </Card.Text>
                                                     </Col>
-                                                    <Col>
+                                                    <Col xs={6}>
                                                         {result.pcd && (
-                                                            <Card.Text className="bg-light rounded text-center text-primary p-2 h-100 d-flex flex-column justify-content-center">
+                                                            <Card.Text className="bg-light rounded text-center text-primary p-2 info-card">
                                                                 <FontAwesomeIcon className="me-2" icon={faWheelchair} title="PcD" />
                                                                 PcD
                                                             </Card.Text>
