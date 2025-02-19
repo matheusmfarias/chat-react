@@ -1,17 +1,18 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import api from '../../../services/axiosConfig';
-import { Row, Col, Button, InputGroup, Form, Container, Modal, Card, Dropdown } from 'react-bootstrap';
+import { Row, Col, Button, InputGroup, Form, Container, Card, Dropdown } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faSearch, faTimesCircle, faFilter, faFilterCircleXmark, faChevronRight, faChevronLeft, faLocationDot, faHome, faBuilding, faLaptopHouse, faBriefcase, faMoneyBillWave, faWheelchair, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faSearch, faTimesCircle, faFilter, faChevronRight, faChevronLeft, faLocationDot, faHome, faBuilding, faLaptopHouse, faBriefcase, faMoneyBillWave, faWheelchair, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 import HeaderEmpresa from '../HeaderEmpresa';
-import ModalVagas from './ModalVagas';
+import ModalVagas from '../../Modals/ModalVagas';
 import Swal from 'sweetalert2';
 import { showToast, TOAST_TYPES } from '../../ToastNotification';
 import './VagasEmpresa.css';
 import DetalhesVagas from './DetalhesVagas';
 import { useNavigate, useLocation } from 'react-router-dom';
-import Select from 'react-select';
 import Skeleton from 'react-loading-skeleton';
+import Filters from '../../Filters/Filters';
+import FiltersModal from '../../Modals/FiltersModal';
 
 const VagasEmpresa = () => {
     const navigate = useNavigate();
@@ -23,8 +24,6 @@ const VagasEmpresa = () => {
     const [selectedJob, setSelectedJob] = useState(null);
     const [states, setStates] = useState([]);
     const [cities, setCities] = useState([]);
-    const [selectedStateFilter, setSelectedStateFilter] = useState('');
-    const [selectedCityFilter, setSelectedCityFilter] = useState('');
     const [selectedStateModal, setSelectedStateModal] = useState('');
     const [selectedCityModal, setSelectedCityModal] = useState('');
     const [viewingJob, setViewingJob] = useState(false);
@@ -58,37 +57,26 @@ const VagasEmpresa = () => {
     const [isEditMode, setIsEditMode] = useState(false);
     const [editJobId, setEditJobId] = useState(null);
     const [isRedirectHandled, setIsRedirectHandled] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
     const [totalPages, setTotalPages] = useState(1);
-    const [currentPage, setCurrentPage] = useState(1);
+    const currentPage = parseInt(new URLSearchParams(location.search).get('page')) || 1;
     const [totalJobs, setTotalJobs] = useState(0);
     const itemsPerPage = 9;
-    const [filters, setFilters] = useState({
-        modality: [],
-        type: [],
-        pcd: '',
-        state: '',
-        city: '',
-    });
 
-    const SkeletonCard = () => (
-        <Row className="mt-2">
-            {Array.from({ length: 9 }).map((_, index) => (
-                <Col key={index} className="mb-4 d-flex" md={6} xxl={4}>
-                    <Card className="w-100 border-0 shadow-sm rounded p-2 d-flex flex-column">
-                        <Card.Body>
-                            <Skeleton height={30} width="60%" className="mb-3" />
-                            <Skeleton height={20} width="40%" className="mb-4" />
-                            <Skeleton height={20} width="50%" className="mb-3" />
-                            <Skeleton height={20} width="80%" className="mb-3" />
-                            <Skeleton height={20} width="80%" className="mb-3" />
-                            <Skeleton height={30} width="30%" />
-                        </Card.Body>
-                    </Card>
-                </Col>
-            ))}
-        </Row>
-    );
+    const getInitialFilters = () => {
+        const params = new URLSearchParams(window.location.search);
+        return {
+            modality: params.getAll('modality'),
+            type: params.getAll('type'),
+            pcd: params.get('pcd') || '',
+            state: params.get('state') || '',
+            city: params.get('city') || '',
+        };
+    };
+
+    const [filters, setFilters] = useState(getInitialFilters);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedStateFilter, setSelectedStateFilter] = useState(getInitialFilters().state);
+    const [selectedCityFilter, setSelectedCityFilter] = useState(getInitialFilters().city);
 
     const fetchLocations = useCallback(async (stateCode = null) => {
         try {
@@ -113,13 +101,43 @@ const VagasEmpresa = () => {
 
     useEffect(() => {
         if (selectedStateFilter) {
-            fetchLocations(selectedStateFilter); // Busca as cidades do estado selecionado
+            fetchLocations(selectedStateFilter);
         } else {
-            setCities([]); // Limpa as cidades se nenhum estado estiver selecionado
+            setCities([]);
         }
     }, [selectedStateFilter, fetchLocations]);
 
-    const buildFilters = (filters, selectedStateFilter, selectedCityFilter, searchTerm) => {
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+
+        if (!params.has("page")) {
+            navigate(`${location.pathname}?page=1`, { replace: true });
+        }
+    }, [location.search, location.pathname, navigate]);
+
+    const handlePageChange = (direction) => {
+        const params = new URLSearchParams(location.search);
+        let newPage = parseInt(params.get("page")) || 1;
+
+        if (direction === 'next' && newPage < totalPages) {
+            newPage += 1;
+        } else if (direction === 'prev' && newPage > 1) {
+            newPage -= 1;
+        }
+
+        if (newPage === 1) {
+            params.delete('page');
+        } else {
+            params.set('page', newPage);
+        }
+        navigate(`${location.pathname}?${params.toString()}`);
+    };
+
+    useEffect(() => {
+        document.body.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [currentPage]);
+
+    const buildFilters = (filters, selectedStateFilter, selectedCityFilter, searchTerm, currentPage) => {
         const params = new URLSearchParams();
 
         if (searchTerm.trim()) params.append('keyword', searchTerm);
@@ -136,25 +154,42 @@ const VagasEmpresa = () => {
         if (selectedStateFilter) params.append('state', selectedStateFilter);
         if (selectedCityFilter) params.append('city', selectedCityFilter);
 
+        if (currentPage > 1) {
+            params.set('page', currentPage);
+        }
+
         return params;
     };
 
-    const handleSearchByJob = useCallback(async () => {
-        const params = buildFilters(filters, selectedStateFilter, selectedCityFilter, searchTerm);
+    const updateURLWithFilters = useCallback(
+        (filters, selectedStateFilter, selectedCityFilter, searchTerm, currentPage) => {
+            const params = buildFilters(filters, selectedStateFilter, selectedCityFilter, searchTerm, currentPage);
+            navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+        },
+        [navigate, location.pathname]
+    );
 
-        params.append('page', currentPage || 1);
-        params.append('limit', itemsPerPage || 9);
+    const handleSearchByJob = useCallback(async () => {
+        const params = new URLSearchParams(location.search);
+
+        const apiParams = new URLSearchParams();
+        params.forEach((value, key) => {
+            if (key !== 'page') {
+                apiParams.append(key, value);
+            }
+        });
+        apiParams.append('page', params.get('page') || 1);
+        apiParams.append('limit', itemsPerPage);
 
         if (activeTab === 'andamento') {
-            params.append('status', 'true');
+            apiParams.append('status', 'true');
         } else if (activeTab === 'encerrada') {
-            params.append('status', 'false');
+            apiParams.append('status', 'false');
         }
 
-        setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await api.get(`${process.env.REACT_APP_API_URL}/api/jobs?${params.toString()}`, {
+            const response = await api.get(`${process.env.REACT_APP_API_URL}/api/jobs?${apiParams.toString()}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -172,7 +207,7 @@ const VagasEmpresa = () => {
                         return { ...job, totalApplications: applicationsResponse.data.totalApplications };
                     } catch (error) {
                         console.error(`Erro ao buscar inscrições para a vaga ${job._id}:`, error);
-                        return { ...job, totalApplications: 0 }; // Caso ocorra erro, define totalApplications como 0
+                        return { ...job, totalApplications: 0 };
                     }
                 })
             );
@@ -185,11 +220,48 @@ const VagasEmpresa = () => {
         } finally {
             setLoading(false);
         }
-    }, [activeTab, searchTerm, selectedStateFilter, selectedCityFilter, filters, currentPage, itemsPerPage]);
+    }, [activeTab, location.search, itemsPerPage]);
 
     useEffect(() => {
-        setCurrentPage(1);
-    }, [searchTerm, selectedStateFilter, selectedCityFilter, filters]);
+        const params = new URLSearchParams(location.search);
+        const currentPage = parseInt(params.get('page')) || 1;
+
+        updateURLWithFilters(filters, selectedStateFilter, selectedCityFilter, searchTerm, currentPage);
+    }, [filters, selectedStateFilter, selectedCityFilter, searchTerm, location.search, updateURLWithFilters]);
+
+    useEffect(() => {
+        handleSearchByJob();
+    }, [location.search, handleSearchByJob]);
+
+    const SkeletonCard = () => (
+        <Row className="mt-2">
+            {Array.from({ length: 9 }).map((_, index) => (
+                <Col key={index} className="mb-4 d-flex" md={6} xxl={4}>
+                    <Card className="w-100 border-0 shadow-sm rounded p-2 d-flex flex-column">
+                        <Card.Body>
+                            <Skeleton height={30} width="60%" className="mb-3" />
+                            <Skeleton height={20} width="40%" className="mb-4" />
+                            <Skeleton height={20} width="50%" className="mb-3" />
+                            <Skeleton height={20} width="80%" className="mb-3" />
+                            <Skeleton height={20} width="80%" className="mb-3" />
+                            <Skeleton height={30} width="30%" />
+                        </Card.Body>
+                    </Card>
+                </Col>
+            ))}
+        </Row>
+    );
+
+    const updateFilters = (newFilters) => {
+        setFilters(newFilters);
+        updateURLWithFilters(
+            newFilters,
+            selectedStateFilter,
+            selectedCityFilter,
+            searchTerm,
+            1
+        );
+    };
 
     useEffect(() => {
         setLoading(true);
@@ -202,19 +274,16 @@ const VagasEmpresa = () => {
 
     const handleResetFilter = () => {
         setLoading(true);
+        setFilters({ modality: [], type: [], pcd: '', state: '', city: '' });
         setSelectedStateFilter('');
         setSelectedCityFilter('');
-        setFilters({ modality: '', type: '', pcd: '' });
-        setJobs([]);
+        setSearchTerm('');
+        updateURLWithFilters({ modality: [], type: [], pcd: '', state: '', city: '' }, '', '', '', 1);
     };
 
-    const handlePageChange = (direction) => {
+    const handleClearSearch = () => {
         setLoading(true);
-        if (direction === 'next' && currentPage < totalPages) {
-            setCurrentPage(currentPage + 1);
-        } else if (direction === 'prev' && currentPage > 1) {
-            setCurrentPage(currentPage - 1);
-        }
+        setSearchTerm("");
     };
 
     const hasFiltersApplied = (filters, selectedStateFilter, selectedCityFilter) => {
@@ -428,12 +497,6 @@ const VagasEmpresa = () => {
         <FontAwesomeIcon icon={faTrash} className="icon-btn" onClick={() => handleConfirmDelete(job._id)} title="Excluir" />
     }; */
 
-    const handleClearSearch = () => {
-        setLoading(true);
-        setSearchTerm("");
-        setCurrentPage(1);
-    };
-
     return (
         <>
             <HeaderEmpresa />
@@ -443,114 +506,19 @@ const VagasEmpresa = () => {
                 <Container fluid>
                     <Row className="mt-3">
                         <h1>Gestão de vagas</h1>
-                        <Col lg={2} className='coluna-filtros mt-2'>
-                            <Row>
-                                <Col lg={11}>
-                                    <Form.Group className="mb-2">
-                                        <div className="d-flex flex-row justify-content-between">
-                                            <h5>Tipo</h5>
-                                            {(hasFiltersApplied(filters, selectedStateFilter, selectedCityFilter)) && (
-                                                <FontAwesomeIcon
-                                                    icon={faFilterCircleXmark}
-                                                    title="Limpar filtros"
-                                                    onClick={handleResetFilter}
-                                                    size="lg"
-                                                    style={{ cursor: 'pointer' }}
-                                                />
-                                            )}
-                                        </div>
-                                        {['Efetivo', 'Aprendiz', 'Estágio', 'Pessoa Jurídica', 'Trainee', 'Temporário', 'Freelancer', 'Terceiro'].map((type) => (
-                                            <Form.Check
-                                                type="checkbox"
-                                                label={type}
-                                                key={type}
-                                                value={type}
-                                                checked={filters.type.includes(type)}
-                                                onChange={(e) => {
-                                                    setLoading(true);
-                                                    const newTypes = e.target.checked
-                                                        ? [...filters.type, type]
-                                                        : filters.type.filter((t) => t !== type);
-                                                    setFilters({ ...filters, type: newTypes });
-                                                }}
-                                            />
-                                        ))}
-                                    </Form.Group>
-                                    <Form.Group className="mb-2">
-                                        <h5>Modalidade</h5>
-                                        {['Presencial', 'Híbrido', 'Remoto'].map((modality) => (
-                                            <Form.Check
-                                                type="checkbox"
-                                                label={modality}
-                                                key={modality}
-                                                value={modality}
-                                                checked={filters.modality.includes(modality)}
-                                                onChange={(e) => {
-                                                    setLoading(true);
-                                                    const newModalities = e.target.checked
-                                                        ? [...filters.modality, modality]
-                                                        : filters.modality.filter((t) => t !== modality);
-                                                    setFilters({ ...filters, modality: newModalities });
-                                                }}
-                                            />
-                                        ))}
-                                    </Form.Group>
-                                    <Form.Group className="mb-2">
-                                        <h5>Localização</h5>
-                                        <Select
-                                            options={states.map((state) => ({
-                                                value: state.sigla,
-                                                label: state.nome,
-                                            }))}
-                                            value={
-                                                states
-                                                    .map((state) => ({ value: state.sigla, label: state.nome }))
-                                                    .find((option) => option.value === selectedStateFilter) || null
-                                            }
-                                            onChange={(selectedOption) => {
-                                                setLoading(true);
-                                                setSelectedStateFilter(selectedOption?.value || '');
-                                                setCities([]);
-                                            }}
-                                            placeholder="Estado"
-                                            menuPortalTarget={document.body}
-                                        />
-                                    </Form.Group>
-                                    <Form.Group className="mb-2">
-                                        <Select
-                                            options={cities.map((city) => ({
-                                                value: city.nome,
-                                                label: city.nome,
-                                            }))}
-                                            value={
-                                                cities
-                                                    .map((city) => ({ value: city.nome, label: city.nome }))
-                                                    .find((option) => option.value === selectedCityFilter) || null
-                                            }
-                                            onChange={(selectedOption) => {
-                                                setLoading(true);
-                                                setSelectedCityFilter(selectedOption?.value || '')
-                                            }}
-                                            placeholder="Cidade"
-                                            menuPortalTarget={document.body}
-                                        />
-                                    </Form.Group>
-                                    <Form.Group className="d-flex flex-row justify-content-between">
-                                        <h5>PcD</h5>
-                                        <Form.Check
-                                            type="switch"
-                                            id="pcd-toggle"
-                                            label=""
-                                            checked={filters.pcd === "true"}
-                                            onChange={(e) => {
-                                                setLoading(true);
-                                                setFilters({ ...filters, pcd: e.target.checked ? "true" : "" });
-                                            }}
-                                        />
-                                    </Form.Group>
-                                </Col>
-                            </Row>
-                        </Col>
+                        <Filters
+                            filters={filters}
+                            selectedStateFilter={selectedStateFilter}
+                            setSelectedStateFilter={setSelectedStateFilter}
+                            selectedCityFilter={selectedCityFilter}
+                            setSelectedCityFilter={setSelectedCityFilter}
+                            states={states}
+                            cities={cities}
+                            hasFiltersApplied={hasFiltersApplied}
+                            handleResetFilter={handleResetFilter}
+                            updateFilters={updateFilters}
+                            setLoading={setLoading}
+                        />
                         <Col xs={12} lg={10} className='mt-2'>
                             <Row>
                                 <Col lg={1} xl={2}>
@@ -567,7 +535,10 @@ const VagasEmpresa = () => {
                                             placeholder="Pesquisar por vagas, cidade, modelo..."
                                             aria-label="Pesquisar"
                                             value={searchTerm}
-                                            onChange={e => setSearchTerm(e.target.value)}
+                                            onChange={e => {
+                                                setSearchTerm(e.target.value);
+                                                updateURLWithFilters(filters, selectedStateFilter, selectedCityFilter, e.target.value, 1);
+                                            }}
                                         />
                                         {searchTerm && (
                                             <FontAwesomeIcon
@@ -575,13 +546,13 @@ const VagasEmpresa = () => {
                                                 className="icon-remove-tag position-absolute"
                                                 onClick={() => handleClearSearch()}
                                                 style={{
-                                                    right: '110px',
+                                                    right: '80px',
                                                     top: '50%',
                                                     transform: 'translateY(-50%)',
                                                 }}
                                             />
                                         )}
-                                        <Button className="btn-buscar-vagas" variant="outline-primary">
+                                        <Button className="btn-outline-primary rounded-end w-auto px-4" variant="light">
                                             <FontAwesomeIcon icon={faSearch} />
                                         </Button>
                                     </InputGroup>
@@ -684,7 +655,7 @@ const VagasEmpresa = () => {
                                         style={{ width: '100%' }}
                                         onClick={() => {
                                             setActiveTab('andamento');
-                                            setCurrentPage(1); // Reiniciar para a primeira página
+                                            updateURLWithFilters(filters, selectedStateFilter, selectedCityFilter, searchTerm, 1);
                                         }}
                                     >
                                         Em andamento
@@ -694,7 +665,7 @@ const VagasEmpresa = () => {
                                         style={{ width: '100%' }}
                                         onClick={() => {
                                             setActiveTab('encerrada');
-                                            setCurrentPage(1); // Reiniciar para a primeira página
+                                            updateURLWithFilters(filters, selectedStateFilter, selectedCityFilter, searchTerm, 1);
                                         }}
                                     >
                                         Encerradas
@@ -702,113 +673,18 @@ const VagasEmpresa = () => {
                                 </div>
                             </Col>
                             {/* Modal para os filtros */}
-                            <Modal show={showFilterModal} onHide={handleCloseFilterModal} centered>
-                                <Modal.Header closeButton>
-                                    <Modal.Title>Filtros</Modal.Title>
-                                </Modal.Header>
-                                <Modal.Body>
-                                    {/* Conteúdo dos filtros */}
-                                    <Row>
-                                        <Col>
-                                            <Form.Group className="mb-2">
-                                                <h5>Tipo</h5>
-                                                {['Efetivo', 'Aprendiz', 'Estágio', 'Pessoa Jurídica', 'Trainee', 'Temporário', 'Freelancer', 'Terceiro'].map((type) => (
-                                                    <Form.Check
-                                                        type="checkbox"
-                                                        label={type}
-                                                        key={type}
-                                                        value={type}
-                                                        checked={filters.type.includes(type)}
-                                                        onChange={(e) => {
-                                                            const newTypes = e.target.checked
-                                                                ? [...filters.type, type]
-                                                                : filters.type.filter((t) => t !== type);
-                                                            setFilters({ ...filters, type: newTypes });
-                                                        }}
-                                                    />
-                                                ))}
-                                            </Form.Group>
-                                            <Form.Group className="mb-2">
-                                                <h5>Modalidade</h5>
-                                                {['Presencial', 'Híbrido', 'Remoto'].map((modality) => (
-                                                    <Form.Check
-                                                        type="checkbox"
-                                                        label={modality}
-                                                        key={modality}
-                                                        value={modality}
-                                                        checked={filters.modality.includes(modality)}
-                                                        onChange={(e) => {
-                                                            const newModalities = e.target.checked
-                                                                ? [...filters.modality, modality]
-                                                                : filters.modality.filter((t) => t !== modality);
-                                                            setFilters({ ...filters, modality: newModalities });
-                                                        }}
-                                                    />
-                                                ))}
-                                            </Form.Group>
-                                            <Form.Group className="mb-2">
-                                                <h5>Localização</h5>
-                                                <Select
-                                                    options={states.map((state) => ({
-                                                        value: state.sigla,
-                                                        label: state.nome,
-                                                    }))}
-                                                    value={
-                                                        states
-                                                            .map((state) => ({ value: state.sigla, label: state.nome }))
-                                                            .find((option) => option.value === selectedStateFilter) || null
-                                                    }
-                                                    onChange={(selectedOption) => {
-                                                        setLoading(true);
-                                                        setSelectedStateFilter(selectedOption?.value || '');
-                                                        setCities([]);
-                                                    }}
-                                                    placeholder="Estado"
-                                                />
-                                            </Form.Group>
-                                            <Form.Group className="mb-2">
-                                                <Select
-                                                    options={cities.map((city) => ({
-                                                        value: city.nome,
-                                                        label: city.nome,
-                                                    }))}
-                                                    value={
-                                                        cities
-                                                            .map((city) => ({ value: city.nome, label: city.nome }))
-                                                            .find((option) => option.value === selectedCityFilter) || null
-                                                    }
-                                                    onChange={(selectedOption) => {
-                                                        setLoading(true);
-                                                        setSelectedCityFilter(selectedOption?.value || '')
-                                                    }}
-                                                    placeholder="Cidade"
-                                                />
-                                            </Form.Group>
-                                            <Form.Group className="d-flex flex-row justify-content-between">
-                                                <h5>PcD</h5>
-                                                <Form.Check
-                                                    type="switch"
-                                                    id="pcd-toggle"
-                                                    label=""
-                                                    checked={filters.pcd === "true"}
-                                                    onChange={(e) => {
-                                                        setLoading(true);
-                                                        setFilters({ ...filters, pcd: e.target.checked ? "true" : "false" });
-                                                    }}
-                                                />
-                                            </Form.Group>
-                                        </Col>
-                                    </Row>
-                                </Modal.Body>
-                                <Modal.Footer>
-                                    <Button variant="primary" onClick={handleCloseFilterModal}>
-                                        Aplicar Filtros
-                                    </Button>
-                                    <Button variant="secondary" onClick={handleCloseFilterModal}>
-                                        Fechar
-                                    </Button>
-                                </Modal.Footer>
-                            </Modal>
+                            <FiltersModal
+                                show={showFilterModal}
+                                onClose={handleCloseFilterModal}
+                                filters={filters}
+                                selectedStateFilter={selectedStateFilter}
+                                setSelectedStateFilter={setSelectedStateFilter}
+                                selectedCityFilter={selectedCityFilter}
+                                setSelectedCityFilter={setSelectedCityFilter}
+                                states={states}
+                                cities={cities}
+                                updateFilters={updateFilters}
+                            />
                             {loading ? (
                                 <SkeletonCard />
                             ) : jobs.length > 0 ? (
@@ -915,7 +791,7 @@ const VagasEmpresa = () => {
                                     ))}
                                     {/* Paginação */}
                                     {totalPages > 1 && (
-                                        <div className="d-flex flex-row p-2 justify-content-center" style={{ marginLeft: '6px' }}>
+                                        <div className="d-flex flex-row justify-content-center p-2">
                                             <Button
                                                 className="btn-sm me-2 mb-2"
                                                 onClick={() => handlePageChange('prev')}

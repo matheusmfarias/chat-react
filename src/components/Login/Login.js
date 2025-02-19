@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Cookies from "js-cookie";
 import api from '../../services/axiosConfig';
 import logo from '../../assets/images/logo-aci-transparente.png';
 import SenhaInput from "../SenhaInput/SenhaInput";
@@ -19,6 +20,7 @@ const Login = () => {
 
     useEffect(() => {
         localStorage.clear();
+        Cookies.remove('userId'); // Remove cookies antigos (opcional)
         document.title = "ACI Empregos | Login";
     }, []);
 
@@ -28,12 +30,16 @@ const Login = () => {
         try {
             const response = await api.post(`${process.env.REACT_APP_API_URL}/api/auth/login`, { email, senha });
 
-            const { token, firstLogin, role } = response.data;
+            const { token, userId, firstLogin, role } = response.data;
 
             // Armazena o token no localStorage
             localStorage.setItem('token', token);
             localStorage.setItem('role', role);
 
+            // Armazena o userId nos cookies
+            Cookies.set('userId', userId, { expires: 7 }); // Expira em 7 dias
+
+            // Navegação baseada no status do usuário
             if (role === 'admin') {
                 navigate('/admin-dashboard');
             } else if (firstLogin) {

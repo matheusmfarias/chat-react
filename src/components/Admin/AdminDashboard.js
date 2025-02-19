@@ -6,11 +6,10 @@ import { faEdit, faToggleOn, faToggleOff, faPlus, faSearch, faSortDown, faSortUp
 import { showToast } from '../ToastNotification';
 import useFormattedCNPJ, { formatCNPJ } from '../../hooks/useFormattedCNPJ';
 import ModalComponent from './ModalComponent';
-import CurriculoTemplate from '../Candidato/Curriculo/CurriculoTemplate';
-import { createRoot } from 'react-dom/client'; // Importar createRoot do react-dom/client
 import useFormattedDate from '../../hooks/useFormattedDate';
 import './AdminDashboard.css';
 import HeaderAdmin from './HeaderAdmin';
+import CurriculoTemplate from '../Candidato/Curriculo/CurriculoTemplate';
 
 const AdminDashboard = () => {
     const [empresas, setEmpresas] = useState([]);
@@ -38,6 +37,8 @@ const AdminDashboard = () => {
     const [currentPageVagas, setCurrentPageVagas] = useState(1); // Página das vagas
     const [currentPageCandidatosVaga, setCurrentPageCandidatosVaga] = useState(1); // Página dos candidatos de uma vaga
     const [currentPageCandidatos, setCurrentPageCandidatos] = useState(1); // Página dos candidatos gerais (aba)
+    const [viewCurriculo, setViewCurriculo] = useState(false); // Estado para controlar a visualização do currículo
+    const [selectedUserId, setSelectedUserId] = useState(null); // Estado para armazenar o ID do usuário selecionado
 
     //Breadcrumb
     const [currentView, setCurrentView] = useState('empresas');
@@ -464,7 +465,7 @@ const AdminDashboard = () => {
                         <thead>
                             <tr>
                                 <th>Nome</th>
-                                <th>Sobrenome</th>
+                                <th>E-mail</th>
                                 <th>Último acesso</th>
                                 <th>Ações</th>
                             </tr>
@@ -472,8 +473,8 @@ const AdminDashboard = () => {
                         <tbody>
                             {candidatos.map((candidato) => (
                                 <tr key={candidato._id} className={candidato.isInactive ? 'table-danger' : ''}>
-                                    <td>{candidato.nome}</td>
-                                    <td>{candidato.sobrenome}</td>
+                                    <td>{candidato.nome} {candidato.sobrenome}</td>
+                                    <td>{candidato.email}</td>
                                     <td>{formatDate(candidato.lastAccess)}</td>
                                     <td>
                                         <Button variant="primary" onClick={() => handleViewCurriculo(candidato._id)}>
@@ -604,58 +605,9 @@ const AdminDashboard = () => {
         }
     };
 
-    const handleViewCurriculo = (candidatoId) => {
-        const newWindow = window.open('', '', 'width=800,height=600');
-        newWindow.document.write('<html><head><title>Currículo</title></head><body><div id="curriculo-template-root"></div></body></html>');
-        // Injetar link CSS do Bootstrap na nova janela
-        const bootstrapLink = newWindow.document.createElement('link');
-        bootstrapLink.rel = 'stylesheet';
-        bootstrapLink.href = 'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css';
-        newWindow.document.head.appendChild(bootstrapLink);
-
-        // Injetar link CSS personalizado na nova janela
-        const customLink = newWindow.document.createElement('link');
-        customLink.rel = 'stylesheet';
-        customLink.type = 'text/css';
-        customLink.href = `${window.location.origin}/CurriculoTemplate.css`;
-        newWindow.document.head.appendChild(customLink);
-
-        newWindow.document.close();
-
-        api.get(`${process.env.REACT_APP_API_URL}/api/user/candidato/${candidatoId}`, {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        }).then(response => {
-            const user = response.data;
-            const informacoes = {
-                nome: user.nome,
-                sobrenome: user.sobrenome,
-                dataNascimento: user.nascimento ? user.nascimento.split('T')[0] : '',
-                email: user.email,
-                telefoneContato: user.additionalInfo?.contactPhone || '',
-                telefoneRecado: user.additionalInfo?.backupPhone || '',
-                cnh: user.additionalInfo?.cnh || 'Não tenho',
-                tipoCnh: user.additionalInfo?.cnhTypes || [],
-                fotoPerfil: `${process.env.REACT_APP_API_URL}${user.profilePicture}` || '',
-                habilidadesProfissionais: user.habilidadesProfissionais || [],
-                habilidadesComportamentais: user.habilidadesComportamentais || [],
-                cursos: user.cursos || [],
-                objetivos: user.objetivos || []
-            };
-            const experiencias = user.experiences || [];
-            const formacoes = user.formacao || [];
-
-            const root = createRoot(newWindow.document.getElementById('curriculo-template-root'));
-            root.render(
-                <CurriculoTemplate
-                    experiencias={experiencias}
-                    formacoes={formacoes}
-                    informacoes={informacoes}
-                />
-            );
-        }).catch(error => {
-            console.error('Erro ao buscar currículo do candidato:', error);
-            newWindow.close();
-        });
+    const handleViewCurriculo = (userId) => {
+        setSelectedUserId(userId); // Define o ID do usuário selecionado
+        setViewCurriculo(true); // Ativa a visualização do currículo
     };
 
     return (
@@ -735,6 +687,8 @@ const AdminDashboard = () => {
                     </>
                 )}
             </Container>
+
+            {viewCurriculo && <CurriculoTemplate userId={selectedUserId} />}
 
             <ModalComponent
                 show={showModal}

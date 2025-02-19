@@ -16,6 +16,8 @@
     "browser-image-compression": "^2.0.2",
     "chat-react": "file:",
     "cpf-cnpj-validator": "^1.0.3",
+    "framer-motion": "^12.0.6",
+    "js-cookie": "^3.0.5",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.8.2",
     "qrcode.react": "^3.1.0",

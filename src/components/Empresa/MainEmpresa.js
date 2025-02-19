@@ -13,14 +13,12 @@ const MainEmpresa = () => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const companyResponse = await api.get(`${process.env.REACT_APP_API_URL}/api/company/me`, {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
+          const response = await api.get(`${process.env.REACT_APP_API_URL}/api/company/me`, {
+            headers: { Authorization: `Bearer ${token}` }
           });
-          setCompanyName(companyResponse.data.nome);
+          setCompanyName(response.data.nome);
         } catch (error) {
-          console.error('Error fetching company data:', error);
+          console.error('Erro ao buscar nome da empresa:', error);
         }
       }
     };
@@ -32,7 +30,7 @@ const MainEmpresa = () => {
   return (
     <div className="main-content-empresa">
       <div className="central-container-empresa">
-      <FontAwesomeIcon icon={faCircleUser} className='profile-empresa-icon' />
+        <FontAwesomeIcon icon={faCircleUser} className='profile-empresa-icon' />
         <h2>Olá, {companyName}</h2>
       </div>
     </div>

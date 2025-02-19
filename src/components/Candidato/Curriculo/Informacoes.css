@@ -25,7 +25,6 @@
     gap: 10px;
     flex-wrap: wrap;
     width: 80%;
-    /* Garante que o container das tags tenha a mesma largura do input */
 }
 
 .tag {

@@ -122,7 +122,7 @@ const CarouselEmpresa = () => {
     const SkeletonCard = () => (
         <Row className="mt-3">
             {Array.from({ length: slidesToShow }).map((_, index) => (
-                <Col key={index} className="mb-3 d-flex p-2" md={6} xxl={4}>
+                <Col key={index} className="mb-3 d-flex p-2" md={6} xl={4}>
                     <Card className="w-100 border-0 shadow-sm rounded p-2 d-flex flex-column">
                         <Card.Body>
                             <Skeleton height={30} width="60%" className="mb-3" />
@@ -139,7 +139,7 @@ const CarouselEmpresa = () => {
     );
 
     return (
-        <div style={{ minHeight: '55vh', padding: '20px' }} className='m-2'>
+        <div style={{ minHeight: '55vh', padding: '20px' }} className='m-3'>
             <h1 className="text-center text-primary">Acompanhe suas vagas ativas</h1>
             {loading && jobs.length === 0 ? (
                 <SkeletonCard />

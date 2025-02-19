@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import Cookies from "js-cookie";
 import './HeaderCandidato.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleDown, faAngleUp } from '@fortawesome/free-solid-svg-icons';
@@ -58,9 +59,17 @@ const HeaderCandidato = () => {
     }, []);
 
     const handleLogout = () => {
+        // Remove o token do localStorage
         localStorage.removeItem('token');
-        sessionStorage.removeItem('userName'); // Remove o nome da sessão ao fazer logout
-        navigate('/', { replace: true }); // Redireciona para a página inicial após o logout
+
+        // Remove o nome de usuário armazenado na sessionStorage
+        sessionStorage.removeItem('userName');
+
+        // Remove o userId dos cookies
+        Cookies.remove('userId');
+
+        // Redireciona para a página inicial
+        navigate('/', { replace: true });
     };
 
     return (

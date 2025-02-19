@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { Container, Row, Col, Image, Card } from 'react-bootstrap';
-import './CurriculoTemplate.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleUser } from "@fortawesome/free-solid-svg-icons";
 
@@ -22,11 +21,11 @@ const CurriculoTemplate = ({ experiencias = [], formacoes = [], informacoes = {}
     }, []);
 
     return (
-        <Container className="curriculo-template">
-            <Row className="mb-3">
-                <Col md={5} lg={4}>
+        <Container>
+            <Row className="mb-3 mt-2">
+                <Col md={3} lg={2}>
                     {fotoPerfil && fotoPerfil !== "undefined" && fotoPerfil !== "" && fotoPerfil !== `${process.env.REACT_APP_API_URL}` ? (
-                        <Image src={fotoPerfil} roundedCircle className="profile-avatar" />
+                        <Image src={fotoPerfil} className="profile-avatar" />
                     ) : (
                         <FontAwesomeIcon
                             icon={faCircleUser}
@@ -36,7 +35,7 @@ const CurriculoTemplate = ({ experiencias = [], formacoes = [], informacoes = {}
                         />
                     )}
                 </Col>
-                <Col className="mt-md-2">
+                <Col className="mt-2">
                     <h2>{nome} {sobrenome}</h2>
                     <p><strong>Data de Nascimento:</strong> {formatarData(dataNascimento)}</p>
                     <p><strong>Email:</strong> {email}</p>
@@ -52,26 +51,43 @@ const CurriculoTemplate = ({ experiencias = [], formacoes = [], informacoes = {}
                             <Card.Title>Histórico de trabalho</Card.Title>
                             {experiencias.length > 0 ? (
                                 <ul>
-                                    {experiencias
-                                        .filter(
-                                            (trabalho) =>
-                                                trabalho.empresa &&
-                                                trabalho.funcao &&
-                                                trabalho.mesInicial &&
-                                                trabalho.anoInicial &&
-                                                (trabalho.trabalhoAtualmente || (trabalho.mesFinal && trabalho.anoFinal)) &&
-                                                trabalho.atividades
-                                        )
-                                        .map((trabalho, index) => (
+                                    {experiencias.map((trabalho, index) => {
+                                        // Verifica campos faltantes
+                                        const camposFaltantes = [];
+                                        if (!trabalho.empresa) camposFaltantes.push("empresa");
+                                        if (!trabalho.funcao) camposFaltantes.push("função");
+                                        if (!trabalho.mesInicial || !trabalho.anoInicial) camposFaltantes.push("período inicial");
+                                        if (!trabalho.trabalhoAtualmente && (!trabalho.mesFinal || !trabalho.anoFinal)) camposFaltantes.push("período final");
+                                        if (!trabalho.atividades) camposFaltantes.push("atividades");
+
+                                        return (
                                             <li key={index}>
-                                                {trabalho.empresa} - {trabalho.funcao} (
-                                                {trabalho.mesInicial}/{trabalho.anoInicial} -{' '}
-                                                {trabalho.trabalhoAtualmente
-                                                    ? 'Atualmente'
-                                                    : `${trabalho.mesFinal}/${trabalho.anoFinal}`}
-                                                ) - {trabalho.atividades}
+                                                <span style={!trabalho.empresa ? { color: 'red' } : {}}>
+                                                    {trabalho.empresa || "Empresa não informada"}
+                                                </span> -{' '}
+                                                <span style={!trabalho.funcao ? { color: 'red' } : {}}>
+                                                    {trabalho.funcao || "Função não informada"}
+                                                </span> (
+                                                <span style={!trabalho.mesInicial || !trabalho.anoInicial ? { color: 'red' } : {}}>
+                                                    {trabalho.mesInicial && trabalho.anoInicial
+                                                        ? `${trabalho.mesInicial}/${trabalho.anoInicial}`
+                                                        : "Período inicial não informado"
+                                                    }
+                                                </span> -{' '}
+                                                <span style={!trabalho.trabalhoAtualmente && (!trabalho.mesFinal || !trabalho.anoFinal) ? { color: 'red' } : {}}>
+                                                    {trabalho.trabalhoAtualmente
+                                                        ? 'Atualmente'
+                                                        : (trabalho.mesFinal && trabalho.anoFinal
+                                                            ? `${trabalho.mesFinal}/${trabalho.anoFinal}`
+                                                            : "Período final não informado"
+                                                        )}
+                                                </span>) -{' '}
+                                                <span style={!trabalho.atividades ? { color: 'red' } : {}}>
+                                                    {trabalho.atividades || "Atividades não informadas"}
+                                                </span>
                                             </li>
-                                        ))}
+                                        );
+                                    })}
                                 </ul>
                             ) : (
                                 <p>Nenhuma informação inserida</p>

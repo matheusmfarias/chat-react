@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../../services/axiosConfig';
-import { Button, Spinner } from 'react-bootstrap';
+import { Button, Card, Container, Col, Row, Spinner, Form } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
-import ReactSelect from 'react-select';
+import Select from "react-select";
+import { motion, AnimatePresence } from "framer-motion";
+import UserFormationModal from '../../Modals/UserFormationModal';
+import Swal from "sweetalert2";
+import { showToast, TOAST_TYPES } from '../../ToastNotification';
 
 const Formacao = ({ formacoes, setFormacoes }) => {
-    const [showPopup, setShowPopup] = useState(false);
-    const [isClosing, setIsClosing] = useState(false);
+    const [showFormationModal, setShowFormationModal] = useState(false);
     const [loading, setLoading] = useState(true);
     const [loadingAdd, setLoadingAdd] = useState(false);
     const [loadingDelete, setLoadingDelete] = useState(false);
@@ -98,8 +101,8 @@ const Formacao = ({ formacoes, setFormacoes }) => {
             await api.post(`${process.env.REACT_APP_API_URL}/api/user/formacao`, newFormacao, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
+            showToast(`Formação adicionada com sucesso!`, TOAST_TYPES.SUCCESS);
             fetchFormacao();
-            closePopup();
             setNewFormacao({
                 escolaridade: '',
                 instituicao: '',
@@ -112,9 +115,10 @@ const Formacao = ({ formacoes, setFormacoes }) => {
                 anoFinal: ''
             });
         } catch (error) {
-            console.error('Erro ao adicionar formação:', error);
+            showToast(`Erro ao adicionar a formação!`, TOAST_TYPES.ERROR);
         } finally {
             setLoadingAdd(false);
+            handleCloseFormationModal();
         }
     };
 
@@ -141,20 +145,13 @@ const Formacao = ({ formacoes, setFormacoes }) => {
             await api.put(`${process.env.REACT_APP_API_URL}/api/user/formacao/${currentFormacao._id}`, currentFormacao, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
+            showToast(`Formação atualizada com sucesso!`, TOAST_TYPES.SUCCESS);
             fetchFormacao();
         } catch (error) {
-            console.error('Erro ao atualizar formação:', error);
+            showToast(`Erro ao atualizar a formação!`, TOAST_TYPES.ERROR);
         } finally {
             setLoadingAdd(false);
         }
-    };
-
-    const closePopup = () => {
-        setIsClosing(true);
-        setTimeout(() => {
-            setIsClosing(false);
-            setShowPopup(false);
-        }, 500);
     };
 
     const toggleExpand = (index) => {
@@ -169,84 +166,55 @@ const Formacao = ({ formacoes, setFormacoes }) => {
 
     const handleDeleteFormacao = async (index) => {
         const currentFormacao = formacoes[index];
-        setLoadingDelete(true);
-        try {
-            await api.delete(`${process.env.REACT_APP_API_URL}/api/user/formacao/${currentFormacao._id}`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
-            fetchFormacao();
-        } catch (error) {
-            console.error('Erro ao remover formação:', error);
-        } finally {
-            setLoadingDelete(false);
-        }
-    };
-
-    const customStyles = {
-        control: (provided, state) => ({
-            ...provided,
-            width: '100%',
-            padding: '0 15px',               // Adiciona padding horizontal
-            border: '2px solid #D3D3D3',
-            borderRadius: '8px',
-            fontSize: '16px',
-            height: '58px',               // Define a altura mínima para 58px
-            display: 'flex',
-            alignItems: 'center',
-            boxShadow: state.isFocused ? '0 0 0 2px rgba(31, 82, 145, 0.25)' : 'none',
-            '&:hover': {
-                borderColor: '#1F5291',
+        Swal.fire({
+            title: "Tem certeza que deseja deletar a formação?",
+            text: "Esta ação não pode ser desfeita.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Sim, deletar",
+            cancelButtonText: "Cancelar",
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                setLoadingDelete(true);
+                try {
+                    await api.delete(`${process.env.REACT_APP_API_URL}/api/user/formacao/${currentFormacao._id}`, {
+                        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                    });
+                    showToast(`Formação deletada com sucesso!`, TOAST_TYPES.SUCCESS);
+                    fetchFormacao();
+                } catch (error) {
+                    showToast(`Erro ao deletar a formação!`, TOAST_TYPES.ERROR);
+                } finally {
+                    setLoadingDelete(false);
+                }
             }
-        }),
-        valueContainer: (provided) => ({
-            ...provided,
-            height: '54px',
-            padding: '0',
-        }),
-        option: (provided, state) => ({
-            ...provided,
-            backgroundColor: state.isSelected ? '#1F5291' : 'white',
-            color: state.isSelected ? 'white' : '#575e67',
-            padding: '15px',
-            fontSize: '16px',
-            '&:hover': {
-                backgroundColor: '#286abb',
-                color: 'white',
-            }
-        }),
-        menu: (provided) => ({
-            ...provided,
-            borderRadius: '8px',
-            marginTop: '5px',
-            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-        }),
-        menuList: (provided) => ({
-            ...provided,
-            padding: '0',
-        }),
-        dropdownIndicator: (provided) => ({
-            ...provided,
-            color: '#1F5291',
-            '&:hover': {
-                color: '#286abb',
-            }
-        }),
-        indicatorSeparator: () => ({
-            display: 'none',
         })
     };
 
+    const handleCloseFormationModal = () => {
+        setShowFormationModal(false);
+        setNewFormacao({
+            escolaridade: '',
+            instituicao: '',
+            situacao: '',
+            curso: '',
+            grau: '',
+            mesInicial: '',
+            anoInicial: '',
+            mesFinal: '',
+            anoFinal: ''
+        });
+    }
+
     return (
         <>
-            <div className='form-columns-container'>
-                {loading ? (
-                    <div className="d-flex justify-content-center">
+            <Container fluid>
+                <Row className='d-flex flex-column justify-content-center align-items-center'>
+                    {loading ? (
                         <Spinner animation="border" variant="primary" />
-                    </div>
-                ) : (
-                    formacoes.length === 0 ? (
-                        <p className='text-center'>Nenhuma formação informada. Clique em "Adicionar" para cadastrar.</p>
-                    ) : (
+                    ) : formacoes.length > 0 ? (
                         formacoes
                             .sort((a, b) => {
                                 // Se ambos têm o ano de finalização
@@ -270,351 +238,256 @@ const Formacao = ({ formacoes, setFormacoes }) => {
                                 }
                             })
                             .map((exp, index) => (
-                                <div key={index} className={`experience-card ${exp.expanded ? 'expanded' : ''}`}>
-                                    <div className="card-header" onClick={() => toggleExpand(index)}>
-                                        <div className="header-left">
-                                            {exp.escolaridade === "Graduação" || exp.escolaridade === "Pós-graduação" ? (
-                                                <>
-                                                    <h4>{exp.grau} em {exp.curso}</h4>
-                                                    <p>{exp.instituicao}</p>
-                                                </>
-                                            ) : exp.escolaridade === "Técnico" ? (
-                                                <>
-                                                    <h4>{exp.escolaridade} em {exp.curso}</h4>
-                                                    <p>{exp.instituicao}</p>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <h4>{exp.escolaridade}</h4>
-                                                    <p>{exp.instituicao}</p>
-                                                </>
-                                            )}
-                                        </div>
-                                        <span className="toggle-icon">
-                                            {exp.expanded ? <FontAwesomeIcon icon={faChevronUp} /> : <FontAwesomeIcon icon={faChevronDown} />}
-                                        </span>
-                                    </div>
-                                    {exp.expanded && (
-                                        <div className={`card-body ${exp.expanded ? 'expanded' : ''}`}>
-                                            <div className="form-group">
-                                                <label>Instituição</label>
-                                                <input type="text" name="instituicao" value={exp.instituicao || ''} onChange={(e) => handleEditChange(index, e)} />
-                                            </div>
-                                            <div className="form-group">
-                                                <label>Escolaridade</label>
-                                                <div className="escolaridade-select">
-                                                    <ReactSelect
-                                                        name="escolaridade"
-                                                        value={escolaridadeOptions.find(option => option.value === exp.escolaridade) || null}
-                                                        onChange={(selectedOption) =>
-                                                            handleEditChange(index, {
-                                                                target: {
-                                                                    name: 'escolaridade',
-                                                                    value: selectedOption ? selectedOption.value : ''
-                                                                }
-                                                            })
-                                                        }
-                                                        styles={customStyles}
-                                                        options={escolaridadeOptions}
-                                                        placeholder="Selecione"
-                                                        isSearchable={false}
-                                                    />
-                                                </div>
-                                            </div>
-                                            {(exp.escolaridade === 'Técnico' || exp.escolaridade === 'Graduação' || exp.escolaridade === 'Pós-graduação') && (
-                                                <div className="form-group">
-                                                    <label>Curso</label>
-                                                    <input type="text" name="curso" value={exp.curso || ''} onChange={(e) => handleEditChange(index, e)} />
-                                                </div>
-                                            )}
-                                            {exp.escolaridade === 'Graduação' && (
-                                                <div className="form-group">
-                                                    <label>Grau</label>
-                                                    <div className="grau-select">
-                                                        <ReactSelect
-                                                            name="grau"
-                                                            value={grauOptions.find(option => option.value === exp.grau) || null}
-                                                            onChange={(selectedOption) =>
-                                                                handleEditChange(index, {
-                                                                    target: {
-                                                                        name: 'grau',
-                                                                        value: selectedOption ? selectedOption.value : ''
+                                <Card
+                                    key={index}
+                                    className="mb-3 border-0 shadow-sm rounded bg-light"
+                                >
+                                    <Card.Body className="p-2">
+                                        <Row onClick={() => toggleExpand(index)}>
+                                            <Col xs={11}>
+                                                {exp.escolaridade === "Graduação" || exp.escolaridade === "Pós-graduação" ? (
+                                                    <>
+                                                        <Card.Title className='mb-0 me-2 info-card'>{exp.grau} em {exp.curso}</Card.Title>
+                                                        <Card.Text>{exp.instituicao}</Card.Text>
+                                                    </>
+                                                ) : exp.escolaridade === "Técnico" ? (
+                                                    <>
+                                                        <Card.Title className='mb-0 me-2 info-card'>{exp.escolaridade} em {exp.curso}</Card.Title>
+                                                        <Card.Text>{exp.instituicao}</Card.Text>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Card.Title className='mb-0 me-2 info-card'>{exp.escolaridade}</Card.Title>
+                                                        <Card.Text>{exp.instituicao}</Card.Text>
+                                                    </>
+                                                )}
+                                            </Col>
+                                            <Col xs={1} className='d-flex align-items-center'>
+                                                <span style={{ cursor: 'pointer' }}>
+                                                    {exp.expanded ? <FontAwesomeIcon icon={faChevronUp} /> : <FontAwesomeIcon icon={faChevronDown} />}
+                                                </span>
+                                            </Col>
+                                        </Row>
+                                        <AnimatePresence>
+                                            {exp.expanded && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, height: 0 }}
+                                                    animate={{ opacity: 1, height: "auto" }}
+                                                    exit={{ opacity: 0, height: 0 }}
+                                                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                                                >
+                                                    <Form onSubmit={handleAddFormacao}>
+                                                        <motion.div
+                                                            initial={{ opacity: 0, y: -20 }}
+                                                            animate={{ opacity: 1, y: 0 }}
+                                                            transition={{ delay: 0.1 }}
+                                                        >
+                                                            <Row className="mb-3 mt-3">
+                                                                <Form.Label>Instituição</Form.Label>
+                                                                <Form.Group>
+                                                                    <Form.Control
+                                                                        type="text"
+                                                                        name="instituicao"
+                                                                        value={exp.instituicao || ''}
+                                                                        onChange={(e) => handleEditChange(index, e)}
+                                                                    />
+                                                                </Form.Group>
+                                                            </Row>
+                                                        </motion.div>
+                                                        <motion.div
+                                                            initial={{ opacity: 0, y: -20 }}
+                                                            animate={{ opacity: 1, y: 0 }}
+                                                            transition={{ delay: 0.2 }}
+                                                        >
+                                                            <Row className="mb-3">
+                                                                <Form.Label>Escolaridade</Form.Label>
+                                                                <Select
+                                                                    name="escolaridade"
+                                                                    value={escolaridadeOptions.find(option => option.value === exp.escolaridade) || null}
+                                                                    onChange={(selectedOption) =>
+                                                                        handleEditChange(index, {
+                                                                            target: {
+                                                                                name: 'escolaridade',
+                                                                                value: selectedOption ? selectedOption.value : ''
+                                                                            }
+                                                                        })
                                                                     }
-                                                                })
-                                                            }
-                                                            options={grauOptions}
-                                                            styles={customStyles}
-                                                            placeholder="Selecione"
-                                                            isSearchable={false}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            )}
-                                            {exp.escolaridade === 'Pós-graduação' && (
-                                                <div className="form-group">
-                                                    <label>Grau</label>
-                                                    <div className="grau-select">
-                                                        <ReactSelect
-                                                            name="grau"
-                                                            value={grauPosOptions.find(option => option.value === exp.grau) || null}
-                                                            onChange={(selectedOption) =>
-                                                                handleEditChange(index, {
-                                                                    target: {
-                                                                        name: 'grau',
-                                                                        value: selectedOption ? selectedOption.value : ''
-                                                                    }
-                                                                })
-                                                            }
-                                                            options={grauPosOptions}
-                                                            styles={customStyles}
-                                                            placeholder="Selecione"
-                                                            isSearchable={false}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            )}
-                                            <div className="form-group">
-                                                <label>Situação</label>
-                                                <div className="situacao-select">
-                                                    <ReactSelect
-                                                        name="situacao"
-                                                        value={situacaoOptions.find(option => option.value === exp.situacao) || null}
-                                                        onChange={(selectedOption) =>
-                                                            handleEditChange(index, {
-                                                                target: {
-                                                                    name: 'situacao',
-                                                                    value: selectedOption ? selectedOption.value : ''
+                                                                    options={escolaridadeOptions}
+                                                                    placeholder="Selecione"
+                                                                />
+                                                            </Row>
+                                                        </motion.div>
+                                                        {(exp.escolaridade === 'Técnico' || exp.escolaridade === 'Graduação' || exp.escolaridade === 'Pós-graduação') && (
+                                                            <Row className="mb-3">
+                                                                <Form.Label>Curso</Form.Label>
+                                                                <Form.Group>
+                                                                    <Form.Control
+                                                                        type="text"
+                                                                        name="curso"
+                                                                        value={exp.curso || ''}
+                                                                        onChange={(e) => handleEditChange(index, e)}
+                                                                    />
+                                                                </Form.Group>
+                                                            </Row>
+                                                        )}
+                                                        {exp.escolaridade === 'Graduação' && (
+                                                            <Row className="mb-3">
+                                                                <Form.Label>Grau</Form.Label>
+                                                                <Form.Group>
+                                                                    <Select
+                                                                        name="grau"
+                                                                        value={grauOptions.find(option => option.value === exp.grau) || null}
+                                                                        onChange={(selectedOption) =>
+                                                                            handleEditChange(index, {
+                                                                                target: {
+                                                                                    name: 'grau',
+                                                                                    value: selectedOption ? selectedOption.value : ''
+                                                                                }
+                                                                            })
+                                                                        }
+                                                                        options={grauOptions}
+                                                                        placeholder="Selecione"
+                                                                    />
+                                                                </Form.Group>
+                                                            </Row>
+                                                        )}
+                                                        {exp.escolaridade === 'Pós-graduação' && (
+                                                            <Row className="mb-3">
+                                                                <Form.Label>Grau</Form.Label>
+                                                                <Form.Group>
+                                                                    <Select
+                                                                        name="grau"
+                                                                        value={grauPosOptions.find(option => option.value === exp.grau) || null}
+                                                                        onChange={(selectedOption) =>
+                                                                            handleEditChange(index, {
+                                                                                target: {
+                                                                                    name: 'grau',
+                                                                                    value: selectedOption ? selectedOption.value : ''
+                                                                                }
+                                                                            })
+                                                                        }
+                                                                        options={grauPosOptions}
+                                                                        placeholder="Selecione"
+                                                                    />
+                                                                </Form.Group>
+                                                            </Row>
+                                                        )}
+                                                        <Row className="mb-3">
+                                                            <Form.Label>Situação</Form.Label>
+                                                            <Select
+                                                                name="situacao"
+                                                                value={situacaoOptions.find(option => option.value === exp.situacao) || null}
+                                                                onChange={(selectedOption) =>
+                                                                    handleEditChange(index, {
+                                                                        target: {
+                                                                            name: 'situacao',
+                                                                            value: selectedOption ? selectedOption.value : ''
+                                                                        }
+                                                                    })
                                                                 }
-                                                            })
-                                                        }
-                                                        options={situacaoOptions}
-                                                        styles={customStyles}
-                                                        placeholder="Selecione"
-                                                        isSearchable={false}
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="form-group">
-                                                <label>Início</label>
-                                                <div className="date-select">
-                                                    <ReactSelect
-                                                        name="mesInicial"
-                                                        value={mesesOptions.find(option => option.value === exp.mesInicial) || null}
-                                                        onChange={(selectedOption) => handleEditChange(index, { target: { name: 'mesInicial', value: selectedOption ? selectedOption.value : '' } })}
-                                                        options={mesesOptions}
-                                                        placeholder="Mês"
-                                                        styles={customStyles}
-                                                        isSearchable={false}
-                                                    />
-                                                    <ReactSelect
-                                                        name="anoInicial"
-                                                        value={anosOptions.find(option => option.value === exp.anoInicial) || null}
-                                                        onChange={(selectedOption) => handleEditChange(index, { target: { name: 'anoInicial', value: selectedOption ? selectedOption.value : '' } })}
-                                                        options={anosOptions}
-                                                        placeholder="Ano"
-                                                        styles={customStyles}
-                                                        isSearchable={false}
-                                                    />
-                                                </div>
-                                            </div>
-                                            {(exp.situacao === 'Completo') && (
-                                                <div className="form-group">
-                                                    <label>Fim</label>
-                                                    <div className="date-select">
-                                                        <ReactSelect
-                                                            name="mesFinal"
-                                                            value={mesesOptions.find(option => option.value === exp.mesFinal) || null}
-                                                            onChange={(selectedOption) => handleEditChange(index, { target: { name: 'mesFinal', value: selectedOption ? selectedOption.value : '' } })}
-                                                            options={mesesOptions}
-                                                            placeholder="Mês"
-                                                            isSearchable={false}
-                                                            styles={customStyles}
-                                                            isDisabled={exp.trabalhoAtualmente} // Desativa o select se estiver trabalhando atualmente
-                                                        />
-                                                        <ReactSelect
-                                                            name="anoFinal"
-                                                            value={anosOptions.find(option => option.value === exp.anoFinal) || null}
-                                                            onChange={(selectedOption) => handleEditChange(index, { target: { name: 'anoFinal', value: selectedOption ? selectedOption.value : '' } })}
-                                                            options={anosOptions}
-                                                            placeholder="Ano"
-                                                            isSearchable={false}
-                                                            styles={customStyles}
-                                                            isDisabled={exp.trabalhoAtualmente} // Desativa o select se estiver trabalhando atualmente
-                                                        />
-                                                    </div>
-                                                </div>
+                                                                options={situacaoOptions}
+                                                                placeholder="Selecione"
+                                                            />
+                                                        </Row>
+                                                        <Row className="mb-3">
+                                                            <Form.Label>Início</Form.Label>
+                                                            <Col xs={6}>
+                                                                <Select
+                                                                    name="mesInicial"
+                                                                    value={mesesOptions.find(option => option.value === exp.mesInicial) || null}
+                                                                    onChange={(selectedOption) => handleEditChange(index, { target: { name: 'mesInicial', value: selectedOption ? selectedOption.value : '' } })}
+                                                                    options={mesesOptions}
+                                                                    placeholder="Mês"
+                                                                />
+                                                            </Col>
+                                                            <Col xs={6}>
+                                                                <Select
+                                                                    name="anoInicial"
+                                                                    value={anosOptions.find(option => option.value === exp.anoInicial) || null}
+                                                                    onChange={(selectedOption) => handleEditChange(index, { target: { name: 'anoInicial', value: selectedOption ? selectedOption.value : '' } })}
+                                                                    options={anosOptions}
+                                                                    placeholder="Ano"
+                                                                />
+                                                            </Col>
+                                                        </Row>
+                                                        {(exp.situacao === 'Completo') && (
+                                                            <Row className="mb-3">
+                                                                <Form.Label>Fim</Form.Label>
+                                                                <Col xs={6}>
+                                                                    <Select
+                                                                        name="mesFinal"
+                                                                        value={mesesOptions.find(option => option.value === exp.mesFinal) || null}
+                                                                        onChange={(selectedOption) => handleEditChange(index, { target: { name: 'mesFinal', value: selectedOption ? selectedOption.value : '' } })}
+                                                                        options={mesesOptions}
+                                                                        placeholder="Mês"
+                                                                    />
+                                                                </Col>
+                                                                <Col xs={6}>
+                                                                    <Select
+                                                                        name="anoFinal"
+                                                                        value={anosOptions.find(option => option.value === exp.anoFinal) || null}
+                                                                        onChange={(selectedOption) => handleEditChange(index, { target: { name: 'anoFinal', value: selectedOption ? selectedOption.value : '' } })}
+                                                                        options={anosOptions}
+                                                                        placeholder="Ano"
+                                                                    />
+                                                                </Col>
+                                                            </Row>
+                                                        )}
+                                                        <motion.div
+                                                            initial={{ opacity: 0, y: -20 }}
+                                                            animate={{ opacity: 1, y: 0 }}
+                                                            transition={{ delay: 0.7 }}
+                                                        >
+                                                            <Row>
+                                                                <Button onClick={() => handleSaveEdit(index)} disabled={!exp.edited}>
+                                                                    {loadingAdd ? (
+                                                                        <div className="d-flex justify-content-center align-items-center">
+                                                                            <Spinner animation="border" variant="white" />
+                                                                        </div>
+                                                                    ) : (
+                                                                        <span>Salvar</span>
+                                                                    )}
+                                                                </Button>
+                                                                <Button variant="danger" onClick={() => handleDeleteFormacao(index)}>
+                                                                    {loadingDelete ? (
+                                                                        <div className="d-flex justify-content-center align-items-center">
+                                                                            <Spinner animation="border" variant="white" />
+                                                                        </div>
+                                                                    ) : (
+                                                                        <span>Deletar</span>
+                                                                    )}
+                                                                </Button>
+                                                            </Row>
+                                                        </motion.div>
+                                                    </Form>
+                                                </motion.div>
                                             )}
-                                            <div className='d-flex flex-column align-items-center mb-2'>
-                                                <Button className="btn-exp btn-primary mt-2" onClick={() => handleSaveEdit(index)} disabled={!exp.edited}>
-                                                    {loadingAdd ? (
-                                                        <div className="d-flex justify-content-center align-items-center">
-                                                            <Spinner animation="border" variant="white" />
-                                                        </div>
-                                                    ) : (
-                                                        <span>Salvar</span>
-                                                    )}
-                                                </Button>
-                                                <Button className="btn-exp btn-danger mt-2" onClick={() => handleDeleteFormacao(index)}>
-                                                    {loadingDelete ? (
-                                                        <div className="d-flex justify-content-center align-items-center">
-                                                            <Spinner animation="border" variant="white" />
-                                                        </div>
-                                                    ) : (
-                                                        <span>Deletar</span>
-                                                    )}
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
+                                        </AnimatePresence>
+                                    </Card.Body>
+                                </Card>
                             ))
-                    ))}
-                <Button className="btn-adicionar-curriculo mt-4" onClick={() => setShowPopup(true)}>Adicionar</Button>
-            </div>
-            {showPopup && (
-                <div className={`popup-overlay ${isClosing ? 'closing' : ''}`}>
-                    <div className={`popup-content ${isClosing ? 'closing' : ''}`}>
-                        <h3>Adicionar Formação</h3>
-                        <div className="form-group">
-                            <label>Instituição</label>
-                            <input type="text" name="instituicao" value={newFormacao.instituicao} onChange={handleInputChange} required />
-                        </div>
-                        <div className="form-group">
-                            <label>Escolaridade</label>
-                            <div className="escolaridade-select">
-                                <ReactSelect
-                                    name="escolaridade"
-                                    value={escolaridades.map((escolaridade) => ({ value: escolaridade, label: escolaridade })).find(option => option.value === newFormacao.escolaridade) || null}
-                                    onChange={(selectedOption) => handleInputChange({ target: { name: 'escolaridade', value: selectedOption ? selectedOption.value : '' } })}
-                                    options={escolaridades.map((escolaridade) => ({ value: escolaridade, label: escolaridade }))}
-                                    placeholder="Selecione"
-                                    styles={customStyles}
-                                    isSearchable={false}
-                                />
-                            </div>
-                        </div>
-                        {(newFormacao.escolaridade === 'Técnico' || newFormacao.escolaridade === 'Graduação' || newFormacao.escolaridade === 'Pós-graduação') && (
-                            <div className="form-group">
-                                <label>Curso</label>
-                                <input type="text" name="curso" value={newFormacao.curso} onChange={handleInputChange} />
-                            </div>
-                        )}
-                        {newFormacao.escolaridade === 'Graduação' && (
-                            <div className="form-group">
-                                <label>Grau</label>
-                                <div className="grau-select">
-                                    <ReactSelect
-                                        name="grau"
-                                        value={grausGraduacao.map((grau) => ({ value: grau, label: grau })).find(option => option.value === newFormacao.grau) || null}
-                                        onChange={(selectedOption) => handleInputChange({ target: { name: 'grau', value: selectedOption ? selectedOption.value : '' } })}
-                                        options={grausGraduacao.map((grau) => ({ value: grau, label: grau }))}
-                                        placeholder="Selecione"
-                                        styles={customStyles}
-                                        isSearchable={false}
-                                    />
-
-                                </div>
-                            </div>
-                        )}
-                        {newFormacao.escolaridade === 'Pós-graduação' && (
-                            <div className="form-group">
-                                <label>Grau</label>
-                                <div className="grau-select">
-                                    <ReactSelect
-                                        name="grau"
-                                        value={grausPosGraduacao.map((grau) => ({ value: grau, label: grau })).find(option => option.value === newFormacao.grau) || null}
-                                        onChange={(selectedOption) => handleInputChange({ target: { name: 'grau', value: selectedOption ? selectedOption.value : '' } })}
-                                        options={grausPosGraduacao.map((grau) => ({ value: grau, label: grau }))}
-                                        placeholder="Selecione"
-                                        styles={customStyles}
-                                        isSearchable={false}
-                                    />
-
-                                </div>
-                            </div>
-                        )}
-                        <div className="form-group">
-                            <label>Situação</label>
-                            <div className="situacao-select">
-                                <ReactSelect
-                                    name="situacao"
-                                    value={situacoes.map((situacao) => ({ value: situacao, label: situacao })).find(option => option.value === newFormacao.situacao) || null}
-                                    onChange={(selectedOption) => handleInputChange({ target: { name: 'situacao', value: selectedOption ? selectedOption.value : '' } })}
-                                    options={situacoes.map((situacao) => ({ value: situacao, label: situacao }))}
-                                    placeholder="Selecione"
-                                    styles={customStyles}
-                                    isSearchable={false}
-                                />
-
-                            </div>
-                        </div>
-                        <div className="form-group">
-                            <label>Início</label>
-                            <div className="date-select">
-                                <ReactSelect
-                                    name="mesInicial"
-                                    value={mesesOptions.find(option => option.value === newFormacao.mesInicial) || null}
-                                    onChange={(selectedOption) => handleInputChange({ target: { name: 'mesInicial', value: selectedOption ? selectedOption.value : '' } })}
-                                    options={mesesOptions}
-                                    placeholder="Mês"
-                                    styles={customStyles}
-                                    isSearchable={false}
-                                />
-                                <ReactSelect
-                                    name="anoInicial"
-                                    value={anosOptions.find(option => option.value === newFormacao.anoInicial) || null}
-                                    onChange={(selectedOption) => handleInputChange({ target: { name: 'anoInicial', value: selectedOption ? selectedOption.value : '' } })}
-                                    options={anosOptions}
-                                    placeholder="Ano"
-                                    styles={customStyles}
-                                    isSearchable={false}
-                                />
-                            </div>
-                        </div>
-                        {(newFormacao.situacao === 'Completo') && (
-                            <div className="form-group">
-                                <label>Fim</label>
-                                <div className="date-select">
-                                    <ReactSelect
-                                        name="mesFinal"
-                                        value={mesesOptions.find(option => option.value === newFormacao.mesFinal) || null}
-                                        onChange={(selectedOption) => handleInputChange({ target: { name: 'mesFinal', value: selectedOption ? selectedOption.value : '' } })}
-                                        options={mesesOptions}
-                                        placeholder="Mês"
-                                        isSearchable={false}
-                                        styles={customStyles}
-                                        isDisabled={newFormacao.trabalhoAtualmente} // Desativa o select se estiver trabalhando atualmente
-                                    />
-                                    <ReactSelect
-                                        name="anoFinal"
-                                        value={anosOptions.find(option => option.value === newFormacao.anoFinal) || null}
-                                        onChange={(selectedOption) => handleInputChange({ target: { name: 'anoFinal', value: selectedOption ? selectedOption.value : '' } })}
-                                        options={anosOptions}
-                                        placeholder="Ano"
-                                        isSearchable={false}
-                                        styles={customStyles}
-                                        isDisabled={newFormacao.trabalhoAtualmente} // Desativa o select se estiver trabalhando atualmente
-                                    />
-                                </div>
-                            </div>
-                        )}
-                        <div className='d-flex flex-column align-items-center'>
-                            <Button onClick={handleAddFormacao}>
-                                {loadingAdd ? (
-                                    <div className="d-flex justify-content-center align-items-center">
-                                        <Spinner animation="border" variant="white" />
-                                    </div>
-                                ) : (
-                                    <span>Adicionar</span>
-                                )}
-                            </Button>
-                            <Button variant='secondary' onClick={closePopup}>Cancelar</Button>
-                        </div>
-                    </div>
-                </div>
-            )}
+                    ) : (
+                        <p className='text-center'>Nenhuma formação informada. Clique em "Adicionar" para cadastrar.</p>
+                    )}
+                    <Button className="mt-2" onClick={() => setShowFormationModal(true)}>Adicionar</Button>
+                    <UserFormationModal
+                        show={showFormationModal}
+                        onClose={handleCloseFormationModal}
+                        newFormacao={newFormacao}
+                        handleInputChange={handleInputChange}
+                        handleAddFormacao={handleAddFormacao}
+                        loadingAdd={loadingAdd}
+                        mesesOptions={mesesOptions}
+                        anosOptions={anosOptions}
+                        grauOptions={grauOptions}
+                        grausPosOptions={grausPosGraduacao}
+                        grausGraduacao={grausGraduacao}
+                        situacaoOptions={situacoes}
+                        escolaridadeOptions={escolaridades}
+                    />
+                </Row>
+            </Container>
         </>
     );
-}
-
+};
 export default Formacao;

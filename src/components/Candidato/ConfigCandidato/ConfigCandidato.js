@@ -6,8 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleUser, faPencil } from '@fortawesome/free-solid-svg-icons';
 import api from '../../../services/axiosConfig';
 import { useNavigate } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { showToast, TOAST_TYPES } from '../../ToastNotification';
 import imageCompression from 'browser-image-compression';
 import ReactSelect from 'react-select';
 
@@ -30,19 +29,6 @@ const Config = () => {
         cnh: '',
         cnhTypes: []
     });
-
-    const notify = (message, type) => {
-        toast[type](message, {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            closeButton: false
-        });
-    };
 
     const [loading, setLoading] = useState(true);
     const [loadingSubmit, setLoadingSubmit] = useState(false);
@@ -127,7 +113,6 @@ const Config = () => {
             [name]: value  // Atualiza o campo específico do estado
         }));
     };
-
 
     const handleNameChange = (e) => {
         const { name, value } = e.target;
@@ -249,15 +234,16 @@ const Config = () => {
 
         // Validação da CNH
         if (userData.cnh === true && validCnhTypes.length === 0) {
-            notify('Selecione pelo menos uma modalidade de CNH.', 'warning');
+            showToast(`Selecione pelo menos uma modalidade de CNH`, TOAST_TYPES.WARNING);
             return;
         }
 
-        // Validação do arquivo de imagem
+        /*
         if (userData.profilePicture && !(userData.profilePicture instanceof File)) {
-            notify('A imagem selecionada não é válida. Por favor, selecione outra imagem.', 'error');
+            console.log(userData.profilePicture);
+            showToast(`A imagem selecionada não é válida. Por favor, selecione outra imagem.`, TOAST_TYPES.ERROR);
             return;
-        }
+        }*/
 
         setLoadingSubmit(true); // Ativa o spinner
         try {
@@ -289,12 +275,10 @@ const Config = () => {
                 const updatedProfilePicUrl = `${process.env.REACT_APP_API_URL}${response.data.profilePicture}`;
                 setPreview(updatedProfilePicUrl);
             }
-
-            notify('Dados atualizados com sucesso!', 'success');
+            showToast(`Dados atualizados com sucesso!`, TOAST_TYPES.SUCCESS);
             setIsFormChanged(false); // Reseta o estado do formulário
         } catch (error) {
-            console.error('Erro ao atualizar os dados do usuário:', error);
-            notify('Erro ao atualizar os dados. Tente novamente.', 'error');
+            showToast(`Erro ao atualizar os dados. Tente novamente.`, TOAST_TYPES.ERROR);
         } finally {
             setLoadingSubmit(false); // Desativa o spinner após a requisição
         }
@@ -320,11 +304,11 @@ const Config = () => {
         control: (provided, state) => ({
             ...provided,
             width: '100%',
-            padding: '0 15px',               // Adiciona padding horizontal
+            padding: '0 15px',
             border: '2px solid #D3D3D3',
             borderRadius: '8px',
             fontSize: '16px',
-            height: '58px',               // Define a altura mínima para 58px
+            height: '58px',
             display: 'flex',
             alignItems: 'center',
             boxShadow: state.isFocused ? '0 0 0 2px rgba(31, 82, 145, 0.25)' : 'none',
@@ -372,7 +356,6 @@ const Config = () => {
 
     return (
         <>
-            <ToastContainer />
             <HeaderCandidato />
             <main className='config-content-usuario'>
                 <div className='config-container-usuario'>
@@ -585,7 +568,7 @@ const Config = () => {
                                         </div>
                                     </div>
                                 )}
-                                <button type='submit' className='save-btn d-flex justify-content-center' disabled={!isFormChanged}>
+                                <button type='submit' className='save-btn d-flex justify-content-center' disabled={!isFormChanged || !userData.nome || !userData.sobrenome || !userData.nascimento || !userData.rg || !userData.contactPhone || !userData.backupPhone}>
                                     {loadingSubmit ? (
                                         <div className="d-flex justify-content-center">
                                             <Spinner animation="border" variant="white" />
